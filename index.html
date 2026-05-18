@@ -301,7 +301,26 @@
       .person-card, .serve-card { padding: 14px; }
       .person-top { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
       .person-top strong { font-size: 18px; }
+      .order-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+      .danger-button {
+        min-height: 38px;
+        padding: 0 12px;
+        border: 0;
+        border-radius: 8px;
+        background: #ffe8e1;
+        color: #a13a26;
+        font-weight: 800;
+      }
       .muted { color: var(--muted); }
+      .empty-state {
+        padding: 18px 14px;
+        border: 1px dashed var(--line);
+        border-radius: 8px;
+        background: rgba(255,255,255,.65);
+        color: var(--muted);
+        text-align: center;
+        font-weight: 700;
+      }
       .line-items { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
       .line-items li {
         display: flex;
@@ -377,11 +396,8 @@
         </div>
         <div class="menu-photo" id="menuPhoto" role="img" aria-label="菜單照片預覽">
           <div class="photo-topline"></div>
-          <h3>阿海便當</h3>
-          <div class="photo-row"><span>雞腿飯</span><b>120</b></div>
-          <div class="photo-row"><span>排骨飯</span><b>110</b></div>
-          <div class="photo-row"><span>滷肉飯</span><b>75</b></div>
-          <div class="photo-row"><span>紅茶</span><b>30</b></div>
+          <h3>菜單照片預覽</h3>
+          <div class="photo-row"><span>拍照或選相簿後會顯示在這裡</span><b></b></div>
         </div>
         <div class="upload-panel">
           <label class="upload-button">
@@ -389,7 +405,7 @@
             <span class="camera-icon" aria-hidden="true">▣</span>
             <span>拍照或選相簿</span>
           </label>
-          <button class="primary-button" id="mockOcrBtn" type="button">模擬 OCR 辨識</button>
+          <button class="primary-button" id="saveMenuBtn2" type="button">儲存菜單</button>
         </div>
         <div class="editable-list" id="menuEditor" aria-label="辨識後菜單"></div>
         <form class="add-form" id="addItemForm">
@@ -419,7 +435,7 @@
       <section class="view" id="view-mine">
         <div class="section-heading">
           <div><p class="eyebrow">Step 3</p><h2>個人訂單</h2></div>
-          <button class="small-button" id="editLastBtn" type="button">編輯最後一筆</button>
+          <span class="pill">可編輯</span>
         </div>
         <div class="person-orders" id="personOrders"></div>
       </section>
@@ -454,17 +470,10 @@
       const state = {
         locked: false,
         activeCategory: ALL,
-        menu: [
-          { id: "m1", name: "雞腿飯", price: 120, category: "便當" },
-          { id: "m2", name: "排骨飯", price: 110, category: "便當" },
-          { id: "m3", name: "滷肉飯", price: 75, category: "飯類" },
-          { id: "m4", name: "牛肉麵", price: 145, category: "麵類" },
-          { id: "m5", name: "燙青菜", price: 45, category: "小菜" },
-          { id: "m6", name: "紅茶", price: 30, category: "飲料" },
-          { id: "m7", name: "珍珠奶茶", price: 65, category: "飲料" }
-        ],
+        menu: [],
         draft: {},
-        orders: []
+        orders: [],
+        editingOrderId: ""
       };
 
       const $ = (selector) => document.querySelector(selector);
@@ -561,6 +570,12 @@
       }
 
       function renderMenuEditor() {
+        if (!state.menu.length) {
+          $("#menuEditor").innerHTML = '<div class="empty-state">目前沒有餐點，請用下方欄位新增。</div>';
+          renderCategories();
+          renderOrder();
+          return;
+        }
         $("#menuEditor").innerHTML = state.menu.map((item) => `
           <div class="editor-row" data-id="${item.id}">
             <input class="name-input" value="${escapeHtml(item.name)}" aria-label="${escapeHtml(item.name)} 名稱" />
@@ -603,7 +618,13 @@
 
       function renderOrder() {
         renderCategories();
-        $("#orderList").innerHTML = getVisibleMenu().map((item) => {
+        const visibleMenu = getVisibleMenu();
+        if (!visibleMenu.length) {
+          $("#orderList").innerHTML = '<div class="empty-state">目前沒有可點餐點，請先到菜單新增餐點。</div>';
+          updateDraftTotal();
+          return;
+        }
+        $("#orderList").innerHTML = visibleMenu.map((item) => {
           const draft = state.draft[item.id] || { qty: 0, option: DEFAULT_OPTION, note: "" };
           return `
             <article class="order-card" data-id="${item.id}">
@@ -672,6 +693,16 @@
         showToast("菜單已存到試算表");
       }
 
+      function persistInBackground(action, payload, failMessage) {
+        callApi(action, payload).catch((error) => {
+          showToast(`${failMessage}：${error.message}`);
+        });
+      }
+
+      function removeOrderLocal(orderId) {
+        state.orders = state.orders.filter((order) => order.id !== orderId);
+      }
+
       async function submitOrder() {
         if (state.locked) {
           showToast("主揪已鎖單");
@@ -689,20 +720,26 @@
         }
 
         const person = $("#personName").value.trim() || `${state.orders.length + 1}號`;
-        const order = { id: uid("order"), person, note: $("#personNote").value.trim(), items };
-        await callApi("submitOrder", { groupId: GROUP_ID, title: GROUP_TITLE, order });
+        const order = { id: state.editingOrderId || uid("order"), person, note: $("#personNote").value.trim(), items };
+        if (state.editingOrderId) removeOrderLocal(state.editingOrderId);
         state.orders.push(order);
         state.draft = {};
+        state.editingOrderId = "";
         $("#personName").value = `${state.orders.length + 1}號`;
         $("#personNote").value = "";
         renderAll();
         activateView("mine");
         showToast(`${person} 的餐點已送出`);
+        persistInBackground("submitOrder", { groupId: GROUP_ID, title: GROUP_TITLE, order }, "背景儲存失敗");
       }
 
       function renderPersonOrders() {
+        if (!state.orders.length) {
+          $("#personOrders").innerHTML = '<div class="empty-state">目前沒有個人訂單。</div>';
+          return;
+        }
         $("#personOrders").innerHTML = state.orders.map((order) => `
-          <article class="person-card">
+          <article class="person-card" data-order-id="${order.id}">
             <div class="person-top">
               <div><strong>${escapeHtml(order.person)}</strong><div class="muted">${escapeHtml(order.note || "無個人備註")}</div></div>
               <strong>${money(getOrderTotal(order))}</strong>
@@ -712,8 +749,48 @@
                 <li><span>${escapeHtml(item.name)} × ${item.qty}<br><span class="muted">${escapeHtml([item.option, item.note].filter(Boolean).join("，"))}</span></span><b>${money(Number(item.price) * Number(item.qty))}</b></li>
               `).join("")}
             </ul>
+            <div class="order-actions">
+              <button class="small-button" type="button" data-action="edit-order">編輯</button>
+              <button class="danger-button" type="button" data-action="delete-order">刪除</button>
+            </div>
           </article>
         `).join("");
+
+        $$("#personOrders .person-card").forEach((card) => {
+          const orderId = card.dataset.orderId;
+          card.querySelector('[data-action="edit-order"]').addEventListener("click", () => editOrder(orderId));
+          card.querySelector('[data-action="delete-order"]').addEventListener("click", () => deleteOrder(orderId));
+        });
+      }
+
+      function editOrder(orderId) {
+        const order = state.orders.find((entry) => entry.id === orderId);
+        if (!order) return;
+        $("#personName").value = order.person;
+        $("#personNote").value = order.note || "";
+        state.editingOrderId = order.id;
+        state.draft = {};
+        order.items.forEach((item) => {
+          state.draft[item.menuId] = { qty: Number(item.qty), option: item.option || DEFAULT_OPTION, note: item.note || "" };
+        });
+        activateView("order");
+        renderOrder();
+        showToast("已載入訂單，可修改後送出");
+      }
+
+      function deleteOrder(orderId) {
+        const order = state.orders.find((entry) => entry.id === orderId);
+        if (!order) return;
+        const ok = window.confirm(`確定刪除 ${order.person} 的整筆訂單嗎？`);
+        if (!ok) return;
+        removeOrderLocal(orderId);
+        if (state.editingOrderId === orderId) {
+          state.editingOrderId = "";
+          state.draft = {};
+        }
+        renderAll();
+        showToast("訂單已刪除");
+        persistInBackground("deleteOrder", { groupId: GROUP_ID, orderId }, "背景刪除失敗");
       }
 
       function getItemSummary() {
@@ -812,27 +889,13 @@
 
       function setupEvents() {
         $$(".tab").forEach((tab) => tab.addEventListener("click", () => activateView(tab.dataset.view)));
-        $("#mockOcrBtn").addEventListener("click", () => {
-          state.menu = [
-            { id: "m1", name: "雞腿飯", price: 120, category: "便當" },
-            { id: "m2", name: "排骨飯", price: 110, category: "便當" },
-            { id: "m3", name: "滷肉飯", price: 75, category: "飯類" },
-            { id: "m4", name: "牛肉麵", price: 145, category: "麵類" },
-            { id: "m5", name: "燙青菜", price: 45, category: "小菜" },
-            { id: "m6", name: "紅茶", price: 30, category: "飲料" },
-            { id: "m7", name: "珍珠奶茶", price: 65, category: "飲料" },
-            { id: "m8", name: "豆干海帶", price: 40, category: "小菜" }
-          ];
-          renderAll();
-          showToast("已產生可編輯菜單");
-        });
 
         $("#imageInput").addEventListener("change", (event) => {
           const file = event.target.files[0];
           if (!file) return;
           const url = URL.createObjectURL(file);
           $("#menuPhoto").style.background = `linear-gradient(rgba(255,255,255,.22), rgba(255,255,255,.22)), url("${url}") center / cover`;
-          showToast("圖片已載入，先用模擬 OCR 產生餐點");
+          showToast("圖片已載入，可依照片手動新增餐點");
         });
 
         $("#addItemForm").addEventListener("submit", (event) => {
@@ -852,6 +915,9 @@
         $("#saveMenuBtn").addEventListener("click", async () => {
           try { await saveMenu(); } catch (error) { showToast(error.message); }
         });
+        $("#saveMenuBtn2").addEventListener("click", async () => {
+          try { await saveMenu(); } catch (error) { showToast(error.message); }
+        });
         $("#submitOrderBtn").addEventListener("click", async () => {
           try { await submitOrder(); } catch (error) { showToast(error.message); }
         });
@@ -859,30 +925,18 @@
         $("#refreshBtn").addEventListener("click", refreshData);
         $("#copySummaryBtn").addEventListener("click", () => copyText(getSummaryText(), "叫餐文字已複製"));
         $("#shareBtn").addEventListener("click", () => copyText(location.href, "分享網址已複製"));
-        $("#editLastBtn").addEventListener("click", () => {
-          const last = state.orders.at(-1);
-          if (!last) return;
-          $("#personName").value = last.person;
-          $("#personNote").value = last.note;
-          state.draft = {};
-          last.items.forEach((item) => {
-            state.draft[item.menuId] = { qty: item.qty, option: item.option, note: item.note };
-          });
-          state.orders = state.orders.filter((order) => order.id !== last.id);
-          renderAll();
-          activateView("order");
-          showToast("已載入最後一筆，可修改後再送出");
-        });
       }
 
       async function init() {
         setupEvents();
-        try {
-          await loadRemoteData();
-        } catch (error) {
-          showToast(error.message);
-        }
         renderAll();
+        loadRemoteData()
+          .then(() => {
+            renderAll();
+          })
+          .catch((error) => {
+            showToast(error.message);
+          });
       }
 
       init();
