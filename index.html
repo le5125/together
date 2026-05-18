@@ -1554,7 +1554,7 @@
       // ════════════════════════════════════════════════════
       const $ = (s) => document.querySelector(s);
       const $$ = (s) => Array.from(document.querySelectorAll(s));
-      const money = (v) => `$${Number(v || 0).toLocaleString("zh-TW")}`;
+      const money = (v) => $${Number(v || 0).toLocaleString("zh-TW")};
 
       function escapeHtml(value) {
         return String(value ?? "")
@@ -1618,7 +1618,7 @@
       //  API
       // ════════════════════════════════════════════════════
       function callApi(action, payload = {}) {
-        const cb = `gasCb_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+        const cb = gasCb_${Date.now()}_${Math.random().toString(16).slice(2)};
         const q = new URLSearchParams({ action, payload: JSON.stringify(payload), callback: cb });
         return new Promise((resolve, reject) => {
           const script = document.createElement("script");
@@ -1633,14 +1633,14 @@
             result?.ok ? resolve(result) : reject(new Error(result?.message || "呼叫失敗"));
           };
           script.onerror = () => { cleanup(); reject(new Error("無法連線")); };
-          script.src = `${API_URL}?${q.toString()}`;
+          script.src = ${API_URL}?${q.toString()};
           document.body.appendChild(script);
         });
       }
 
       function postToGas(action, payload) {
         return new Promise((resolve, reject) => {
-          const requestId = `post_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+          const requestId = post_${Date.now()}_${Math.random().toString(16).slice(2)};
           const timer = setTimeout(() => {
             window.removeEventListener("message", onMsg);
             reject(new Error("回應逾時（資料可能已寫入）"));
@@ -1695,7 +1695,7 @@
         return u.toString();
       }
       function shareText() {
-        return `🍱 ${state.title}\n👉 點我加入：${shareUrl()}`;
+        return 🍱 ${state.title}\n👉 點我加入：${shareUrl()};
       }
       async function copyText(text, successMsg) {
         try {
@@ -1752,15 +1752,15 @@
         const wrap2 = $("#orderMenuImageWrap");
         if (src) {
           const tag = state.selectedImageDataUrl ? '<div class="image-tag">尚未儲存</div>' : '';
-          wrap1.innerHTML = `${tag}<img src="${src}" alt="菜單" data-menu-image />`;
-          wrap2.innerHTML = `<img src="${src}" alt="菜單" data-menu-image />`;
+          wrap1.innerHTML = ${tag}<img src="${src}" alt="菜單" data-menu-image />;
+          wrap2.innerHTML = <img src="${src}" alt="菜單" data-menu-image />;
         } else if (state.imageLoading) {
-          const loadingHtml = `
+          const loadingHtml = 
             <div class="placeholder">
               <span class="emo loading-spin">🍜</span>
               菜單載入中…<br/>
               <small>稍等一下下</small>
-            </div>`;
+            </div>;
           wrap1.innerHTML = loadingHtml;
           wrap2.innerHTML = loadingHtml;
         } else {
@@ -1775,10 +1775,10 @@
           state.draftItems.push({ name: "", price: "", qty: 1, note: "" });
         }
         const box = $("#orderItems");
-        box.innerHTML = state.draftItems.map((item, idx) => `
+        box.innerHTML = state.draftItems.map((item, idx) => 
           <div class="item-card" data-idx="${idx}">
             <div class="item-no">第 ${idx + 1} 樣</div>
-            ${state.draftItems.length > 1 ? `<button class="remove" data-act="remove" type="button" aria-label="刪除">✕</button>` : ''}
+            ${state.draftItems.length > 1 ? <button class="remove" data-act="remove" type="button" aria-label="刪除">✕</button> : ''}
             <label class="field" style="margin: 6px 0 8px">
               <span class="lbl">餐點</span>
               <input data-field="name" value="${escapeHtml(item.name)}" placeholder="例如：奶茶 / 雞腿便當" />
@@ -1801,11 +1801,11 @@
               <span class="lbl">這份的備註 <span class="hint">點一下快選</span></span>
               <input data-field="note" value="${escapeHtml(item.note)}" placeholder="例如：半糖去冰" />
               <div class="quick-notes">
-                ${QUICK_NOTES.map(n => `<button class="chip" type="button" data-quick="${escapeHtml(n)}">${escapeHtml(n)}</button>`).join("")}
+                ${QUICK_NOTES.map(n => <button class="chip" type="button" data-quick="${escapeHtml(n)}">${escapeHtml(n)}</button>).join("")}
               </div>
             </label>
           </div>
-        `).join("");
+        ).join("");
 
         $$("#orderItems .item-card").forEach(card => {
           const idx = Number(card.dataset.idx);
@@ -1855,18 +1855,18 @@
         const total = state.draftItems.reduce((s, i) => s + Number(i.price || 0) * Number(i.qty || 1), 0);
         const btn = $("#submitOrderBtn");
         btn.innerHTML = state.editingOrderId
-          ? `💾 更新訂單${total ? ` <span style="opacity:.85">· ${money(total)}</span>` : ""}`
-          : `🚀 送出訂單${total ? ` <span style="opacity:.85">· ${money(total)}</span>` : ""}`;
+          ? 💾 更新訂單${total ?  <span style="opacity:.85">· ${money(total)}</span> : ""}
+          : 🚀 送出訂單${total ?  <span style="opacity:.85">· ${money(total)}</span> : ""};
       }
 
       function renderOrders() {
         const box = $("#personOrders");
         if (!state.orders.length) {
-          box.innerHTML = `<div class="empty">
+          box.innerHTML = <div class="empty">
             <span class="emo">🍽️</span>
             <strong>還沒有人點餐</strong>
             點「點餐」分頁送出第一單吧
-          </div>`;
+          </div>;
           return;
         }
         // 我的訂單排前面
@@ -1878,35 +1878,35 @@
         box.innerHTML = sorted.map(o => {
           const mine = isMyOrder(o.id);
           const color = colorFor(o.person);
-          return `
+          return 
           <article class="order-card ${mine ? "is-mine" : ""}" data-id="${o.id}">
             <div class="order-head">
               <div class="avatar" style="background:${color}">${escapeHtml(o.person)}</div>
               <div class="who">
-                ${o.note ? `<div class="note">💬 ${escapeHtml(o.note)}</div>` : ''}
+                ${o.note ? <div class="note">💬 ${escapeHtml(o.note)}</div> : ''}
               </div>
               <div class="order-total">${money(orderTotal(o))}</div>
             </div>
             <ul class="line-items">
-              ${o.items.map(i => `
+              ${o.items.map(i => 
                 <li>
                   <div>
                     <span class="item-name">${escapeHtml(i.name)}</span>
                     <span class="qty"> × ${i.qty}</span>
-                    ${i.note ? `<span class="item-note">📝 ${escapeHtml(i.note)}</span>` : ''}
+                    ${i.note ? <span class="item-note">📝 ${escapeHtml(i.note)}</span> : ''}
                   </div>
                   <div class="item-price">${i.price ? money(Number(i.price) * Number(i.qty)) : '<span style="color:var(--muted);font-weight:600">未填</span>'}</div>
                 </li>
-              `).join("")}
+              ).join("")}
             </ul>
-            ${mine ? `
+            ${mine ? 
               <div class="order-actions">
                 <button class="btn btn-secondary btn-sm" type="button" data-act="edit">✏️ 編輯</button>
                 <button class="btn btn-danger btn-sm" type="button" data-act="delete">🗑️ 刪除</button>
               </div>
-            ` : ''}
+             : ''}
           </article>
-        `}).join("");
+        }).join("");
 
         $$("#personOrders .order-card").forEach(card => {
           const id = card.dataset.id;
@@ -1925,8 +1925,8 @@
           if (!name) return;
           const note = normalize(i.note);
           // key 用「名稱 + 備註」合併同款同備註的，分開不同備註
-          const key = note ? `${name}__${note}` : name;
-          const display = note ? `${name}（${note}）` : name;
+          const key = note ? ${name}__${note} : name;
+          const display = note ? ${name}（${note}） : name;
           const v = map.get(key) || { name: display, qty: 0, subtotal: 0, hasPrice: false };
           v.qty += Number(i.qty || 0);
           v.subtotal += Number(i.price || 0) * Number(i.qty || 0);
@@ -1939,7 +1939,7 @@
       function renderSummary() {
         // 餐點統計
         const items = buildItemSummary();
-        $("#itemSummary").innerHTML = items.length ? items.map(i => `
+        $("#itemSummary").innerHTML = items.length ? items.map(i => 
           <div class="summary-row">
             <div class="label-w">
               <span>${escapeHtml(i.name)}</span>
@@ -1947,26 +1947,26 @@
             </div>
             <b>${i.hasPrice ? money(i.subtotal) : '<span style="color:var(--muted)">—</span>'}</b>
           </div>
-        `).join("") : '<div style="color:var(--muted);text-align:center;padding:14px">尚無資料</div>';
+        ).join("") : '<div style="color:var(--muted);text-align:center;padding:14px">尚無資料</div>';
 
         // 個人統計
-        $("#personSummary").innerHTML = state.orders.length ? state.orders.map(o => `
+        $("#personSummary").innerHTML = state.orders.length ? state.orders.map(o => 
           <div class="summary-row">
             <div class="label-w">
               <div class="avatar" style="background:${colorFor(o.person)}">${escapeHtml(o.person)}</div>
             </div>
             <b>${money(orderTotal(o))}</b>
           </div>
-        `).join("") : '<div style="color:var(--muted);text-align:center;padding:14px">尚無資料</div>';
+        ).join("") : '<div style="color:var(--muted);text-align:center;padding:14px">尚無資料</div>';
 
         // 備註（只列整單備註，單品備註已合進「依餐點」裡）
         const notes = [];
         state.orders.forEach(o => {
           if (o.note) notes.push({ who: o.person, what: o.note });
         });
-        $("#noteSummary").innerHTML = notes.length ? notes.map(n => `
+        $("#noteSummary").innerHTML = notes.length ? notes.map(n => 
           <div class="note-line"><span class="who">${escapeHtml(n.who)}</span>：${escapeHtml(n.what)}</div>
-        `).join("") : '<div style="color:var(--muted);text-align:center;padding:14px">沒有備註</div>';
+        ).join("") : '<div style="color:var(--muted);text-align:center;padding:14px">沒有備註</div>';
 
         $("#grandTotal").textContent = money(grandTotal());
       }
@@ -2013,12 +2013,12 @@
           state.orders = Array.isArray(r.orders) ? r.orders : [];
           state.lastSync = Date.now();
           state.imageLoading = false;
-          setSyncState("ok", `已同步 · ${new Date().toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit" })}`);
+          setSyncState("ok", 已同步 · ${new Date().toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit" })});
           renderAll();
         } catch (e) {
           state.imageLoading = false;
           setSyncState("error", "同步失敗，點重新整理");
-          if (!silent) showToast(`連線失敗：${e.message}`, "error");
+          if (!silent) showToast(連線失敗：${e.message}, "error");
           renderAll();
         } finally {
           state.syncing = false;
@@ -2077,7 +2077,7 @@
           showToast("已儲存 · 分享連結已複製", "success");
           copyText(shareText(), "已儲存 · 分享連結已複製");
         } catch (e) {
-          showToast(`儲存失敗：${e.message}`, "error");
+          showToast(儲存失敗：${e.message}, "error");
         } finally {
           btn.disabled = false;
           btn.innerHTML = "✨ 儲存並產生分享連結";
@@ -2116,26 +2116,26 @@
         $("#confirmTitle").textContent = isEdit ? "更新訂單" : "確認訂單";
 
         const color = colorFor(orderData.person);
-        $("#confirmHeader").innerHTML = `
+        $("#confirmHeader").innerHTML = 
           <div class="avatar" style="background:${color}">${escapeHtml(orderData.person)}</div>
           <div>
-            ${orderData.note ? `<div class="note">💬 ${escapeHtml(orderData.note)}</div>` : '<div class="note">無整單備註</div>'}
+            ${orderData.note ? <div class="note">💬 ${escapeHtml(orderData.note)}</div> : '<div class="note">無整單備註</div>'}
           </div>
-        `;
+        ;
 
         let total = 0;
         $("#confirmItems").innerHTML = orderData.items.map(i => {
           const sub = Number(i.price || 0) * Number(i.qty || 0);
           total += sub;
-          return `
+          return 
             <div class="preview-item">
               <div style="flex:1;min-width:0">
                 <div class="pi-name">${escapeHtml(i.name)} <span style="color:var(--caramel);font-size:18px"> × ${i.qty}</span></div>
-                ${i.note ? `<div class="pi-meta">📝 ${escapeHtml(i.note)}</div>` : ''}
+                ${i.note ? <div class="pi-meta">📝 ${escapeHtml(i.note)}</div> : ''}
               </div>
               <div class="pi-price">${i.price ? money(sub) : '<span style="color:var(--muted);font-weight:600;font-size:15px">未填價</span>'}</div>
             </div>
-          `;
+          ;
         }).join("");
         $("#confirmTotal").textContent = money(total);
 
@@ -2178,7 +2178,7 @@
           .then(() => setSyncState("ok", "已同步"))
           .catch(e => {
             setSyncState("error", "背景儲存失敗");
-            showToast(`背景儲存失敗：${e.message}`, "error");
+            showToast(背景儲存失敗：${e.message}, "error");
           });
       }
 
@@ -2199,13 +2199,13 @@
         const o = state.orders.find(x => x.id === id);
         if (!o) return;
         if (!isMyOrder(id)) { showToast("只能刪除自己的訂單", "error"); return; }
-        if (!confirm(`確定刪除 ${o.person} 的訂單？`)) return;
+        if (!confirm(確定刪除 ${o.person} 的訂單？)) return;
         state.orders = state.orders.filter(x => x.id !== id);
         removeMyOrderId(id);
         renderAll();
         showToast("已刪除", "success");
         callApi("deleteOrder", { groupId: state.groupId, orderId: id })
-          .catch(e => showToast(`背景刪除失敗：${e.message}`, "error"));
+          .catch(e => showToast(背景刪除失敗：${e.message}, "error"));
       }
 
       async function toggleLock() {
@@ -2219,16 +2219,16 @@
         } catch (e) {
           state.locked = !next;
           renderLockUI();
-          showToast(`切換失敗：${e.message}`, "error");
+          showToast(切換失敗：${e.message}, "error");
         }
       }
 
       function summaryText() {
-        const lines = [`🍱 ${state.title}`, "─────────"];
-        buildItemSummary().forEach(i => lines.push(`${i.name} × ${i.qty}${i.hasPrice ? ` ${money(i.subtotal)}` : ""}`));
-        lines.push("─────────", `💰 總計：${money(grandTotal())}`, "");
+        const lines = [🍱 ${state.title}, "─────────"];
+        buildItemSummary().forEach(i => lines.push(${i.name} × ${i.qty}${i.hasPrice ?  ${money(i.subtotal)} : ""}));
+        lines.push("─────────", 💰 總計：${money(grandTotal())}, "");
         lines.push("【每人】");
-        state.orders.forEach(o => lines.push(`${o.person}：${money(orderTotal(o))}`));
+        state.orders.forEach(o => lines.push(${o.person}：${money(orderTotal(o))}));
         const noteText = $("#noteSummary").innerText.trim();
         if (noteText && noteText !== "沒有備註") lines.push("", "【備註】", noteText);
         return lines.join("\n");
@@ -2242,7 +2242,7 @@
           showToast("還沒人點餐，無法結團", "error");
           return;
         }
-        if (!confirm(`確定結團？\n\n• 將自動鎖單，沒人能再點餐\n• 跳出彙整頁可截圖傳 LINE\n• 24 小時內仍可查看`)) return;
+        if (!confirm(確定結團？\n\n• 將自動鎖單，沒人能再點餐\n• 跳出彙整頁可截圖傳 LINE\n• 24 小時內仍可查看)) return;
 
         // 鎖單（如果還沒鎖）
         if (!state.locked) {
@@ -2267,7 +2267,7 @@
 
         // 餐點清單
         const items = buildItemSummary();
-        $("#receiptItems").innerHTML = items.map(i => `
+        $("#receiptItems").innerHTML = items.map(i => 
           <div class="receipt-row">
             <div class="ri-name">
               <span>${escapeHtml(i.name)}</span>
@@ -2275,17 +2275,17 @@
             </div>
             <b>${i.hasPrice ? money(i.subtotal) : '—'}</b>
           </div>
-        `).join("");
+        ).join("");
 
         // 每人金額
-        $("#receiptPeople").innerHTML = state.orders.map(o => `
+        $("#receiptPeople").innerHTML = state.orders.map(o => 
           <div class="receipt-row receipt-person-row">
             <div class="ri-name">
               <div class="avatar" style="background:${colorFor(o.person)}">${escapeHtml(o.person)}</div>
             </div>
             <b>${money(orderTotal(o))}</b>
           </div>
-        `).join("");
+        ).join("");
 
         // 備註（只列整單備註，單品備註已合進「依餐點」裡）
         const notes = [];
@@ -2295,9 +2295,9 @@
         const notesSection = $("#receiptNotesSection");
         if (notes.length) {
           notesSection.style.display = "block";
-          $("#receiptNotes").innerHTML = notes.map(n => `
+          $("#receiptNotes").innerHTML = notes.map(n => 
             <div class="receipt-note"><span class="who">${escapeHtml(n.who)}</span>：${escapeHtml(n.what)}</div>
-          `).join("");
+          ).join("");
         } else {
           notesSection.style.display = "none";
         }
@@ -2312,7 +2312,7 @@
 
       function activateView(view) {
         $$(".tab").forEach(t => t.classList.toggle("is-active", t.dataset.view === view));
-        $$(".view").forEach(p => p.classList.toggle("is-active", p.id === `view-${view}`));
+        $$(".view").forEach(p => p.classList.toggle("is-active", p.id === view-${view}));
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
 
