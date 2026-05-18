@@ -7,16 +7,16 @@
     <style>
       :root {
         --ink: #17211b;
-        --muted: #66726d;
+        --muted: #68736e;
         --line: #dce3de;
         --paper: #f8faf6;
-        --panel: #ffffff;
-        --mint: #d7efe2;
+        --panel: #fff;
         --green: #289365;
+        --mint: #d7efe2;
         --gold: #f5c85b;
-        --red-bg: #ffe8e1;
         --red: #a13a26;
-        --shadow: 0 20px 50px rgba(24, 38, 31, 0.16);
+        --red-bg: #ffe8e1;
+        --shadow: 0 18px 46px rgba(24, 38, 31, .16);
       }
 
       * { box-sizing: border-box; }
@@ -25,52 +25,47 @@
         margin: 0;
         display: grid;
         place-items: center;
-        background: linear-gradient(135deg, #eef5ef 0%, #f7f5ee 48%, #e7f1f6 100%);
+        background: linear-gradient(135deg, #eef5ef, #f7f5ee 48%, #e7f1f6);
         color: var(--ink);
         font-family: "Segoe UI", "Noto Sans TC", Arial, sans-serif;
       }
-      button, input, select { font: inherit; }
+      button, input, textarea { font: inherit; }
       button, .upload-button {
         cursor: pointer;
-        -webkit-tap-highlight-color: rgba(40, 147, 101, .25);
+        -webkit-tap-highlight-color: rgba(40,147,101,.28);
         transition: transform 80ms ease, filter 120ms ease, box-shadow 120ms ease;
       }
       button:active, .upload-button:active {
         transform: scale(.96);
-        filter: brightness(.9);
-        box-shadow: inset 0 0 0 999px rgba(23, 33, 27, .08);
+        filter: brightness(.92);
+        box-shadow: inset 0 0 0 999px rgba(23,33,27,.08);
       }
-      button:focus-visible, .upload-button:focus-within {
-        outline: 3px solid rgba(40, 147, 101, .34);
+      button:focus-visible, .upload-button:focus-within, input:focus-visible, textarea:focus-visible {
+        outline: 3px solid rgba(40,147,101,.28);
         outline-offset: 2px;
       }
       h1, h2, h3, p { margin-top: 0; }
       h1 { margin: 0; font-size: 28px; line-height: 1.05; }
       h2 { margin: 0; font-size: 21px; }
-      h3 { margin-bottom: 12px; font-size: 16px; }
+      h3 { margin-bottom: 10px; font-size: 16px; }
 
       .phone-shell {
         width: min(430px, 100vw);
         min-height: min(920px, 100vh);
         background: var(--paper);
-        border: 1px solid rgba(23, 33, 27, 0.08);
+        border: 1px solid rgba(23,33,27,.08);
         box-shadow: var(--shadow);
         overflow: hidden;
         position: relative;
       }
-      .app-header, .status-strip, .tabs, .menu-controls { background: var(--panel); }
+      .app-header, .status-strip, .tabs { background: var(--panel); }
       .app-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         padding: 24px 20px 14px;
       }
-      .eyebrow {
-        margin: 0 0 4px;
-        color: var(--green);
-        font-size: 12px;
-        font-weight: 800;
-      }
+      .eyebrow { margin: 0 0 4px; color: var(--green); font-size: 12px; font-weight: 800; }
       .icon-button, .small-button, .primary-button, .danger-button {
         border: 0;
         border-radius: 8px;
@@ -78,7 +73,6 @@
         font-weight: 800;
       }
       .icon-button { width: 42px; background: #eef4f0; color: var(--ink); font-size: 22px; }
-      .icon-button.dark { background: var(--ink); color: #fff; }
       .primary-button { padding: 0 18px; background: var(--green); color: #fff; }
       .small-button { padding: 0 12px; background: #eef4f0; color: var(--ink); }
       .danger-button { padding: 0 12px; background: var(--red-bg); color: var(--red); }
@@ -89,19 +83,14 @@
         gap: 8px;
         padding: 10px 14px 14px;
       }
-      .status-strip div {
-        padding: 12px 8px;
-        border-radius: 8px;
-        background: #f1f6f3;
-        text-align: center;
-      }
+      .status-strip div { padding: 12px 8px; border-radius: 8px; background: #f1f6f3; text-align: center; }
       .status-strip strong, .status-strip span { display: block; }
       .status-strip span { margin-top: 2px; color: var(--muted); font-size: 12px; }
 
       .sync-panel {
         display: flex;
-        align-items: center;
         justify-content: space-between;
+        align-items: center;
         gap: 12px;
         padding: 12px 14px;
         border-top: 1px solid var(--line);
@@ -111,33 +100,9 @@
       .sync-panel strong { font-size: 14px; }
       .sync-panel span { margin-top: 2px; color: var(--muted); font-size: 12px; }
 
-      .menu-controls {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 10px;
-        padding: 12px 14px;
-        border-top: 1px solid var(--line);
-      }
-      .menu-controls label span, .person-form label span {
-        display: block;
-        margin-bottom: 6px;
-        color: var(--muted);
-        font-size: 12px;
-        font-weight: 800;
-      }
-      .menu-controls input, .menu-controls select,
-      .person-form input, .add-form input, .option-note {
-        width: 100%;
-        min-height: 44px;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: #fff;
-        padding: 0 12px;
-      }
-
       .tabs {
         display: grid;
-        grid-template-columns: repeat(5, 1fr);
+        grid-template-columns: repeat(4, 1fr);
         gap: 6px;
         padding: 10px 10px 12px;
         border-bottom: 1px solid var(--line);
@@ -162,8 +127,86 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 16px;
+        gap: 12px;
         margin-bottom: 16px;
+      }
+      label span {
+        display: block;
+        margin-bottom: 6px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+      }
+      input, textarea {
+        width: 100%;
+        min-height: 44px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        padding: 0 12px;
+      }
+      textarea { min-height: 72px; padding: 10px 12px; resize: vertical; }
+      .form-grid { display: grid; gap: 10px; }
+      .button-row { display: flex; gap: 10px; align-items: center; }
+      .button-row > * { flex: 1; }
+      .upload-button {
+        min-height: 48px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        font-weight: 800;
+      }
+      .upload-button input { position: absolute; opacity: 0; pointer-events: none; }
+
+      .menu-image-wrap {
+        min-height: 220px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fff;
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+      }
+      .menu-image-wrap img { width: 100%; height: auto; display: block; }
+      .image-placeholder { padding: 24px; color: var(--muted); text-align: center; font-weight: 700; }
+      .help-text { color: var(--muted); font-size: 13px; line-height: 1.45; }
+
+      .order-items, .orders, .summary-list { display: grid; gap: 10px; }
+      .entry-card, .order-card, .summary-block {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        padding: 12px;
+      }
+      .entry-card {
+        display: grid;
+        grid-template-columns: 1fr 86px 42px;
+        gap: 8px;
+        align-items: end;
+      }
+      .entry-card textarea { grid-column: 1 / -1; min-height: 54px; }
+      .person-top, .summary-row, .line-items li {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .person-top { margin-bottom: 10px; }
+      .line-items { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
+      .line-items li, .summary-row, .note-chip { padding-top: 7px; border-top: 1px dashed var(--line); }
+      .order-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+      .muted { color: var(--muted); }
+      .empty-state {
+        padding: 18px 14px;
+        border: 1px dashed var(--line);
+        border-radius: 8px;
+        background: rgba(255,255,255,.65);
+        color: var(--muted);
+        text-align: center;
+        font-weight: 700;
       }
       .pill {
         display: inline-flex;
@@ -175,158 +218,6 @@
         color: #216a4e;
         font-size: 12px;
         font-weight: 800;
-      }
-
-      .menu-photo {
-        min-height: 220px;
-        padding: 22px 20px;
-        border-radius: 8px;
-        background: linear-gradient(0deg, rgba(255,255,255,.9), rgba(255,255,255,.9)), repeating-linear-gradient(90deg, #f1e1bd 0 10px, #f7eacb 10px 20px);
-        border: 1px solid #e5d4aa;
-        box-shadow: 0 12px 22px rgba(94, 77, 41, 0.12);
-      }
-      .photo-topline { width: 44px; height: 5px; margin-bottom: 12px; border-radius: 999px; background: #e86f51; }
-      .photo-row {
-        padding: 9px 0;
-        border-top: 1px dashed #cfbc91;
-        color: var(--muted);
-      }
-
-      .upload-panel {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        gap: 10px;
-        margin: 16px 0;
-      }
-      .upload-button {
-        min-height: 48px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: var(--panel);
-        font-weight: 800;
-      }
-      .upload-button input { position: absolute; opacity: 0; pointer-events: none; }
-      .ocr-progress {
-        margin: -4px 0 14px;
-        padding: 10px 12px;
-        border-radius: 8px;
-        background: #eef4f0;
-        color: var(--muted);
-        font-size: 13px;
-        font-weight: 700;
-      }
-
-      .editable-list, .order-list, .person-orders, .serve-list { display: grid; gap: 10px; }
-      .editor-row, .order-card, .person-card, .summary-block, .serve-card {
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: var(--panel);
-      }
-      .editor-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 12px;
-      }
-      .editor-row input {
-        width: 100%;
-        min-height: 38px;
-        border: 1px solid transparent;
-        border-radius: 8px;
-        background: #f4f7f4;
-        padding: 0 10px;
-      }
-      .editor-row .price-input { max-width: 86px; text-align: right; }
-      .add-form { display: grid; grid-template-columns: 1fr 86px 42px; gap: 10px; margin-top: 12px; }
-      .person-form { display: grid; gap: 10px; margin-bottom: 16px; }
-      .category-filter { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; }
-      .category-filter button {
-        flex: 0 0 auto;
-        min-height: 36px;
-        padding: 0 12px;
-        border: 1px solid var(--line);
-        border-radius: 999px;
-        background: var(--panel);
-        color: var(--muted);
-        font-weight: 800;
-      }
-      .category-filter button.is-active { background: #fff5dc; border-color: #edc556; color: #7a5a00; }
-      .order-card { padding: 14px; }
-      .order-main {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 14px;
-        align-items: start;
-      }
-      .order-name { display: flex; gap: 8px; align-items: center; font-weight: 900; }
-      .tag {
-        padding: 3px 7px;
-        border-radius: 999px;
-        background: #eef4f0;
-        color: var(--muted);
-        font-size: 11px;
-        font-weight: 800;
-      }
-      .order-price { margin-top: 4px; color: var(--muted); font-size: 13px; }
-      .stepper {
-        display: grid;
-        grid-template-columns: 34px 34px 34px;
-        align-items: center;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        overflow: hidden;
-      }
-      .stepper button { height: 34px; border: 0; background: #f3f6f3; font-size: 18px; }
-      .stepper span { text-align: center; font-weight: 900; }
-      .option-note { margin-top: 10px; }
-      .sticky-action {
-        position: fixed;
-        left: 50%;
-        bottom: 14px;
-        width: min(398px, calc(100vw - 28px));
-        transform: translateX(-50%);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 12px;
-        border: 1px solid rgba(23, 33, 27, 0.12);
-        border-radius: 8px;
-        background: rgba(255, 255, 255, 0.94);
-        box-shadow: 0 16px 40px rgba(23, 33, 27, 0.18);
-        z-index: 6;
-      }
-      .sticky-action span { display: block; color: var(--muted); font-size: 12px; font-weight: 800; }
-      .sticky-action strong { font-size: 20px; }
-      .person-card, .serve-card, .summary-block { padding: 14px; }
-      .person-top { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
-      .person-top strong { font-size: 18px; }
-      .order-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
-      .muted { color: var(--muted); }
-      .line-items { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
-      .line-items li, .summary-row {
-        display: flex;
-        justify-content: space-between;
-        gap: 8px;
-        padding-top: 7px;
-        border-top: 1px dashed var(--line);
-      }
-      .summary-block { margin-bottom: 12px; }
-      .note-chip { padding: 10px 0; border-top: 1px dashed var(--line); color: var(--muted); }
-      .serve-card { border-left: 5px solid var(--gold); }
-      .empty-state {
-        padding: 18px 14px;
-        border: 1px dashed var(--line);
-        border-radius: 8px;
-        background: rgba(255,255,255,.65);
-        color: var(--muted);
-        text-align: center;
-        font-weight: 700;
       }
       .toast {
         position: fixed;
@@ -342,9 +233,21 @@
         font-weight: 800;
         opacity: 0;
         transition: 180ms ease;
-        z-index: 10;
+        z-index: 20;
       }
       .toast.show { opacity: 1; transform: translate(-50%, 0); }
+      .modal {
+        position: fixed;
+        inset: 0;
+        display: none;
+        background: rgba(0,0,0,.88);
+        z-index: 30;
+        overflow: auto;
+      }
+      .modal.show { display: block; }
+      .modal img { width: 100%; height: auto; display: block; }
+      .modal button { position: sticky; top: 10px; left: calc(100% - 56px); margin: 10px; z-index: 31; }
+      .hidden-frame { display: none; }
       @media (max-width: 430px) {
         body { display: block; background: var(--paper); }
         .phone-shell { min-height: 100vh; border: 0; box-shadow: none; }
@@ -352,16 +255,16 @@
     </style>
   </head>
   <body>
-    <main class="phone-shell" aria-label="多人點餐系統手機版">
+    <main class="phone-shell" aria-label="多人點餐系統">
       <header class="app-header">
         <div>
-          <p class="eyebrow" id="menuLabel">菜單：未命名菜單</p>
+          <p class="eyebrow" id="groupLabel">訂餐團</p>
           <h1>多人點餐</h1>
         </div>
-        <button class="icon-button" id="shareBtn" type="button" aria-label="複製分享網址" title="複製分享網址">↗</button>
+        <button class="icon-button" id="shareBtn" type="button" aria-label="複製分享網址">↗</button>
       </header>
 
-      <section class="status-strip" aria-label="點餐狀態">
+      <section class="status-strip">
         <div><strong id="peopleCount">0</strong><span>人已點</span></div>
         <div><strong id="itemCount">0</strong><span>份餐點</span></div>
         <div><strong id="totalPrice">$0</strong><span>目前總額</span></div>
@@ -369,128 +272,92 @@
 
       <section class="sync-panel">
         <div>
-          <strong id="syncTitle">連線中</strong>
-          <span id="syncText">正在讀取 Google 試算表</span>
+          <strong id="syncTitle">讀取中</strong>
+          <span id="syncText">正在同步試算表</span>
         </div>
         <button class="small-button" id="refreshBtn" type="button">重新整理</button>
       </section>
 
-      <section class="menu-controls">
-        <label>
-          <span>菜單名</span>
-          <input id="menuNameInput" type="text" placeholder="例如：老王牛肉麵、飲料店A" />
-        </label>
-        <label>
-          <span>選擇菜單</span>
-          <select id="savedMenuSelect"><option value="">尚未載入菜單</option></select>
-        </label>
-      </section>
-
-      <nav class="tabs" aria-label="主要流程">
-        <button class="tab is-active" type="button" data-view="import">菜單</button>
+      <nav class="tabs">
+        <button class="tab is-active" type="button" data-view="setup">建立</button>
         <button class="tab" type="button" data-view="order">點餐</button>
         <button class="tab" type="button" data-view="mine">個人</button>
         <button class="tab" type="button" data-view="summary">統計</button>
-        <button class="tab" type="button" data-view="serve">分餐</button>
       </nav>
 
-      <section class="view is-active" id="view-import">
+      <section class="view is-active" id="view-setup">
         <div class="section-heading">
-          <div><p class="eyebrow">Step 1</p><h2>擷取菜單</h2></div>
-          <button class="small-button" id="saveMenuBtn" type="button">儲存菜單</button>
+          <div><p class="eyebrow">主揪</p><h2>建立訂餐團</h2></div>
+          <button class="small-button" id="copyLinkBtn" type="button">複製網址</button>
         </div>
-        <div class="menu-photo" id="menuPhoto" role="img" aria-label="菜單照片預覽">
-          <div class="photo-topline"></div>
-          <h3>菜單照片預覽</h3>
-          <div class="photo-row">拍照或選相簿後，系統會擷取餐點名稱與價格。</div>
+        <div class="form-grid">
+          <label><span>店名 / 訂餐團名稱</span><input id="groupTitleInput" type="text" placeholder="例如：五十嵐下午茶" /></label>
+          <div class="button-row">
+            <label class="upload-button"><input id="cameraInput" type="file" accept="image/*" capture="environment" />拍照</label>
+            <label class="upload-button"><input id="albumInput" type="file" accept="image/*" />相簿</label>
+          </div>
+          <div class="menu-image-wrap" id="menuImageWrap"><div class="image-placeholder">菜單圖片會顯示在這裡。點圖片可放大。</div></div>
+          <button class="primary-button" id="saveGroupBtn" type="button">儲存並產生網址</button>
+          <p class="help-text">菜單圖片會存到 Google Drive，訂單會記錄到 Google 試算表。分享網址後，大家只要看圖自己填餐點和價格。</p>
         </div>
-        <div class="upload-panel">
-          <label class="upload-button">
-            <input id="cameraInput" type="file" accept="image/*" capture="environment" />
-            <span aria-hidden="true">▣</span><span>拍照</span>
-          </label>
-          <label class="upload-button">
-            <input id="albumInput" type="file" accept="image/*" />
-            <span aria-hidden="true">□</span><span>相簿</span>
-          </label>
-          <button class="primary-button" id="extractMenuBtn" type="button">擷取菜單</button>
-        </div>
-        <div class="ocr-progress" id="ocrProgress">請先拍照或從相簿選擇菜單照片。</div>
-        <div class="editable-list" id="menuEditor" aria-label="辨識後菜單"></div>
-        <form class="add-form" id="addItemForm">
-          <input id="newItemName" type="text" placeholder="新增餐點名稱" aria-label="新增餐點名稱" />
-          <input id="newItemPrice" type="number" min="0" placeholder="價格" aria-label="價格" />
-          <button class="icon-button dark" type="submit" aria-label="新增餐點" title="新增餐點">＋</button>
-        </form>
       </section>
 
       <section class="view" id="view-order">
         <div class="section-heading">
-          <div><p class="eyebrow">Step 2</p><h2>替誰點餐</h2></div>
-          <button class="small-button" id="lockBtn" type="button">開放中</button>
+          <div><p class="eyebrow">大家填寫</p><h2>我的點餐</h2></div>
+          <span class="pill" id="lockStatus">開放中</span>
         </div>
-        <form class="person-form" id="personForm">
-          <label><span>名字或代號</span><input id="personName" type="text" value="1號" placeholder="例如：1號、小明、A車" /></label>
-          <label><span>個人備註</span><input id="personNote" type="text" placeholder="例如：不要香菜、跟小美一起付" /></label>
+        <div class="menu-image-wrap" id="orderMenuImageWrap"><div class="image-placeholder">主揪尚未上傳菜單圖片。</div></div>
+        <form class="form-grid" id="orderForm">
+          <label><span>名字或代號</span><input id="personName" type="text" placeholder="例如：小明、1號、A車" /></label>
+          <label><span>個人備註</span><input id="personNote" type="text" placeholder="例如：一起付款、不要香菜" /></label>
+          <div class="order-items" id="orderItems"></div>
+          <button class="small-button" id="addItemBtn" type="button">新增一個餐點</button>
+          <button class="primary-button" id="submitOrderBtn" type="submit">送出訂單</button>
         </form>
-        <div class="category-filter" id="categoryFilter" aria-label="餐點分類"></div>
-        <div class="order-list" id="orderList" aria-label="餐點列表"></div>
-        <div class="sticky-action">
-          <div><span>這位點餐</span><strong id="draftTotal">$0</strong></div>
-          <button class="primary-button" id="submitOrderBtn" type="button">確定送出</button>
-        </div>
       </section>
 
       <section class="view" id="view-mine">
         <div class="section-heading">
-          <div><p class="eyebrow">Step 3</p><h2>個人訂單</h2></div>
-          <span class="pill">可編輯</span>
+          <div><p class="eyebrow">可修改</p><h2>個人訂單</h2></div>
+          <span class="pill">編輯 / 刪除</span>
         </div>
-        <div class="person-orders" id="personOrders"></div>
+        <div class="orders" id="personOrders"></div>
       </section>
 
       <section class="view" id="view-summary">
         <div class="section-heading">
-          <div><p class="eyebrow">主揪視角</p><h2>統計叫餐</h2></div>
-          <button class="small-button" id="copySummaryBtn" type="button">複製文字</button>
+          <div><p class="eyebrow">主揪統計</p><h2>全部統計</h2></div>
+          <button class="small-button" id="copySummaryBtn" type="button">複製叫餐文字</button>
         </div>
         <div class="summary-block"><h3>依餐點統計</h3><div id="itemSummary"></div></div>
+        <div class="summary-block"><h3>依個人統計</h3><div id="personSummary"></div></div>
         <div class="summary-block"><h3>備註彙整</h3><div id="noteSummary"></div></div>
-      </section>
-
-      <section class="view" id="view-serve">
-        <div class="section-heading">
-          <div><p class="eyebrow">餐點抵達</p><h2>依人分餐</h2></div>
-          <span class="pill">現場用</span>
-        </div>
-        <div class="serve-list" id="serveList"></div>
       </section>
     </main>
 
+    <div class="modal" id="imageModal"><button class="icon-button" id="closeModalBtn" type="button">×</button><img id="modalImage" alt="放大的菜單" /></div>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <iframe class="hidden-frame" name="uploadFrame" id="uploadFrame"></iframe>
+
     <script>
       const API_URL = "https://script.google.com/macros/s/AKfycbxugZM52HlLboXW9c3MIS-331D9t6CB5hA6cXHXKekcmQURmYfIoNyIsdKKFD1CZKK_Bw/exec";
       const params = new URLSearchParams(location.search);
-      const ALL = "全部";
-      const DEFAULT_OPTION = "";
       const state = {
+        groupId: params.get("group") || crypto.randomUUID(),
+        title: params.get("title") || "未命名訂餐團",
+        imageUrl: "",
+        selectedImageFile: null,
+        selectedImageDataUrl: "",
         locked: false,
-        activeCategory: ALL,
-        menu: [],
-        draft: {},
         orders: [],
-        editingOrderId: "",
-        selectedMenuFile: null,
-        isOcrRunning: false,
-        menuName: params.get("menu") || params.get("group") || params.get("title") || "未命名菜單",
-        savedMenus: []
+        draftItems: [],
+        editingOrderId: ""
       };
 
       const $ = (selector) => document.querySelector(selector);
       const $$ = (selector) => Array.from(document.querySelectorAll(selector));
       const money = (value) => `$${Number(value || 0).toLocaleString("zh-TW")}`;
-      const uid = (prefix) => crypto.randomUUID ? crypto.randomUUID() : `${prefix}_${Date.now()}_${Math.random().toString(16).slice(2)}`;
 
       function escapeHtml(value) {
         return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
@@ -500,17 +367,7 @@
         const toast = $("#toast");
         toast.textContent = message;
         toast.classList.add("show");
-        window.setTimeout(() => toast.classList.remove("show"), 1800);
-      }
-
-      async function copyText(text, successMessage) {
-        try {
-          await navigator.clipboard.writeText(text);
-          showToast(successMessage);
-        } catch {
-          window.prompt("複製這段文字", text);
-          showToast("已產生文字，可手動複製");
-        }
+        setTimeout(() => toast.classList.remove("show"), 1800);
       }
 
       function callApi(action, payload = {}) {
@@ -518,12 +375,12 @@
         const query = new URLSearchParams({ action, payload: JSON.stringify(payload), callback });
         return new Promise((resolve, reject) => {
           const script = document.createElement("script");
-          const timer = window.setTimeout(() => {
+          const timer = setTimeout(() => {
             cleanup();
             reject(new Error("GAS 回應逾時"));
           }, 15000);
           function cleanup() {
-            window.clearTimeout(timer);
+            clearTimeout(timer);
             delete window[callback];
             script.remove();
           }
@@ -540,16 +397,75 @@
         });
       }
 
-      function getMenuName() {
-        state.menuName = $("#menuNameInput").value.trim() || state.menuName || "未命名菜單";
-        return state.menuName;
+      function postToGas(action, payload) {
+        return new Promise((resolve, reject) => {
+          const requestId = `post_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+          const timer = setTimeout(() => {
+            window.removeEventListener("message", onMessage);
+            reject(new Error("上傳逾時"));
+          }, 30000);
+          function onMessage(event) {
+            const data = event.data || {};
+            if (data.requestId !== requestId) return;
+            clearTimeout(timer);
+            window.removeEventListener("message", onMessage);
+            data.ok ? resolve(data) : reject(new Error(data.message || "上傳失敗"));
+          }
+          window.addEventListener("message", onMessage);
+          const form = document.createElement("form");
+          form.method = "POST";
+          form.action = API_URL;
+          form.target = "uploadFrame";
+          form.style.display = "none";
+          const input = document.createElement("textarea");
+          input.name = "payload";
+          input.value = JSON.stringify({ requestId, action, payload });
+          form.appendChild(input);
+          document.body.appendChild(form);
+          form.submit();
+          form.remove();
+        });
       }
 
-      function updateMenuUrl(menuName) {
+      function compressImage(file) {
+        return new Promise((resolve, reject) => {
+          const image = new Image();
+          image.onload = () => {
+            const maxSide = 1600;
+            const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
+            const canvas = document.createElement("canvas");
+            canvas.width = Math.round(image.width * scale);
+            canvas.height = Math.round(image.height * scale);
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+            resolve(canvas.toDataURL("image/jpeg", .82));
+          };
+          image.onerror = reject;
+          image.src = URL.createObjectURL(file);
+        });
+      }
+
+      function shareUrl() {
         const url = new URL(location.href);
-        url.searchParams.set("menu", menuName);
-        url.searchParams.delete("group");
-        url.searchParams.delete("title");
+        url.searchParams.set("group", state.groupId);
+        url.searchParams.set("title", state.title);
+        return url.toString();
+      }
+
+      async function copyText(text, successMessage) {
+        try {
+          await navigator.clipboard.writeText(text);
+          showToast(successMessage);
+        } catch {
+          window.prompt("複製這段文字", text);
+          showToast("已產生文字，可手動複製");
+        }
+      }
+
+      function updateUrl() {
+        const url = new URL(location.href);
+        url.searchParams.set("group", state.groupId);
+        url.searchParams.set("title", state.title);
         history.replaceState(null, "", url.toString());
       }
 
@@ -557,496 +473,212 @@
         return order.items.reduce((sum, item) => sum + Number(item.price) * Number(item.qty), 0);
       }
 
-      function getAllItemCount() {
-        return state.orders.reduce((sum, order) => sum + order.items.reduce((itemSum, item) => itemSum + Number(item.qty), 0), 0);
+      function allItemCount() {
+        return state.orders.reduce((sum, order) => sum + order.items.reduce((s, item) => s + Number(item.qty), 0), 0);
       }
 
-      function getGrandTotal() {
+      function grandTotal() {
         return state.orders.reduce((sum, order) => sum + getOrderTotal(order), 0);
       }
 
       function updateStatus() {
+        $("#groupLabel").textContent = state.title;
         $("#peopleCount").textContent = state.orders.length;
-        $("#itemCount").textContent = getAllItemCount();
-        $("#totalPrice").textContent = money(getGrandTotal());
-        $("#lockBtn").textContent = state.locked ? "已鎖單" : "開放中";
-        $("#menuLabel").textContent = `菜單：${state.menuName}`;
-        $("#menuNameInput").value = state.menuName;
-        $("#syncTitle").textContent = "已連接 Google 試算表";
-        $("#syncText").textContent = "送出後會寫入試算表";
+        $("#itemCount").textContent = allItemCount();
+        $("#totalPrice").textContent = money(grandTotal());
+        $("#syncTitle").textContent = state.imageUrl ? "已建立訂餐團" : "尚未上傳菜單";
+        $("#syncText").textContent = state.imageUrl ? "可分享網址給大家點餐" : "主揪先上傳菜單圖片";
+        $("#lockStatus").textContent = state.locked ? "已鎖單" : "開放中";
       }
 
-      function renderSavedMenus() {
-        const menus = [...new Set([state.menuName, ...state.savedMenus].filter(Boolean))];
-        $("#savedMenuSelect").innerHTML = menus.length
-          ? menus.map((name) => `<option value="${escapeHtml(name)}" ${name === state.menuName ? "selected" : ""}>${escapeHtml(name)}</option>`).join("")
-          : '<option value="">尚無已儲存菜單</option>';
+      function renderMenuImage() {
+        const src = state.selectedImageDataUrl || state.imageUrl;
+        const html = src
+          ? `<img src="${src}" alt="菜單圖片" data-menu-image />`
+          : '<div class="image-placeholder">菜單圖片會顯示在這裡。點圖片可放大。</div>';
+        $("#menuImageWrap").innerHTML = html;
+        $("#orderMenuImageWrap").innerHTML = src ? `<img src="${src}" alt="菜單圖片" data-menu-image />` : '<div class="image-placeholder">主揪尚未上傳菜單圖片。</div>';
+        $$("[data-menu-image]").forEach((img) => img.addEventListener("click", () => openImageModal(img.src)));
       }
 
-      function renderMenuEditor() {
-        if (!state.menu.length) {
-          $("#menuEditor").innerHTML = '<div class="empty-state">目前沒有餐點，請拍照擷取或手動新增。</div>';
-          renderCategories();
-          renderOrder();
-          return;
-        }
-        $("#menuEditor").innerHTML = state.menu.map((item) => `
-          <div class="editor-row" data-id="${item.id}">
-            <input class="name-input" value="${escapeHtml(item.name)}" aria-label="${escapeHtml(item.name)} 名稱" />
-            <input class="price-input" type="number" value="${Number(item.price)}" min="0" aria-label="${escapeHtml(item.name)} 價格" />
+      function renderDraftItems() {
+        if (!state.draftItems.length) state.draftItems.push({ name: "", price: "", qty: 1, note: "" });
+        $("#orderItems").innerHTML = state.draftItems.map((item, index) => `
+          <div class="entry-card" data-index="${index}">
+            <label><span>商品</span><input data-field="name" value="${escapeHtml(item.name)}" placeholder="例如：珍珠奶茶" /></label>
+            <label><span>價格</span><input data-field="price" type="number" min="0" value="${escapeHtml(item.price)}" placeholder="55" /></label>
+            <button class="danger-button" type="button" data-action="remove">×</button>
+            <label><span>數量</span><input data-field="qty" type="number" min="1" value="${escapeHtml(item.qty || 1)}" /></label>
+            <textarea data-field="note" placeholder="單品備註，例如：半糖去冰">${escapeHtml(item.note)}</textarea>
           </div>
         `).join("");
-        $$("#menuEditor .editor-row").forEach((row) => {
-          const item = state.menu.find((entry) => entry.id === row.dataset.id);
-          row.querySelector(".name-input").addEventListener("input", (event) => {
-            item.name = event.target.value.trim() || item.name;
-            renderOrder();
-            renderSummaries();
+        $$("#orderItems .entry-card").forEach((card) => {
+          const index = Number(card.dataset.index);
+          card.querySelectorAll("[data-field]").forEach((input) => {
+            input.addEventListener("input", () => {
+              state.draftItems[index][input.dataset.field] = input.value;
+              updateDraftTotalLabel();
+            });
           });
-          row.querySelector(".price-input").addEventListener("input", (event) => {
-            item.price = Number(event.target.value) || 0;
-            renderOrder();
-            renderSummaries();
-          });
-        });
-      }
-
-      function renderCategories() {
-        const categories = [ALL, ...new Set(state.menu.map((item) => item.category || "未分類"))];
-        $("#categoryFilter").innerHTML = categories.map((category) => `<button class="${category === state.activeCategory ? "is-active" : ""}" type="button" data-category="${escapeHtml(category)}">${escapeHtml(category)}</button>`).join("");
-        $$("#categoryFilter button").forEach((button) => {
-          button.addEventListener("click", () => {
-            state.activeCategory = button.dataset.category;
-            renderOrder();
+          card.querySelector('[data-action="remove"]').addEventListener("click", () => {
+            state.draftItems.splice(index, 1);
+            renderDraftItems();
           });
         });
+        updateDraftTotalLabel();
       }
 
-      function getVisibleMenu() {
-        if (state.activeCategory === ALL) return state.menu;
-        return state.menu.filter((item) => item.category === state.activeCategory);
+      function updateDraftTotalLabel() {
+        const total = state.draftItems.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.qty || 1), 0);
+        $("#submitOrderBtn").textContent = total ? `送出訂單 ${money(total)}` : "送出訂單";
       }
 
-      function renderOrder() {
-        renderCategories();
-        const visibleMenu = getVisibleMenu();
-        if (!visibleMenu.length) {
-          $("#orderList").innerHTML = '<div class="empty-state">目前沒有可點餐點，請先到菜單新增餐點。</div>';
-          updateDraftTotal();
-          return;
-        }
-        $("#orderList").innerHTML = visibleMenu.map((item) => {
-          const draft = state.draft[item.id] || { qty: 0, option: DEFAULT_OPTION, note: "" };
-          return `
-            <article class="order-card" data-id="${item.id}">
-              <div class="order-main">
-                <div>
-                  <div class="order-name"><span>${escapeHtml(item.name)}</span><span class="tag">${escapeHtml(item.category || "未分類")}</span></div>
-                  <div class="order-price">${money(item.price)}</div>
-                </div>
-                <div class="stepper" aria-label="${escapeHtml(item.name)} 數量">
-                  <button type="button" data-action="minus" aria-label="減少 ${escapeHtml(item.name)}">−</button>
-                  <span>${draft.qty}</span>
-                  <button type="button" data-action="plus" aria-label="增加 ${escapeHtml(item.name)}">＋</button>
-                </div>
-              </div>
-              <input class="option-note" data-field="note" value="${escapeHtml(draft.note)}" placeholder="單品備註" aria-label="${escapeHtml(item.name)} 單品備註" />
-            </article>
-          `;
-        }).join("");
-        $$(".order-card").forEach((card) => {
-          const id = card.dataset.id;
-          card.querySelector('[data-action="minus"]').addEventListener("click", () => setDraftQty(id, -1));
-          card.querySelector('[data-action="plus"]').addEventListener("click", () => setDraftQty(id, 1));
-          card.querySelector('[data-field="note"]').addEventListener("input", (event) => updateDraft(id, { note: event.target.value }));
-        });
-        updateDraftTotal();
-      }
-
-      function ensureDraft(id) {
-        if (!state.draft[id]) state.draft[id] = { qty: 0, option: DEFAULT_OPTION, note: "" };
-        return state.draft[id];
-      }
-
-      function setDraftQty(id, delta) {
-        if (state.locked) {
-          showToast("目前已鎖單，不能再新增");
-          return;
-        }
-        const draft = ensureDraft(id);
-        draft.qty = Math.max(0, draft.qty + delta);
-        renderOrder();
-      }
-
-      function updateDraft(id, patch) {
-        Object.assign(ensureDraft(id), patch);
-        updateDraftTotal();
-      }
-
-      function updateDraftTotal() {
-        const total = Object.entries(state.draft).reduce((sum, [id, draft]) => {
-          const item = state.menu.find((entry) => entry.id === id);
-          return sum + (item ? Number(item.price) * Number(draft.qty) : 0);
-        }, 0);
-        $("#draftTotal").textContent = money(total);
-      }
-
-      async function saveMenu() {
-        const menuName = getMenuName();
-        await callApi("saveMenu", { groupId: menuName, title: menuName, menuName, menu: state.menu });
-        if (!state.savedMenus.includes(menuName)) state.savedMenus.unshift(menuName);
-        updateMenuUrl(menuName);
-        renderSavedMenus();
-        showToast(`${menuName} 已存到試算表`);
-      }
-
-      function setOcrProgress(message) {
-        $("#ocrProgress").textContent = message;
-      }
-
-      function normalizeOcrText(text) {
-        return String(text || "")
-          .replace(/[|｜]/g, " ")
-          .replace(/[，,]/g, "")
-          .replace(/[０-９]/g, (char) => String.fromCharCode(char.charCodeAt(0) - 65248))
-          .replace(/[Oo]/g, "0");
-      }
-
-      function parseMenuItemsFromText(rawText) {
-        const text = normalizeOcrText(rawText);
-        const lines = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
-        const items = [];
-        const seen = new Set();
-        lines.forEach((line) => {
-          const cleaned = line.replace(/\s{2,}/g, " ").replace(/(NTD|NT\$|新台幣|元)/gi, " ").trim();
-          const match = cleaned.match(/^(.{2,22}?)\s*(?:\$)?\s*(\d{2,3})(?:\s|$)/);
-          if (!match) return;
-          const name = match[1].replace(/[^\u3400-\u9fff（）()·.\- ]/g, "").replace(/\s+/g, "").trim();
-          const price = Number(match[2]);
-          const chineseCount = (name.match(/[\u3400-\u9fff]/g) || []).length;
-          if (!name || chineseCount < 2 || !price || price < 10 || price > 999) return;
-          const key = `${name}-${price}`;
-          if (seen.has(key)) return;
-          seen.add(key);
-          items.push({ id: uid("menu"), name, price, category: "OCR" });
-        });
-        return items;
-      }
-
-      function cleanOcrName(value) {
-        return normalizeOcrText(value)
-          .replace(/(推薦|新品|加料|甜度|冰量|菜單|找好茶|找奶茶|找拿鐵|季節限定|新鮮|FLAVORED|MILK|TEA|LATTE|FRESH|JUICE|SEASONAL|SPECIAL)/gi, "")
-          .replace(/[^\u3400-\u9fff（）()·.\- ]/g, "")
-          .replace(/[一—–\-]{2,}/g, "")
-          .replace(/\s+/g, "")
-          .trim();
-      }
-
-      function isLikelyPrice(text) {
-        const value = Number(normalizeOcrText(text).replace(/[^\d]/g, ""));
-        return Number.isInteger(value) && value >= 10 && value <= 999;
-      }
-
-      function parseMenuItemsFromOcrData(data) {
-        const words = (data.words || [])
-          .map((word) => {
-            const text = normalizeOcrText(word.text || "").trim();
-            const bbox = word.bbox || {};
-            const x0 = Number(bbox.x0 || 0);
-            const x1 = Number(bbox.x1 || 0);
-            const y0 = Number(bbox.y0 || 0);
-            const y1 = Number(bbox.y1 || 0);
-            return { text, x0, x1, y0, y1, cy: (y0 + y1) / 2, conf: Number(word.confidence || 0) };
-          })
-          .filter((word) => word.text && word.conf > 25);
-
-        const priceWords = words
-          .filter((word) => /^\d{2,3}$/.test(word.text) && isLikelyPrice(word.text))
-          .sort((a, b) => a.y0 - b.y0 || a.x0 - b.x0);
-
-        const items = [];
-        const seenRows = [];
-        const seenItems = new Set();
-
-        priceWords.forEach((priceWord) => {
-          if (seenRows.some((row) => Math.abs(row.y - priceWord.cy) < 14 && Math.abs(row.x - priceWord.x0) < 80)) return;
-
-          const sameLine = words
-            .filter((word) => Math.abs(word.cy - priceWord.cy) < 16 && word.x1 < priceWord.x0 - 4)
-            .sort((a, b) => a.x0 - b.x0);
-
-          let leftBoundary = 0;
-          priceWords.forEach((otherPrice) => {
-            if (otherPrice.cy < priceWord.cy + 24 && otherPrice.cy > priceWord.cy - 24 && otherPrice.x0 < priceWord.x0) {
-              leftBoundary = Math.max(leftBoundary, otherPrice.x1 + 8);
-            }
-          });
-
-          const nameText = sameLine
-            .filter((word) => word.x0 >= leftBoundary)
-            .map((word) => word.text)
-            .join("");
-          const name = cleanOcrName(nameText);
-          const price = Number(priceWord.text);
-          const chineseCount = (name.match(/[\u3400-\u9fff]/g) || []).length;
-
-          if (!name || chineseCount < 2 || price < 10 || price > 999) return;
-          const key = `${name}-${price}`;
-          if (seenItems.has(key)) return;
-          seenRows.push({ y: priceWord.cy, x: priceWord.x0 });
-          seenItems.add(key);
-          items.push({ id: uid("menu"), name, price, category: "OCR" });
-        });
-
-        return items;
-      }
-
-      function preprocessImageForOcr(file) {
-        return new Promise((resolve, reject) => {
-          const image = new Image();
-          image.onload = () => {
-            const scale = Math.min(2.4, Math.max(1.4, 1800 / Math.max(image.width, image.height)));
-            const canvas = document.createElement("canvas");
-            canvas.width = Math.round(image.width * scale);
-            canvas.height = Math.round(image.height * scale);
-            const ctx = canvas.getContext("2d", { willReadFrequently: true });
-            ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-            const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const data = img.data;
-            for (let i = 0; i < data.length; i += 4) {
-              const gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
-              const value = gray > 170 ? 255 : 0;
-              data[i] = value;
-              data[i + 1] = value;
-              data[i + 2] = value;
-            }
-            ctx.putImageData(img, 0, 0);
-            canvas.toBlob((blob) => resolve(blob || file), "image/png");
-          };
-          image.onerror = reject;
-          image.src = URL.createObjectURL(file);
-        });
-      }
-
-      async function extractMenuFromImage(file) {
-        if (!file) {
-          showToast("請先拍照或選相簿");
-          return;
-        }
-        if (!window.Tesseract) {
-          showToast("OCR 載入失敗，請確認網路後重試");
-          return;
-        }
-        if (state.isOcrRunning) return;
-        state.isOcrRunning = true;
-        $("#extractMenuBtn").disabled = true;
-        setOcrProgress("正在擷取菜單文字，第一次可能需要稍等...");
-        try {
-          const ocrImage = await preprocessImageForOcr(file);
-          const result = await Tesseract.recognize(ocrImage, "chi_tra+eng", {
-            logger: (event) => {
-              if (event.status === "recognizing text" && event.progress) setOcrProgress(`正在辨識文字 ${Math.round(event.progress * 100)}%`);
-            },
-            tessedit_pageseg_mode: "1",
-            preserve_interword_spaces: "1"
-          });
-          const itemsByPosition = parseMenuItemsFromOcrData(result.data);
-          const items = itemsByPosition.length ? itemsByPosition : parseMenuItemsFromText(result.data.text);
-          if (!items.length) {
-            setOcrProgress("沒有自動抓到餐點與價格，請拍清楚一點或手動新增餐點。");
-            showToast("沒有抓到餐點，請手動新增或重拍");
-            return;
-          }
-          state.menu = items;
-          state.activeCategory = ALL;
-          state.draft = {};
-          renderAll();
-          setOcrProgress(`已擷取 ${items.length} 個餐點，可先檢查名稱與價格再儲存。`);
-          showToast(`已擷取 ${items.length} 個餐點`);
-        } catch (error) {
-          setOcrProgress("OCR 失敗，請確認網路或換一張更清楚的照片。");
-          showToast(error.message || "OCR 失敗");
-        } finally {
-          state.isOcrRunning = false;
-          $("#extractMenuBtn").disabled = false;
-        }
-      }
-
-      function persistInBackground(action, payload, failMessage) {
-        callApi(action, payload).catch((error) => showToast(`${failMessage}：${error.message}`));
-      }
-
-      function removeOrderLocal(orderId) {
-        state.orders = state.orders.filter((order) => order.id !== orderId);
-      }
-
-      async function submitOrder() {
-        if (state.locked) {
-          showToast("主揪已鎖單");
-          return;
-        }
-        const items = Object.entries(state.draft).filter(([, draft]) => draft.qty > 0).map(([id, draft]) => {
-          const item = state.menu.find((entry) => entry.id === id);
-          return { menuId: id, name: item.name, price: Number(item.price), qty: Number(draft.qty), option: "", note: draft.note.trim() };
-        });
-        if (!items.length) {
-          showToast("請先選餐點");
-          return;
-        }
-        const person = $("#personName").value.trim() || `${state.orders.length + 1}號`;
-        const order = { id: state.editingOrderId || uid("order"), person, note: $("#personNote").value.trim(), items };
-        if (state.editingOrderId) removeOrderLocal(state.editingOrderId);
-        state.orders.push(order);
-        state.draft = {};
-        state.editingOrderId = "";
-        $("#personName").value = `${state.orders.length + 1}號`;
-        $("#personNote").value = "";
-        renderAll();
-        activateView("mine");
-        showToast(`${person} 的餐點已送出`);
-        const menuName = getMenuName();
-        persistInBackground("submitOrder", { groupId: menuName, title: menuName, menuName, order }, "背景儲存失敗");
-      }
-
-      function renderPersonOrders() {
+      function renderOrders() {
         if (!state.orders.length) {
           $("#personOrders").innerHTML = '<div class="empty-state">目前沒有個人訂單。</div>';
           return;
         }
         $("#personOrders").innerHTML = state.orders.map((order) => `
-          <article class="person-card" data-order-id="${order.id}">
+          <article class="order-card" data-order-id="${order.id}">
             <div class="person-top">
               <div><strong>${escapeHtml(order.person)}</strong><div class="muted">${escapeHtml(order.note || "無個人備註")}</div></div>
               <strong>${money(getOrderTotal(order))}</strong>
             </div>
             <ul class="line-items">
-              ${order.items.map((item) => `
-                <li><span>${escapeHtml(item.name)} × ${item.qty}<br><span class="muted">${escapeHtml(item.note || "")}</span></span><b>${money(Number(item.price) * Number(item.qty))}</b></li>
-              `).join("")}
+              ${order.items.map((item) => `<li><span>${escapeHtml(item.name)} × ${item.qty}<br><span class="muted">${escapeHtml(item.note || "")}</span></span><b>${money(Number(item.price) * Number(item.qty))}</b></li>`).join("")}
             </ul>
             <div class="order-actions">
-              <button class="small-button" type="button" data-action="edit-order">編輯</button>
-              <button class="danger-button" type="button" data-action="delete-order">刪除</button>
+              <button class="small-button" type="button" data-action="edit">編輯</button>
+              <button class="danger-button" type="button" data-action="delete">刪除</button>
             </div>
           </article>
         `).join("");
-        $$("#personOrders .person-card").forEach((card) => {
-          const orderId = card.dataset.orderId;
-          card.querySelector('[data-action="edit-order"]').addEventListener("click", () => editOrder(orderId));
-          card.querySelector('[data-action="delete-order"]').addEventListener("click", () => deleteOrder(orderId));
+        $$("#personOrders .order-card").forEach((card) => {
+          const id = card.dataset.orderId;
+          card.querySelector('[data-action="edit"]').addEventListener("click", () => editOrder(id));
+          card.querySelector('[data-action="delete"]').addEventListener("click", () => deleteOrder(id));
         });
       }
 
-      function editOrder(orderId) {
-        const order = state.orders.find((entry) => entry.id === orderId);
-        if (!order) return;
-        $("#personName").value = order.person;
-        $("#personNote").value = order.note || "";
-        state.editingOrderId = order.id;
-        state.draft = {};
-        order.items.forEach((item) => {
-          state.draft[item.menuId] = { qty: Number(item.qty), option: "", note: item.note || "" };
-        });
-        activateView("order");
-        renderOrder();
-        showToast("已載入訂單，可修改後送出");
-      }
-
-      function deleteOrder(orderId) {
-        const order = state.orders.find((entry) => entry.id === orderId);
-        if (!order) return;
-        if (!window.confirm(`確定刪除 ${order.person} 的整筆訂單嗎？`)) return;
-        removeOrderLocal(orderId);
-        if (state.editingOrderId === orderId) {
-          state.editingOrderId = "";
-          state.draft = {};
-        }
-        renderAll();
-        showToast("訂單已刪除");
-        const menuName = getMenuName();
-        persistInBackground("deleteOrder", { groupId: menuName, menuName, orderId }, "背景刪除失敗");
-      }
-
-      function getItemSummary() {
-        const summary = new Map();
+      function itemSummary() {
+        const map = new Map();
         state.orders.forEach((order) => {
           order.items.forEach((item) => {
-            const key = item.name;
-            const existing = summary.get(key) || { name: item.name, qty: 0, subtotal: 0 };
+            const key = item.name.trim();
+            const existing = map.get(key) || { name: key, qty: 0, subtotal: 0 };
             existing.qty += Number(item.qty);
             existing.subtotal += Number(item.price) * Number(item.qty);
-            summary.set(key, existing);
+            map.set(key, existing);
           });
         });
-        return Array.from(summary.values());
+        return [...map.values()];
       }
 
-      function renderSummaries() {
-        $("#itemSummary").innerHTML = getItemSummary().map((item) => `
-          <div class="summary-row"><span>${escapeHtml(item.name)} × ${item.qty}</span><b>${money(item.subtotal)}</b></div>
-        `).join("");
+      function renderSummary() {
+        const items = itemSummary();
+        $("#itemSummary").innerHTML = items.length ? items.map((item) => `<div class="summary-row"><span>${escapeHtml(item.name)} × ${item.qty}</span><b>${money(item.subtotal)}</b></div>`).join("") : '<div class="empty-state">目前沒有統計資料。</div>';
+        $("#personSummary").innerHTML = state.orders.length ? state.orders.map((order) => `<div class="summary-row"><span>${escapeHtml(order.person)}</span><b>${money(getOrderTotal(order))}</b></div>`).join("") : '<div class="empty-state">目前沒有個人資料。</div>';
         const notes = [];
         state.orders.forEach((order) => {
           if (order.note) notes.push(`${order.person}：${order.note}`);
-          order.items.forEach((item) => {
-            if (item.note) notes.push(`${order.person} ${item.name}：${item.note}`);
-          });
+          order.items.forEach((item) => { if (item.note) notes.push(`${order.person} ${item.name}：${item.note}`); });
         });
         $("#noteSummary").innerHTML = notes.length ? notes.map((note) => `<div class="note-chip">${escapeHtml(note)}</div>`).join("") : '<div class="note-chip">目前沒有備註</div>';
       }
 
-      function renderServeList() {
-        $("#serveList").innerHTML = state.orders.map((order) => `
-          <article class="serve-card">
-            <div class="person-top"><strong>${escapeHtml(order.person)}</strong><span class="pill">${order.items.reduce((sum, item) => sum + Number(item.qty), 0)} 份</span></div>
-            <ul class="line-items">
-              ${order.items.map((item) => `<li><span>${escapeHtml(item.name)} × ${item.qty}<br><span class="muted">${escapeHtml(item.note || "")}</span></span><b>${money(Number(item.price) * Number(item.qty))}</b></li>`).join("")}
-            </ul>
-          </article>
-        `).join("");
-      }
-
-      function getSummaryText() {
-        const lines = ["叫餐統計"];
-        getItemSummary().forEach((item) => lines.push(`${item.name} x${item.qty}`));
-        lines.push("", `總金額：${money(getGrandTotal())}`, "", "備註：");
-        lines.push($("#noteSummary").innerText.trim() || "無");
-        return lines.join("\n");
-      }
-
-      async function loadRemoteData() {
-        const menuName = getMenuName();
-        const result = await callApi("getGroupData", { groupId: menuName, title: menuName, menuName });
-        state.savedMenus = Array.isArray(result.menus) ? result.menus : state.savedMenus;
-        state.menu = Array.isArray(result.menu) ? result.menu : [];
-        state.orders = Array.isArray(result.orders) ? result.orders : [];
-        if (result.group?.title) state.menuName = result.group.title;
-        state.locked = Boolean(result.group?.locked);
-      }
-
-      async function refreshData() {
-        try {
-          await loadRemoteData();
-          updateMenuUrl(state.menuName);
-          renderAll();
-          showToast("資料已更新");
-        } catch (error) {
-          showToast(error.message);
-        }
-      }
-
-      async function toggleLock() {
-        state.locked = !state.locked;
+      function renderAll() {
+        $("#groupTitleInput").value = state.title;
         updateStatus();
-        try {
-          const menuName = getMenuName();
-          await callApi("lockGroup", { groupId: menuName, title: menuName, menuName, locked: state.locked });
-          showToast(state.locked ? "已鎖單，準備叫餐" : "已重新開放點餐");
-        } catch (error) {
-          state.locked = !state.locked;
-          updateStatus();
-          showToast(error.message);
+        renderMenuImage();
+        renderDraftItems();
+        renderOrders();
+        renderSummary();
+      }
+
+      async function loadGroup() {
+        const result = await callApi("getGroupData", { groupId: state.groupId, title: state.title });
+        if (result.group) {
+          state.title = result.group.title || state.title;
+          state.imageUrl = result.group.imageUrl || "";
+          state.locked = Boolean(result.group.locked);
         }
+        state.orders = Array.isArray(result.orders) ? result.orders : [];
+      }
+
+      async function saveGroup() {
+        state.title = $("#groupTitleInput").value.trim() || state.title || "未命名訂餐團";
+        updateUrl();
+        const imageDataUrl = state.selectedImageFile ? await compressImage(state.selectedImageFile) : "";
+        showToast("正在儲存菜單圖片");
+        const result = await postToGas("saveGroup", { groupId: state.groupId, title: state.title, imageDataUrl });
+        state.imageUrl = result.imageUrl || state.imageUrl;
+        state.selectedImageDataUrl = "";
+        showToast("已建立訂餐團");
+        renderAll();
+        copyText(shareUrl(), "分享網址已複製");
+      }
+
+      function submitOrder(event) {
+        event.preventDefault();
+        if (state.locked) {
+          showToast("已鎖單，不能再送出");
+          return;
+        }
+        const person = $("#personName").value.trim();
+        if (!person) {
+          showToast("請輸入名字");
+          return;
+        }
+        const items = state.draftItems
+          .map((item) => ({ name: String(item.name || "").trim(), price: Number(item.price || 0), qty: Number(item.qty || 1), note: String(item.note || "").trim() }))
+          .filter((item) => item.name && item.price > 0);
+        if (!items.length) {
+          showToast("請至少輸入一個商品和價格");
+          return;
+        }
+        const order = { id: state.editingOrderId || crypto.randomUUID(), person, note: $("#personNote").value.trim(), items };
+        state.orders = state.orders.filter((entry) => entry.id !== order.id);
+        state.orders.push(order);
+        state.editingOrderId = "";
+        state.draftItems = [];
+        $("#personName").value = "";
+        $("#personNote").value = "";
+        renderAll();
+        activateView("mine");
+        showToast("訂單已送出");
+        callApi("submitOrder", { groupId: state.groupId, order }).catch((error) => showToast(`背景儲存失敗：${error.message}`));
+      }
+
+      function editOrder(id) {
+        const order = state.orders.find((entry) => entry.id === id);
+        if (!order) return;
+        state.editingOrderId = order.id;
+        $("#personName").value = order.person;
+        $("#personNote").value = order.note || "";
+        state.draftItems = order.items.map((item) => ({ ...item }));
+        renderDraftItems();
+        activateView("order");
+        showToast("已載入訂單，可修改後送出");
+      }
+
+      function deleteOrder(id) {
+        const order = state.orders.find((entry) => entry.id === id);
+        if (!order) return;
+        if (!confirm(`確定刪除 ${order.person} 的訂單嗎？`)) return;
+        state.orders = state.orders.filter((entry) => entry.id !== id);
+        renderAll();
+        showToast("訂單已刪除");
+        callApi("deleteOrder", { groupId: state.groupId, orderId: id }).catch((error) => showToast(`背景刪除失敗：${error.message}`));
+      }
+
+      function summaryText() {
+        const lines = [`${state.title} 叫餐統計`];
+        itemSummary().forEach((item) => lines.push(`${item.name} x${item.qty}`));
+        lines.push("", `總金額：${money(grandTotal())}`, "", "依個人：");
+        state.orders.forEach((order) => lines.push(`${order.person} ${money(getOrderTotal(order))}`));
+        const noteText = $("#noteSummary").innerText.trim();
+        lines.push("", "備註：", noteText || "無");
+        return lines.join("\n");
       }
 
       function activateView(view) {
@@ -1054,70 +686,40 @@
         $$(".view").forEach((panel) => panel.classList.toggle("is-active", panel.id === `view-${view}`));
       }
 
-      function renderAll() {
-        renderSavedMenus();
-        renderMenuEditor();
-        renderOrder();
-        renderPersonOrders();
-        renderSummaries();
-        renderServeList();
-        updateStatus();
-      }
-
-      function handleImageFile(file) {
-        if (!file) return;
-        state.selectedMenuFile = file;
-        const url = URL.createObjectURL(file);
-        $("#menuPhoto").style.background = `linear-gradient(rgba(255,255,255,.22), rgba(255,255,255,.22)), url("${url}") center / cover`;
-        showToast("圖片已載入，開始擷取菜單");
-        extractMenuFromImage(file);
+      function openImageModal(src) {
+        $("#modalImage").src = src;
+        $("#imageModal").classList.add("show");
       }
 
       function setupEvents() {
         $$(".tab").forEach((tab) => tab.addEventListener("click", () => activateView(tab.dataset.view)));
-        $("#cameraInput").addEventListener("change", (event) => handleImageFile(event.target.files[0]));
-        $("#albumInput").addEventListener("change", (event) => handleImageFile(event.target.files[0]));
-        $("#extractMenuBtn").addEventListener("click", () => extractMenuFromImage(state.selectedMenuFile));
-        $("#menuNameInput").addEventListener("change", () => {
-          getMenuName();
-          updateMenuUrl(state.menuName);
-          renderAll();
-        });
-        $("#savedMenuSelect").addEventListener("change", async (event) => {
-          if (!event.target.value) return;
-          state.menuName = event.target.value;
-          updateMenuUrl(state.menuName);
-          await refreshData();
-        });
-        $("#addItemForm").addEventListener("submit", (event) => {
-          event.preventDefault();
-          const name = $("#newItemName").value.trim();
-          const price = Number($("#newItemPrice").value);
-          if (!name) {
-            showToast("請輸入餐點名稱");
-            return;
-          }
-          state.menu.push({ id: uid("menu"), name, price: price || 0, category: "手動" });
-          $("#newItemName").value = "";
-          $("#newItemPrice").value = "";
-          renderAll();
-        });
-        $("#saveMenuBtn").addEventListener("click", async () => {
-          try { await saveMenu(); } catch (error) { showToast(error.message); }
-        });
-        $("#submitOrderBtn").addEventListener("click", async () => {
-          try { await submitOrder(); } catch (error) { showToast(error.message); }
-        });
-        $("#lockBtn").addEventListener("click", toggleLock);
-        $("#refreshBtn").addEventListener("click", refreshData);
-        $("#copySummaryBtn").addEventListener("click", () => copyText(getSummaryText(), "叫餐文字已複製"));
-        $("#shareBtn").addEventListener("click", () => copyText(location.href, "分享網址已複製"));
+        $("#cameraInput").addEventListener("change", (event) => handleImage(event.target.files[0]));
+        $("#albumInput").addEventListener("change", (event) => handleImage(event.target.files[0]));
+        $("#saveGroupBtn").addEventListener("click", () => saveGroup().catch((error) => showToast(error.message)));
+        $("#copyLinkBtn").addEventListener("click", () => copyText(shareUrl(), "分享網址已複製"));
+        $("#shareBtn").addEventListener("click", () => copyText(shareUrl(), "分享網址已複製"));
+        $("#refreshBtn").addEventListener("click", () => loadGroup().then(renderAll).catch((error) => showToast(error.message)));
+        $("#addItemBtn").addEventListener("click", () => { state.draftItems.push({ name: "", price: "", qty: 1, note: "" }); renderDraftItems(); });
+        $("#orderForm").addEventListener("submit", submitOrder);
+        $("#copySummaryBtn").addEventListener("click", () => copyText(summaryText(), "叫餐文字已複製"));
+        $("#closeModalBtn").addEventListener("click", () => $("#imageModal").classList.remove("show"));
+        $("#imageModal").addEventListener("click", (event) => { if (event.target.id === "imageModal") $("#imageModal").classList.remove("show"); });
+        $("#groupTitleInput").addEventListener("input", () => { state.title = $("#groupTitleInput").value.trim() || "未命名訂餐團"; updateStatus(); updateUrl(); });
+      }
+
+      function handleImage(file) {
+        if (!file) return;
+        state.selectedImageFile = file;
+        state.selectedImageDataUrl = URL.createObjectURL(file);
+        renderMenuImage();
+        showToast("已載入菜單圖片，請儲存");
       }
 
       async function init() {
         setupEvents();
+        updateUrl();
         renderAll();
-        loadRemoteData().then(renderAll).catch((error) => showToast(error.message));
+        loadGroup().then(renderAll).catch(() => renderAll());
       }
 
       init();
