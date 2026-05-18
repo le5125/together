@@ -193,6 +193,15 @@
       }
       .upload-button input { position: absolute; opacity: 0; pointer-events: none; }
       .camera-icon { color: var(--blue); font-size: 18px; }
+      .ocr-progress {
+        margin: -4px 0 14px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        background: #eef4f0;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 700;
+      }
       .editable-list, .order-list, .person-orders, .serve-list { display: grid; gap: 10px; }
       .editor-row, .order-card, .person-card, .summary-block, .serve-card {
         border: 1px solid var(--line);
@@ -405,8 +414,9 @@
             <span class="camera-icon" aria-hidden="true">▣</span>
             <span>拍照或選相簿</span>
           </label>
-          <button class="primary-button" id="saveMenuBtn2" type="button">儲存菜單</button>
+          <button class="primary-button" id="extractMenuBtn" type="button">擷取菜單</button>
         </div>
+        <div class="ocr-progress" id="ocrProgress">拍照或選相簿後，系統會自動擷取餐點名稱與價格。</div>
         <div class="editable-list" id="menuEditor" aria-label="辨識後菜單"></div>
         <form class="add-form" id="addItemForm">
           <input id="newItemName" type="text" placeholder="新增餐點名稱" aria-label="新增餐點名稱" />
@@ -460,6 +470,7 @@
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script>
       const API_URL = "https://script.google.com/macros/s/AKfycbxugZM52HlLboXW9c3MIS-331D9t6CB5hA6cXHXKekcmQURmYfIoNyIsdKKFD1CZKK_Bw/exec";
       const GROUP_ID = new URLSearchParams(location.search).get("group") || "demo";
@@ -473,7 +484,9 @@
         menu: [],
         draft: {},
         orders: [],
-        editingOrderId: ""
+        editingOrderId: "",
+        selectedMenuFile: null,
+        isOcrRunning: false
       };
 
       const $ = (selector) => document.querySelector(selector);
@@ -693,6 +706,93 @@
         showToast("菜單已存到試算表");
       }
 
+      function setOcrProgress(message) {
+        $("#ocrProgress").textContent = message;
+      }
+
+      function normalizeOcrText(text) {
+        return String(text || "")
+          .replace(/[|｜]/g, " ")
+          .replace(/[，,]/g, "")
+          .replace(/[０-９]/g, (char) => String.fromCharCode(char.charCodeAt(0) - 65248));
+      }
+
+      function parseMenuItemsFromText(rawText) {
+        const text = normalizeOcrText(rawText);
+        const lines = text
+          .split(/\r?\n/)
+          .map((line) => line.trim())
+          .filter(Boolean);
+
+        const items = [];
+        const seen = new Set();
+        lines.forEach((line) => {
+          const cleaned = line
+            .replace(/\s{2,}/g, " ")
+            .replace(/(NTD|NT\$|新台幣|元)/gi, " ")
+            .trim();
+          const match = cleaned.match(/^(.{1,30}?)\s*(?:\$)?\s*(\d{1,4})(?:\s|$)/);
+          if (!match) return;
+
+          const name = match[1]
+            .replace(/[^\u4e00-\u9fa5a-zA-Z0-9（）()·.\- ]/g, "")
+            .trim();
+          const price = Number(match[2]);
+          if (!name || !price || price > 9999) return;
+
+          const key = `${name}-${price}`;
+          if (seen.has(key)) return;
+          seen.add(key);
+          items.push({ id: uid("menu"), name, price, category: "OCR" });
+        });
+        return items;
+      }
+
+      async function extractMenuFromImage(file) {
+        if (!file) {
+          showToast("請先拍照或選相簿");
+          return;
+        }
+        if (!window.Tesseract) {
+          showToast("OCR 載入失敗，請確認網路後重試");
+          return;
+        }
+        if (state.isOcrRunning) return;
+
+        state.isOcrRunning = true;
+        $("#extractMenuBtn").disabled = true;
+        setOcrProgress("正在擷取菜單文字，第一次可能需要稍等...");
+
+        try {
+          const result = await Tesseract.recognize(file, "chi_tra+eng", {
+            logger: (event) => {
+              if (event.status === "recognizing text" && event.progress) {
+                setOcrProgress(`正在辨識文字 ${Math.round(event.progress * 100)}%`);
+              }
+            }
+          });
+          const items = parseMenuItemsFromText(result.data.text);
+          if (!items.length) {
+            setOcrProgress("沒有自動抓到餐點與價格，請拍清楚一點或手動新增餐點。");
+            showToast("沒有抓到餐點，請手動新增或重拍");
+            return;
+          }
+
+          state.menu = items;
+          state.activeCategory = ALL;
+          state.draft = {};
+          renderAll();
+          setOcrProgress(`已擷取 ${items.length} 個餐點，可先檢查名稱與價格再儲存。`);
+          showToast(`已擷取 ${items.length} 個餐點`);
+        } catch (error) {
+          setOcrProgress("OCR 失敗，請確認網路或換一張更清楚的照片。");
+          showToast(error.message || "OCR 失敗");
+        } finally {
+          state.isOcrRunning = false;
+          $("#extractMenuBtn").disabled = false;
+        }
+      }
+
       function persistInBackground(action, payload, failMessage) {
         callApi(action, payload).catch((error) => {
           showToast(`${failMessage}：${error.message}`);
@@ -893,9 +993,11 @@
         $("#imageInput").addEventListener("change", (event) => {
           const file = event.target.files[0];
           if (!file) return;
+          state.selectedMenuFile = file;
           const url = URL.createObjectURL(file);
           $("#menuPhoto").style.background = `linear-gradient(rgba(255,255,255,.22), rgba(255,255,255,.22)), url("${url}") center / cover`;
-          showToast("圖片已載入，可依照片手動新增餐點");
+          showToast("圖片已載入，開始擷取菜單");
+          extractMenuFromImage(file);
         });
 
         $("#addItemForm").addEventListener("submit", (event) => {
@@ -915,8 +1017,8 @@
         $("#saveMenuBtn").addEventListener("click", async () => {
           try { await saveMenu(); } catch (error) { showToast(error.message); }
         });
-        $("#saveMenuBtn2").addEventListener("click", async () => {
-          try { await saveMenu(); } catch (error) { showToast(error.message); }
+        $("#extractMenuBtn").addEventListener("click", async () => {
+          try { await extractMenuFromImage(state.selectedMenuFile); } catch (error) { showToast(error.message); }
         });
         $("#submitOrderBtn").addEventListener("click", async () => {
           try { await submitOrder(); } catch (error) { showToast(error.message); }
