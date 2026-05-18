@@ -1270,7 +1270,7 @@
         </div>
 
         <label class="field">
-          <span class="lbl">店名 / 團名 <span class="hint">必填</span></span>
+          <span class="lbl">店名 / 團名 <span class="hint">可不填，預設「未命名訂餐團」</span></span>
           <input id="groupTitleInput" type="text" placeholder="例如：五十嵐下午茶 🧋" maxlength="40" />
         </label>
 
@@ -1999,21 +1999,21 @@
       //  Actions
       // ════════════════════════════════════════════════════
       async function saveGroup() {
-        const title = $("#groupTitleInput").value.trim();
-        if (!title) {
-          showToast("請先填店名/團名", "error");
-          $("#groupTitleInput").focus();
-          return;
-        }
+        const title = $("#groupTitleInput").value.trim() || "未命名訂餐團";
         state.title = title;
         updateUrl();
         renderStats();
         const btn = $("#saveGroupBtn");
         btn.disabled = true;
         btn.innerHTML = "⏳ 儲存中…";
+        // 暫停輪詢，避免跟儲存搶 GAS
+        stopPolling();
         try {
           const imageDataUrl = state.selectedImageFile ? await compressImage(state.selectedImageFile) : "";
-          const result = await postToGas("saveGroup", { groupId: state.groupId, title: state.title, imageDataUrl });
+          // 有圖才用 POST（圖片太大塞不進 URL），沒圖直接 JSONP 快很多
+          const result = imageDataUrl
+            ? await postToGas("saveGroup", { groupId: state.groupId, title: state.title, imageDataUrl })
+            : await callApi("saveGroup", { groupId: state.groupId, title: state.title, imageDataUrl: "" });
           state.imageUrl = result.imageUrl || state.imageUrl;
           state.selectedImageDataUrl = "";
           state.selectedImageFile = null;
@@ -2025,6 +2025,7 @@
         } finally {
           btn.disabled = false;
           btn.innerHTML = "✨ 儲存並產生分享連結";
+          startPolling();
         }
       }
 
@@ -2350,15 +2351,15 @@
 
       async function init() {
         setupEvents();
-        $("#groupTitleInput").value = state.title;
+        $("#groupTitleInput").value = state.title === "未命名訂餐團" ? "" : state.title;
         $("#heroGroupTitle").textContent = state.title;
         updateUrl();
         loadFromStorage();
         renderAll();
         detectInitialView();
         setSyncState("syncing", "載入中…");
-        await loadGroup(true);
-        startPolling();
+        // 不 await — 讓使用者立刻能操作，背景拉資料
+        loadGroup(true).finally(() => startPolling());
       }
 
       init();
