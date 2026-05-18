@@ -1588,6 +1588,7 @@
         draftItems: [],
         editingOrderId: "",
         myOrderIds: [],     // 我送過的訂單 id（存 localStorage）
+        pendingOrders: new Map(),  // 本機剛送出、後端尚未確認的訂單（id → order）
         lastSync: 0,
         syncing: false,
         pollTimer: null,
@@ -2061,6 +2062,35 @@
       // ════════════════════════════════════════════════════
       //  Data loading & polling
       // ════════════════════════════════════════════════════
+      // 把後端拿到的訂單和本機 pending 合併
+      // - pending 是新增/編輯：用本機版本（後端可能還沒寫完）
+      // - pending 是 null：本機已刪除，過濾掉
+      function mergeOrdersWithPending(serverOrders) {
+        const result = [];
+        const usedPendingIds = new Set();
+        serverOrders.forEach(o => {
+          if (state.pendingOrders.has(o.id)) {
+            const pendingValue = state.pendingOrders.get(o.id);
+            if (pendingValue === null) {
+              // 本機已刪除，跳過
+            } else {
+              // 用本機版本（編輯中的內容比後端新）
+              result.push(pendingValue);
+            }
+            usedPendingIds.add(o.id);
+          } else {
+            result.push(o);
+          }
+        });
+        // 本機新增但後端還沒有的訂單
+        state.pendingOrders.forEach((value, id) => {
+          if (!usedPendingIds.has(id) && value !== null) {
+            result.push(value);
+          }
+        });
+        return result;
+      }
+
       async function loadGroup(silent = false) {
         if (state.syncing) return;
         state.syncing = true;
@@ -2076,7 +2106,9 @@
             }
             state.locked = Boolean(r.group.locked);
           }
-          state.orders = Array.isArray(r.orders) ? r.orders : [];
+          state.orders = mergeOrdersWithPending(
+            Array.isArray(r.orders) ? r.orders : []
+          );
           state.lastSync = Date.now();
           state.imageLoading = false;
           const hasImg = !!(r.group && r.group.imageUrl);
@@ -2236,6 +2268,8 @@
         state.orders = state.orders.filter(o => o.id !== order.id);
         state.orders.push(order);
         saveMyOrderId(order.id);
+        // 加入 pending：輪詢時要保留這筆，避免被 GAS 還沒寫好的回應覆蓋掉
+        state.pendingOrders.set(order.id, order);
         try { localStorage.setItem(storageKey("myName"), order.person); } catch (e) {}
         state.editingOrderId = "";
         state.draftItems = [];
@@ -2245,8 +2279,14 @@
         activateView("mine");
         showToast(isEdit ? "訂單已更新 ✨" : "訂單送出 🎉", "success");
         callApi("submitOrder", { groupId: state.groupId, order })
-          .then(() => setSyncState("ok", "已同步"))
+          .then(() => {
+            // GAS 確認寫入完成，移除 pending 標記，下次輪詢用後端資料覆蓋
+            state.pendingOrders.delete(order.id);
+            setSyncState("ok", "已同步");
+          })
           .catch(e => {
+            // 失敗也別把 pending 留著 — 不然永遠卡住
+            state.pendingOrders.delete(order.id);
             setSyncState("error", "背景儲存失敗");
             showToast(`背景儲存失敗：${e.message}`, "error");
           });
@@ -2272,10 +2312,16 @@
         if (!confirm(`確定刪除 ${o.person} 的訂單？`)) return;
         state.orders = state.orders.filter(x => x.id !== id);
         removeMyOrderId(id);
+        // 標記為「待刪除」— pending value 是 null 表示要刪除
+        state.pendingOrders.set(id, null);
         renderAll();
         showToast("已刪除", "success");
         callApi("deleteOrder", { groupId: state.groupId, orderId: id })
-          .catch(e => showToast(`背景刪除失敗：${e.message}`, "error"));
+          .then(() => state.pendingOrders.delete(id))
+          .catch(e => {
+            state.pendingOrders.delete(id);
+            showToast(`背景刪除失敗：${e.message}`, "error");
+          });
       }
 
       async function toggleLock() {
