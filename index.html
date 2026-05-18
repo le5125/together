@@ -259,7 +259,7 @@
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         gap: 6px;
-        padding: 10px;
+        padding: 12px 10px;
         background: var(--paper);
         position: sticky;
         top: 0;
@@ -267,31 +267,31 @@
         border-bottom: 1px solid var(--line-2);
       }
       .tab {
-        padding: 10px 4px;
-        border-radius: 12px;
-        font-size: 13px;
-        font-weight: 700;
+        padding: 12px 4px;
+        border-radius: 14px;
+        font-size: 15px;
+        font-weight: 800;
         color: var(--muted);
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 2px;
+        gap: 4px;
         position: relative;
       }
-      .tab .tab-emoji { font-size: 18px; line-height: 1; }
+      .tab .tab-emoji { font-size: 24px; line-height: 1; }
       .tab.is-active { color: var(--ink); background: var(--cream-2); }
       .tab .badge {
         position: absolute;
-        top: 4px;
+        top: 6px;
         right: 50%;
-        margin-right: -22px;
-        min-width: 16px;
-        height: 16px;
-        padding: 0 4px;
+        margin-right: -26px;
+        min-width: 18px;
+        height: 18px;
+        padding: 0 5px;
         border-radius: 999px;
         background: var(--tomato);
         color: #fff;
-        font-size: 10px;
+        font-size: 11px;
         font-weight: 900;
         display: grid;
         place-items: center;
@@ -610,11 +610,12 @@
       .order-card.is-mine {
         border-color: var(--matcha);
         background: linear-gradient(180deg, var(--matcha-soft), var(--paper) 30%);
+        padding-top: 28px;
       }
       .order-card.is-mine::before {
         content: "我";
         position: absolute;
-        top: 12px; right: 12px;
+        top: 10px; left: 12px;
         background: var(--matcha);
         color: #fff;
         font-size: 11px;
@@ -891,6 +892,15 @@
         100% { background-position: -200% 0; }
       }
 
+      .loading-spin {
+        display: inline-block;
+        animation: loadingBounce 1.2s ease-in-out infinite;
+      }
+      @keyframes loadingBounce {
+        0%, 100% { transform: translateY(0) rotate(-8deg); }
+        50% { transform: translateY(-8px) rotate(8deg); }
+      }
+
       .hidden { display: none !important; }
 
       iframe.hidden-frame {
@@ -966,32 +976,37 @@
         line-height: 1.1;
       }
       .sheet-header .note {
-        font-size: 12px;
-        color: var(--muted);
-        margin-top: 3px;
+        font-size: 14px;
+        color: var(--ink-2);
+        margin-top: 4px;
       }
       .preview-item {
         background: var(--cream);
         border-radius: 12px;
-        padding: 10px 12px;
-        margin-bottom: 8px;
+        padding: 14px 14px;
+        margin-bottom: 10px;
         display: flex;
         justify-content: space-between;
-        gap: 10px;
+        gap: 12px;
+        align-items: center;
       }
       .preview-item .pi-name {
-        font-weight: 700;
-        font-size: 14px;
+        font-weight: 800;
+        font-size: 18px;
+        line-height: 1.3;
       }
       .preview-item .pi-meta {
-        font-size: 12px;
-        color: var(--muted);
-        margin-top: 2px;
+        font-size: 15px;
+        color: var(--ink-2);
+        margin-top: 4px;
+        line-height: 1.4;
       }
       .preview-item .pi-price {
-        font-weight: 800;
+        font-weight: 900;
+        font-size: 18px;
         font-variant-numeric: tabular-nums;
         white-space: nowrap;
+        color: var(--tomato-dark);
       }
       .preview-total {
         display: flex;
@@ -1519,6 +1534,7 @@
         lastSync: 0,
         syncing: false,
         pollTimer: null,
+        imageLoading: false,
         version: 0          // 偵測有無新資料
       };
 
@@ -1727,6 +1743,15 @@
           const tag = state.selectedImageDataUrl ? '<div class="image-tag">尚未儲存</div>' : '';
           wrap1.innerHTML = `${tag}<img src="${src}" alt="菜單" data-menu-image />`;
           wrap2.innerHTML = `<img src="${src}" alt="菜單" data-menu-image />`;
+        } else if (state.imageLoading) {
+          const loadingHtml = `
+            <div class="placeholder">
+              <span class="emo loading-spin">🍜</span>
+              菜單載入中…<br/>
+              <small>稍等一下下</small>
+            </div>`;
+          wrap1.innerHTML = loadingHtml;
+          wrap2.innerHTML = loadingHtml;
         } else {
           wrap1.innerHTML = '<div class="placeholder"><span class="emo">🍜</span>菜單會顯示在這裡<br/><small>大家點開連結後就能看到</small></div>';
           wrap2.innerHTML = '<div class="placeholder"><span class="emo">📋</span>主揪還沒上傳菜單</div>';
@@ -1974,11 +1999,14 @@
           }
           state.orders = Array.isArray(r.orders) ? r.orders : [];
           state.lastSync = Date.now();
+          state.imageLoading = false;
           setSyncState("ok", `已同步 · ${new Date().toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit" })}`);
           renderAll();
         } catch (e) {
+          state.imageLoading = false;
           setSyncState("error", "同步失敗，點重新整理");
           if (!silent) showToast(`連線失敗：${e.message}`, "error");
+          renderAll();
         } finally {
           state.syncing = false;
         }
@@ -2014,7 +2042,8 @@
           const result = imageDataUrl
             ? await postToGas("saveGroup", { groupId: state.groupId, title: state.title, imageDataUrl })
             : await callApi("saveGroup", { groupId: state.groupId, title: state.title, imageDataUrl: "" });
-          state.imageUrl = result.imageUrl || state.imageUrl;
+          // 用後端回傳的，沒回傳就用剛壓縮好的 dataUrl
+          state.imageUrl = result.imageUrl || imageDataUrl || state.imageUrl;
           state.selectedImageDataUrl = "";
           state.selectedImageFile = null;
           renderAll();
@@ -2075,10 +2104,10 @@
           return `
             <div class="preview-item">
               <div style="flex:1;min-width:0">
-                <div class="pi-name">${escapeHtml(i.name)} <span style="color:var(--caramel)">× ${i.qty}</span></div>
+                <div class="pi-name">${escapeHtml(i.name)} <span style="color:var(--caramel);font-size:18px"> × ${i.qty}</span></div>
                 ${i.note ? `<div class="pi-meta">📝 ${escapeHtml(i.note)}</div>` : ''}
               </div>
-              <div class="pi-price">${i.price ? money(sub) : '<span style="color:var(--muted);font-weight:600">未填價</span>'}</div>
+              <div class="pi-price">${i.price ? money(sub) : '<span style="color:var(--muted);font-weight:600;font-size:15px">未填價</span>'}</div>
             </div>
           `;
         }).join("");
@@ -2355,6 +2384,8 @@
         $("#heroGroupTitle").textContent = state.title;
         updateUrl();
         loadFromStorage();
+        // 從分享連結進來的，預設菜單載入中
+        if (params.has("group")) state.imageLoading = true;
         renderAll();
         detectInitialView();
         setSyncState("syncing", "載入中…");
