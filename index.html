@@ -2,388 +2,1611 @@
 <html lang="zh-Hant">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>多人點餐系統</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#fef3c7" />
+    <title>🍱 揪團點餐</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
       :root {
-        --ink: #17211b;
-        --muted: #68736e;
-        --line: #dce3de;
-        --paper: #f8faf6;
-        --panel: #fff;
-        --green: #289365;
-        --mint: #d7efe2;
-        --gold: #f5c85b;
-        --red: #a13a26;
-        --red-bg: #ffe8e1;
-        --shadow: 0 18px 46px rgba(24, 38, 31, .16);
+        /* 食物感配色：奶油 + 番茄 + 抹茶 + 焦糖 */
+        --cream: #fef9ec;
+        --cream-2: #fef3c7;
+        --paper: #ffffff;
+        --ink: #1f1d18;
+        --ink-2: #4a4640;
+        --muted: #8a847a;
+        --line: #ece4d2;
+        --line-2: #f5eedb;
+
+        --tomato: #e85a4f;
+        --tomato-dark: #c4392e;
+        --tomato-soft: #fde2de;
+
+        --matcha: #5c8a3a;
+        --matcha-dark: #3f6624;
+        --matcha-soft: #e2eed1;
+
+        --caramel: #d4a05c;
+        --caramel-soft: #fbeacc;
+
+        --berry: #a8456b;
+        --berry-soft: #f7dde6;
+
+        --sky: #4a90a4;
+        --sky-soft: #d9ebf0;
+
+        --shadow-sm: 0 2px 0 rgba(31, 29, 24, .08);
+        --shadow-md: 0 4px 0 rgba(31, 29, 24, .12);
+        --shadow-lg: 0 24px 60px rgba(31, 29, 24, .14), 0 2px 0 rgba(31, 29, 24, .06);
+
+        --radius-sm: 10px;
+        --radius-md: 14px;
+        --radius-lg: 20px;
+        --radius-xl: 28px;
       }
 
-      * { box-sizing: border-box; }
+      * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+      html, body { margin: 0; padding: 0; }
+
       body {
         min-height: 100vh;
-        margin: 0;
-        display: grid;
-        place-items: center;
-        background: linear-gradient(135deg, #eef5ef, #f7f5ee 48%, #e7f1f6);
+        background:
+          radial-gradient(circle at 12% 8%, rgba(232,90,79,.10), transparent 42%),
+          radial-gradient(circle at 88% 22%, rgba(92,138,58,.10), transparent 46%),
+          radial-gradient(circle at 50% 100%, rgba(212,160,92,.12), transparent 55%),
+          linear-gradient(180deg, var(--cream), var(--cream-2));
         color: var(--ink);
-        font-family: "Segoe UI", "Noto Sans TC", Arial, sans-serif;
+        font-family: "Noto Sans TC", "Segoe UI", sans-serif;
+        font-feature-settings: "tnum" 1;
+        display: grid;
+        place-items: start center;
+        padding: 18px 12px 40px;
       }
-      button, input, textarea { font: inherit; }
-      button, .upload-button {
-        cursor: pointer;
-        -webkit-tap-highlight-color: rgba(40,147,101,.28);
-        transition: transform 80ms ease, filter 120ms ease, box-shadow 120ms ease;
-      }
-      button:active, .upload-button:active {
-        transform: scale(.96);
-        filter: brightness(.92);
-        box-shadow: inset 0 0 0 999px rgba(23,33,27,.08);
-      }
-      button:focus-visible, .upload-button:focus-within, input:focus-visible, textarea:focus-visible {
-        outline: 3px solid rgba(40,147,101,.28);
-        outline-offset: 2px;
-      }
-      h1, h2, h3, p { margin-top: 0; }
-      h1 { margin: 0; font-size: 28px; line-height: 1.05; }
-      h2 { margin: 0; font-size: 21px; }
-      h3 { margin-bottom: 10px; font-size: 16px; }
 
-      .phone-shell {
-        width: min(430px, 100vw);
-        min-height: min(920px, 100vh);
+      .display { font-family: "Fraunces", "Noto Sans TC", serif; font-weight: 900; letter-spacing: -.02em; }
+
+      button, input, textarea, select {
+        font: inherit;
+        color: inherit;
+      }
+
+      button {
+        cursor: pointer;
+        border: 0;
+        background: none;
+        transition: transform .08s ease, filter .12s ease, box-shadow .12s ease, background .15s ease;
+      }
+      button:active { transform: translateY(1px) scale(.985); }
+
+      input, textarea, select {
+        width: 100%;
+        border: 1.5px solid var(--line);
+        background: #fff;
+        border-radius: var(--radius-md);
+        padding: 12px 14px;
+        min-height: 46px;
+        transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+      }
+      input:focus, textarea:focus, select:focus {
+        outline: none;
+        border-color: var(--matcha);
+        box-shadow: 0 0 0 4px rgba(92,138,58,.16);
+      }
+      textarea { min-height: 60px; resize: vertical; padding-top: 10px; }
+
+      /* ─── Shell ────────────────────────────────────────── */
+      .shell {
+        width: 100%;
+        max-width: 460px;
         background: var(--paper);
-        border: 1px solid rgba(23,33,27,.08);
-        box-shadow: var(--shadow);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-lg);
         overflow: hidden;
         position: relative;
+        border: 1px solid rgba(31,29,24,.06);
       }
-      .app-header, .status-strip, .tabs { background: var(--panel); }
-      .app-header {
+
+      /* ─── Header ───────────────────────────────────────── */
+      .hero {
+        position: relative;
+        padding: 22px 22px 14px;
+        background:
+          radial-gradient(circle at 85% 0%, rgba(232,90,79,.18), transparent 50%),
+          radial-gradient(circle at 0% 100%, rgba(92,138,58,.16), transparent 55%),
+          linear-gradient(135deg, #fff5d6, #ffe6c7);
+        border-bottom: 1px solid var(--line-2);
+      }
+      .hero::after {
+        content: "";
+        position: absolute;
+        left: 0; right: 0; bottom: -1px;
+        height: 16px;
+        background:
+          radial-gradient(circle at 14px 0, var(--paper) 9px, transparent 10px) 0 0/28px 16px repeat-x;
+      }
+
+      .hero-top {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 24px 20px 14px;
+        gap: 10px;
+        margin-bottom: 12px;
       }
-      .eyebrow { margin: 0 0 4px; color: var(--green); font-size: 12px; font-weight: 800; }
-      .icon-button, .small-button, .primary-button, .danger-button {
-        border: 0;
-        border-radius: 8px;
-        min-height: 42px;
-        font-weight: 800;
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
       }
-      .icon-button { width: 42px; background: #eef4f0; color: var(--ink); font-size: 22px; }
-      .primary-button { padding: 0 18px; background: var(--green); color: #fff; }
-      .small-button { padding: 0 12px; background: #eef4f0; color: var(--ink); }
-      .danger-button { padding: 0 12px; background: var(--red-bg); color: var(--red); }
+      .brand-emoji {
+        width: 44px; height: 44px;
+        display: grid; place-items: center;
+        font-size: 26px;
+        background: var(--paper);
+        border-radius: 14px;
+        box-shadow: var(--shadow-sm);
+        transform: rotate(-6deg);
+      }
+      .brand-text .label {
+        font-size: 11px;
+        letter-spacing: .18em;
+        color: var(--tomato);
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+      .brand-text h1 {
+        margin: 0;
+        font-size: 22px;
+        line-height: 1.1;
+      }
 
-      .status-strip {
+      .icon-btn {
+        width: 42px; height: 42px;
+        display: grid; place-items: center;
+        background: var(--paper);
+        border-radius: 12px;
+        font-size: 18px;
+        box-shadow: var(--shadow-sm);
+        color: var(--ink);
+      }
+      .icon-btn:hover { background: var(--cream); }
+      .icon-btn.pulse::after {
+        content: "";
+        position: absolute;
+        width: 8px; height: 8px;
+        background: var(--tomato);
+        border-radius: 50%;
+        margin: -22px 0 0 22px;
+        box-shadow: 0 0 0 0 rgba(232,90,79,.6);
+        animation: pulse 1.8s infinite;
+      }
+      @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(232,90,79,.5); }
+        70% { box-shadow: 0 0 0 8px rgba(232,90,79,0); }
+        100% { box-shadow: 0 0 0 0 rgba(232,90,79,0); }
+      }
+
+      .group-title {
+        font-size: 26px;
+        line-height: 1.15;
+        margin: 4px 0 12px;
+      }
+
+      .stats {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 8px;
-        padding: 10px 14px 14px;
       }
-      .status-strip div { padding: 12px 8px; border-radius: 8px; background: #f1f6f3; text-align: center; }
-      .status-strip strong, .status-strip span { display: block; }
-      .status-strip span { margin-top: 2px; color: var(--muted); font-size: 12px; }
+      .stat {
+        background: rgba(255,255,255,.7);
+        backdrop-filter: blur(6px);
+        border-radius: 14px;
+        padding: 10px;
+        text-align: center;
+        border: 1px solid rgba(255,255,255,.6);
+      }
+      .stat-num {
+        font-family: "Fraunces", serif;
+        font-weight: 900;
+        font-size: 22px;
+        line-height: 1;
+        color: var(--ink);
+      }
+      .stat-label {
+        font-size: 11px;
+        color: var(--ink-2);
+        margin-top: 4px;
+        font-weight: 700;
+      }
+      .stat.money .stat-num { color: var(--tomato-dark); }
+      .stat.people .stat-num { color: var(--matcha-dark); }
 
-      .sync-panel {
+      /* ─── Sync bar ─────────────────────────────────────── */
+      .sync-bar {
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        gap: 12px;
-        padding: 12px 14px;
-        border-top: 1px solid var(--line);
-        background: #fffaf0;
+        gap: 8px;
+        padding: 8px 22px;
+        background: var(--paper);
+        font-size: 12px;
+        color: var(--muted);
+        border-bottom: 1px solid var(--line-2);
       }
-      .sync-panel strong, .sync-panel span { display: block; }
-      .sync-panel strong { font-size: 14px; }
-      .sync-panel span { margin-top: 2px; color: var(--muted); font-size: 12px; }
+      .dot {
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: var(--matcha);
+        box-shadow: 0 0 0 3px rgba(92,138,58,.18);
+        flex-shrink: 0;
+      }
+      .dot.syncing { background: var(--caramel); animation: blink 1s infinite; }
+      .dot.error { background: var(--tomato); }
+      @keyframes blink { 50% { opacity: .35; } }
+      .sync-bar .grow { flex: 1; }
+      .sync-bar button {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--matcha-dark);
+        padding: 4px 8px;
+        border-radius: 8px;
+      }
+      .sync-bar button:hover { background: var(--matcha-soft); }
 
+      /* ─── Tabs ─────────────────────────────────────────── */
       .tabs {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         gap: 6px;
-        padding: 10px 10px 12px;
-        border-bottom: 1px solid var(--line);
+        padding: 10px;
+        background: var(--paper);
         position: sticky;
         top: 0;
-        z-index: 4;
+        z-index: 5;
+        border-bottom: 1px solid var(--line-2);
       }
       .tab {
-        min-height: 38px;
-        border: 0;
-        border-radius: 8px;
-        background: transparent;
+        padding: 10px 4px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 700;
         color: var(--muted);
-        font-size: 14px;
-        font-weight: 800;
-      }
-      .tab.is-active { background: var(--ink); color: #fff; }
-
-      .view { display: none; padding: 18px 16px 98px; }
-      .view.is-active { display: block; }
-      .section-heading {
         display: flex;
+        flex-direction: column;
         align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        margin-bottom: 16px;
+        gap: 2px;
+        position: relative;
       }
-      label span {
-        display: block;
-        margin-bottom: 6px;
-        color: var(--muted);
-        font-size: 12px;
-        font-weight: 800;
-      }
-      input, textarea {
-        width: 100%;
-        min-height: 44px;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: #fff;
-        padding: 0 12px;
-      }
-      textarea { min-height: 72px; padding: 10px 12px; resize: vertical; }
-      .form-grid { display: grid; gap: 10px; }
-      .button-row { display: flex; gap: 10px; align-items: center; }
-      .button-row > * { flex: 1; }
-      .upload-button {
-        min-height: 48px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 8px;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: var(--panel);
-        font-weight: 800;
-      }
-      .upload-button input { position: absolute; opacity: 0; pointer-events: none; }
-
-      .menu-image-wrap {
-        min-height: 220px;
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: #fff;
+      .tab .tab-emoji { font-size: 18px; line-height: 1; }
+      .tab.is-active { color: var(--ink); background: var(--cream-2); }
+      .tab .badge {
+        position: absolute;
+        top: 4px;
+        right: 50%;
+        margin-right: -22px;
+        min-width: 16px;
+        height: 16px;
+        padding: 0 4px;
+        border-radius: 999px;
+        background: var(--tomato);
+        color: #fff;
+        font-size: 10px;
+        font-weight: 900;
         display: grid;
         place-items: center;
-        overflow: hidden;
       }
-      .menu-image-wrap img { width: 100%; height: auto; display: block; }
-      .image-placeholder { padding: 24px; color: var(--muted); text-align: center; font-weight: 700; }
-      .help-text { color: var(--muted); font-size: 13px; line-height: 1.45; }
 
-      .order-items, .orders, .summary-list { display: grid; gap: 10px; }
-      .entry-card, .order-card, .summary-block {
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: var(--panel);
-        padding: 12px;
+      /* ─── Views ────────────────────────────────────────── */
+      .view {
+        display: none;
+        padding: 18px 18px 100px;
+        animation: fadeUp .25s ease;
       }
-      .entry-card {
-        display: grid;
-        grid-template-columns: 1fr 86px 42px;
-        gap: 8px;
+      .view.is-active { display: block; }
+      @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(6px); }
+        to { opacity: 1; transform: none; }
+      }
+
+      .section-head {
+        display: flex;
         align-items: end;
+        justify-content: space-between;
+        margin-bottom: 14px;
+        gap: 12px;
       }
-      .entry-card textarea { grid-column: 1 / -1; min-height: 54px; }
-      .person-top, .summary-row, .line-items li {
+      .section-head .eyebrow {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: .14em;
+        color: var(--tomato);
+        text-transform: uppercase;
+        margin-bottom: 3px;
+      }
+      .section-head h2 {
+        margin: 0;
+        font-size: 20px;
+        line-height: 1.2;
+      }
+
+      label.field { display: block; margin-bottom: 12px; }
+      label.field > .lbl {
         display: flex;
         justify-content: space-between;
-        gap: 8px;
-      }
-      .person-top { margin-bottom: 10px; }
-      .line-items { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; }
-      .line-items li, .summary-row, .note-chip { padding-top: 7px; border-top: 1px dashed var(--line); }
-      .order-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
-      .muted { color: var(--muted); }
-      .empty-state {
-        padding: 18px 14px;
-        border: 1px dashed var(--line);
-        border-radius: 8px;
-        background: rgba(255,255,255,.65);
-        color: var(--muted);
-        text-align: center;
-        font-weight: 700;
-      }
-      .pill {
-        display: inline-flex;
         align-items: center;
-        min-height: 30px;
-        padding: 0 10px;
-        border-radius: 999px;
-        background: var(--mint);
-        color: #216a4e;
         font-size: 12px;
         font-weight: 800;
+        color: var(--ink-2);
+        margin-bottom: 6px;
       }
+      label.field > .lbl .hint { color: var(--muted); font-weight: 500; }
+
+      /* ─── Buttons ──────────────────────────────────────── */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        min-height: 48px;
+        padding: 0 18px;
+        border-radius: 14px;
+        font-weight: 800;
+        font-size: 15px;
+        box-shadow: var(--shadow-sm);
+      }
+      .btn-primary {
+        background: var(--tomato);
+        color: #fff;
+        box-shadow: 0 3px 0 var(--tomato-dark);
+      }
+      .btn-primary:hover { background: #ee6b5f; }
+      .btn-primary:active { box-shadow: 0 1px 0 var(--tomato-dark); }
+      .btn-matcha {
+        background: var(--matcha);
+        color: #fff;
+        box-shadow: 0 3px 0 var(--matcha-dark);
+      }
+      .btn-matcha:hover { background: #6a9e44; }
+      .btn-secondary {
+        background: var(--cream-2);
+        color: var(--ink);
+      }
+      .btn-secondary:hover { background: #fceaa8; }
+      .btn-ghost {
+        background: transparent;
+        color: var(--ink-2);
+        box-shadow: inset 0 0 0 1.5px var(--line);
+        min-height: 42px;
+      }
+      .btn-ghost:hover { background: var(--cream); }
+      .btn-danger {
+        background: var(--tomato-soft);
+        color: var(--tomato-dark);
+      }
+      .btn-danger:hover { background: #fcd0c9; }
+      .btn-block { width: 100%; }
+      .btn-sm { min-height: 38px; padding: 0 12px; font-size: 13px; border-radius: 10px; }
+
+      .button-row { display: flex; gap: 10px; }
+      .button-row > * { flex: 1; }
+
+      /* ─── Upload ───────────────────────────────────────── */
+      .upload-row { display: flex; gap: 10px; margin-bottom: 12px; }
+      .upload-btn {
+        flex: 1;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 52px;
+        background: var(--paper);
+        border: 1.5px dashed var(--line);
+        border-radius: 14px;
+        font-weight: 700;
+        font-size: 14px;
+        color: var(--ink-2);
+        cursor: pointer;
+        transition: all .15s ease;
+      }
+      .upload-btn:hover { border-color: var(--matcha); background: var(--matcha-soft); color: var(--matcha-dark); }
+      .upload-btn input {
+        position: absolute;
+        opacity: 0;
+        width: 0; height: 0;
+        padding: 0; min-height: 0;
+      }
+      .upload-btn .emo { font-size: 18px; }
+
+      .menu-image-wrap {
+        position: relative;
+        min-height: 200px;
+        border-radius: var(--radius-md);
+        background:
+          repeating-linear-gradient(45deg, var(--cream) 0 8px, var(--paper) 8px 16px);
+        border: 1.5px dashed var(--line);
+        overflow: hidden;
+        display: grid;
+        place-items: center;
+        margin-bottom: 14px;
+      }
+      .menu-image-wrap img {
+        width: 100%;
+        height: auto;
+        display: block;
+        cursor: zoom-in;
+      }
+      .placeholder {
+        padding: 28px 20px;
+        text-align: center;
+        color: var(--muted);
+        font-weight: 600;
+      }
+      .placeholder .emo {
+        font-size: 38px;
+        display: block;
+        margin-bottom: 8px;
+      }
+      .image-tag {
+        position: absolute;
+        top: 10px; left: 10px;
+        padding: 4px 10px;
+        background: rgba(31,29,24,.8);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 700;
+        border-radius: 8px;
+        letter-spacing: .04em;
+      }
+
+      .help {
+        font-size: 12.5px;
+        color: var(--muted);
+        line-height: 1.55;
+        background: var(--cream);
+        padding: 10px 12px;
+        border-radius: 10px;
+        border-left: 3px solid var(--caramel);
+      }
+
+      /* ─── Order form ───────────────────────────────────── */
+      .my-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: var(--matcha-soft);
+        color: var(--matcha-dark);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .item-card {
+        background: var(--cream);
+        border: 1.5px solid var(--line-2);
+        border-radius: var(--radius-md);
+        padding: 12px;
+        margin-bottom: 10px;
+        position: relative;
+      }
+      .item-card .item-no {
+        position: absolute;
+        top: -8px; left: 12px;
+        background: var(--ink);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 900;
+        padding: 2px 8px;
+        border-radius: 999px;
+      }
+      .item-card .remove {
+        position: absolute;
+        top: 8px; right: 8px;
+        width: 30px; height: 30px;
+        display: grid; place-items: center;
+        border-radius: 999px;
+        background: var(--paper);
+        color: var(--tomato);
+        font-size: 16px;
+        box-shadow: var(--shadow-sm);
+      }
+      .item-card .remove:hover { background: var(--tomato-soft); }
+      .item-grid {
+        display: grid;
+        grid-template-columns: 1fr 110px;
+        gap: 10px;
+        margin-top: 6px;
+      }
+      .qty-stepper {
+        display: flex;
+        align-items: stretch;
+        background: var(--paper);
+        border: 1.5px solid var(--line);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        min-height: 46px;
+      }
+      .qty-stepper button {
+        width: 38px;
+        font-size: 18px;
+        font-weight: 900;
+        color: var(--matcha-dark);
+        background: var(--paper);
+        display: grid;
+        place-items: center;
+      }
+      .qty-stepper button:hover { background: var(--matcha-soft); }
+      .qty-stepper input {
+        flex: 1;
+        border: 0;
+        text-align: center;
+        font-weight: 800;
+        background: transparent;
+        min-height: 0;
+        padding: 0;
+        font-size: 15px;
+      }
+      .qty-stepper input:focus { box-shadow: none; }
+
+      .add-item-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        min-height: 50px;
+        background: var(--matcha-soft);
+        color: var(--matcha-dark);
+        border: 1.5px dashed var(--matcha);
+        border-radius: 14px;
+        font-weight: 800;
+        margin: 6px 0 16px;
+      }
+      .add-item-btn:hover { background: #d3e6bd; }
+
+      .quick-notes {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 8px;
+      }
+      .chip {
+        padding: 5px 10px;
+        background: var(--paper);
+        border: 1.5px solid var(--line);
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--ink-2);
+      }
+      .chip:hover { background: var(--caramel-soft); border-color: var(--caramel); }
+      .chip.is-on { background: var(--caramel); border-color: var(--caramel); color: #fff; }
+
+      .submit-bar {
+        position: sticky;
+        bottom: 8px;
+        z-index: 3;
+        margin-top: 20px;
+        padding: 8px;
+        background: rgba(255,255,255,.85);
+        backdrop-filter: blur(10px);
+        border-radius: 18px;
+        box-shadow: var(--shadow-md);
+      }
+
+      /* ─── Orders list ──────────────────────────────────── */
+      .order-card {
+        background: var(--paper);
+        border: 1.5px solid var(--line);
+        border-radius: var(--radius-md);
+        padding: 14px;
+        margin-bottom: 12px;
+        position: relative;
+        overflow: hidden;
+      }
+      .order-card.is-mine {
+        border-color: var(--matcha);
+        background: linear-gradient(180deg, var(--matcha-soft), var(--paper) 30%);
+      }
+      .order-card.is-mine::before {
+        content: "我";
+        position: absolute;
+        top: 12px; right: 12px;
+        background: var(--matcha);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 900;
+        padding: 2px 9px;
+        border-radius: 999px;
+      }
+      .order-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      .avatar {
+        width: 38px; height: 38px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-family: "Fraunces", serif;
+        font-weight: 900;
+        font-size: 16px;
+        color: #fff;
+        flex-shrink: 0;
+      }
+      .order-head .who {
+        flex: 1;
+        min-width: 0;
+      }
+      .order-head .name {
+        font-weight: 800;
+        font-size: 15px;
+      }
+      .order-head .note {
+        font-size: 12px;
+        color: var(--muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .order-total {
+        font-family: "Fraunces", serif;
+        font-weight: 900;
+        font-size: 18px;
+        color: var(--tomato-dark);
+      }
+
+      .line-items {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        border-top: 1px dashed var(--line);
+      }
+      .line-items li {
+        padding: 8px 0;
+        border-bottom: 1px dashed var(--line);
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+      }
+      .line-items li:last-child { border-bottom: 0; }
+      .line-items .item-name {
+        font-weight: 700;
+        font-size: 14px;
+      }
+      .line-items .item-note {
+        display: block;
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+      .line-items .item-price {
+        font-weight: 800;
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+      }
+      .line-items .qty {
+        color: var(--caramel);
+        font-weight: 800;
+      }
+
+      .order-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 12px;
+      }
+
+      .empty {
+        text-align: center;
+        padding: 36px 20px;
+        background: var(--cream);
+        border-radius: var(--radius-md);
+        color: var(--muted);
+      }
+      .empty .emo {
+        font-size: 44px;
+        display: block;
+        margin-bottom: 10px;
+      }
+      .empty strong { display: block; color: var(--ink-2); font-size: 15px; margin-bottom: 4px; }
+
+      /* ─── Summary ──────────────────────────────────────── */
+      .summary-card {
+        background: var(--paper);
+        border: 1.5px solid var(--line);
+        border-radius: var(--radius-md);
+        padding: 14px;
+        margin-bottom: 12px;
+      }
+      .summary-card h3 {
+        margin: 0 0 10px;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .summary-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 8px 0;
+        border-bottom: 1px dashed var(--line);
+        font-size: 14px;
+      }
+      .summary-row:last-child { border-bottom: 0; }
+      .summary-row .label-w {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+      }
+      .summary-row .qty-pill {
+        font-size: 11px;
+        font-weight: 800;
+        padding: 2px 7px;
+        background: var(--caramel-soft);
+        color: var(--caramel);
+        border-radius: 999px;
+      }
+      .summary-row b { font-variant-numeric: tabular-nums; }
+
+      .grand-total {
+        margin-top: 16px;
+        padding: 16px;
+        border-radius: var(--radius-md);
+        background: linear-gradient(135deg, var(--tomato), #f0735f);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .grand-total .gt-label { font-weight: 700; font-size: 14px; opacity: .92; }
+      .grand-total .gt-num {
+        font-family: "Fraunces", serif;
+        font-weight: 900;
+        font-size: 30px;
+        line-height: 1;
+      }
+
+      .note-line {
+        padding: 8px 0;
+        border-bottom: 1px dashed var(--line);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+      .note-line:last-child { border-bottom: 0; }
+      .note-line .who { font-weight: 800; color: var(--ink); }
+
+      /* ─── Lock toggle ──────────────────────────────────── */
+      .lock-toggle {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 14px;
+        background: var(--cream);
+        border-radius: var(--radius-md);
+        margin-bottom: 14px;
+      }
+      .lock-toggle.is-locked {
+        background: var(--tomato-soft);
+      }
+      .lock-toggle .lock-info { flex: 1; }
+      .lock-toggle .lock-title { font-weight: 800; font-size: 14px; }
+      .lock-toggle .lock-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+      .switch {
+        position: relative;
+        width: 50px; height: 28px;
+        background: var(--line);
+        border-radius: 999px;
+        transition: background .2s ease;
+        flex-shrink: 0;
+      }
+      .switch::after {
+        content: "";
+        position: absolute;
+        width: 22px; height: 22px;
+        top: 3px; left: 3px;
+        background: #fff;
+        border-radius: 50%;
+        box-shadow: 0 1px 3px rgba(0,0,0,.2);
+        transition: left .2s ease;
+      }
+      .switch.on { background: var(--tomato); }
+      .switch.on::after { left: 25px; }
+
+      .locked-banner {
+        display: none;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 14px;
+        background: var(--tomato-soft);
+        color: var(--tomato-dark);
+        border-radius: var(--radius-md);
+        margin-bottom: 14px;
+        font-weight: 700;
+        font-size: 14px;
+      }
+      .locked-banner.show { display: flex; }
+
+      /* ─── Toast & Modal ────────────────────────────────── */
       .toast {
         position: fixed;
         left: 50%;
-        bottom: 18px;
+        bottom: 24px;
         transform: translate(-50%, 120%);
-        width: min(360px, calc(100vw - 32px));
-        padding: 12px 14px;
-        border-radius: 8px;
+        padding: 12px 18px;
         background: var(--ink);
         color: #fff;
-        text-align: center;
-        font-weight: 800;
+        border-radius: 14px;
+        font-weight: 700;
+        font-size: 14px;
+        box-shadow: 0 12px 30px rgba(0,0,0,.3);
+        z-index: 100;
         opacity: 0;
-        transition: 180ms ease;
-        z-index: 20;
+        transition: all .25s cubic-bezier(.2,.9,.3,1.2);
+        max-width: calc(100vw - 32px);
+        text-align: center;
       }
       .toast.show { opacity: 1; transform: translate(-50%, 0); }
+      .toast.success { background: var(--matcha-dark); }
+      .toast.error { background: var(--tomato-dark); }
+
       .modal {
         position: fixed;
         inset: 0;
+        background: rgba(0,0,0,.92);
+        z-index: 200;
         display: none;
-        background: rgba(0,0,0,.88);
-        z-index: 30;
         overflow: auto;
+        padding: 20px;
       }
-      .modal.show { display: block; }
-      .modal img { width: 100%; height: auto; display: block; }
-      .modal button { position: sticky; top: 10px; left: calc(100% - 56px); margin: 10px; z-index: 31; }
-      .hidden-frame { display: none; }
-      @media (max-width: 430px) {
-        body { display: block; background: var(--paper); }
-        .phone-shell { min-height: 100vh; border: 0; box-shadow: none; }
+      .modal.show { display: block; animation: fadeUp .2s ease; }
+      .modal img { width: 100%; height: auto; border-radius: 12px; }
+      .modal-close {
+        position: fixed;
+        top: 20px; right: 20px;
+        width: 44px; height: 44px;
+        border-radius: 50%;
+        background: #fff;
+        color: var(--ink);
+        font-size: 22px;
+        display: grid;
+        place-items: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,.3);
+      }
+
+      .skeleton {
+        background: linear-gradient(90deg, var(--line-2) 0%, var(--cream) 50%, var(--line-2) 100%);
+        background-size: 200% 100%;
+        animation: shimmer 1.4s infinite;
+        border-radius: var(--radius-md);
+      }
+      @keyframes shimmer {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+      }
+
+      .hidden { display: none !important; }
+
+      iframe.hidden-frame {
+        position: absolute;
+        width: 0; height: 0;
+        border: 0;
+        opacity: 0;
+      }
+
+      /* ─── Onboarding bubble ───────────────────────────── */
+      .bubble {
+        background: var(--matcha);
+        color: #fff;
+        padding: 10px 14px;
+        border-radius: 14px;
+        font-size: 13px;
+        line-height: 1.5;
+        margin-bottom: 14px;
+        position: relative;
+      }
+      .bubble::before {
+        content: "💡";
+        margin-right: 4px;
+      }
+
+      /* ─── Confirm Sheet (送出前確認) ──────────────────── */
+      .sheet-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(31, 29, 24, .55);
+        backdrop-filter: blur(4px);
+        z-index: 150;
+        display: none;
+        opacity: 0;
+        transition: opacity .2s ease;
+      }
+      .sheet-backdrop.show { display: block; opacity: 1; }
+
+      .sheet {
+        position: fixed;
+        left: 0; right: 0; bottom: 0;
+        z-index: 151;
+        background: var(--paper);
+        border-radius: 28px 28px 0 0;
+        max-height: 90vh;
+        overflow: auto;
+        transform: translateY(100%);
+        transition: transform .28s cubic-bezier(.2,.9,.3,1);
+        padding: 8px 18px 24px;
+        box-shadow: 0 -12px 40px rgba(0,0,0,.18);
+      }
+      .sheet.show { transform: translateY(0); }
+      .sheet-handle {
+        width: 40px; height: 4px;
+        background: var(--line);
+        border-radius: 999px;
+        margin: 8px auto 14px;
+      }
+      .sheet-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 14px;
+      }
+      .sheet-header .avatar {
+        width: 44px; height: 44px;
+        font-size: 18px;
+      }
+      .sheet-header .name {
+        font-family: "Fraunces", serif;
+        font-weight: 900;
+        font-size: 20px;
+        line-height: 1.1;
+      }
+      .sheet-header .note {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 3px;
+      }
+      .preview-item {
+        background: var(--cream);
+        border-radius: 12px;
+        padding: 10px 12px;
+        margin-bottom: 8px;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+      }
+      .preview-item .pi-name {
+        font-weight: 700;
+        font-size: 14px;
+      }
+      .preview-item .pi-meta {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+      .preview-item .pi-price {
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+      .preview-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px;
+        background: linear-gradient(135deg, var(--tomato), #f0735f);
+        color: #fff;
+        border-radius: 14px;
+        margin: 12px 0 16px;
+      }
+      .preview-total .label { font-weight: 700; font-size: 13px; opacity: .9; }
+      .preview-total .num {
+        font-family: "Fraunces", serif;
+        font-weight: 900;
+        font-size: 26px;
+        line-height: 1;
+      }
+
+      /* ─── End-team Final Receipt ──────────────────────── */
+      .receipt-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(31, 29, 24, .92);
+        z-index: 180;
+        display: none;
+        overflow: auto;
+        padding: 20px;
+        animation: fadeUp .25s ease;
+      }
+      .receipt-overlay.show { display: block; }
+      .receipt-overlay-top {
+        max-width: 460px;
+        margin: 0 auto 12px;
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .receipt-overlay-top button {
+        background: #fff;
+        color: var(--ink);
+        padding: 10px 14px;
+        border-radius: 999px;
+        font-weight: 800;
+        font-size: 13px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 4px 12px rgba(0,0,0,.25);
+      }
+      .receipt-overlay-top button.ghost {
+        background: rgba(255,255,255,.18);
+        color: #fff;
+        backdrop-filter: blur(8px);
+      }
+
+      .receipt {
+        max-width: 460px;
+        margin: 0 auto;
+        background:
+          linear-gradient(180deg, #fff 0%, #fffaee 100%);
+        border-radius: 20px;
+        padding: 24px 22px 18px;
+        box-shadow: 0 30px 80px rgba(0,0,0,.4);
+        position: relative;
+      }
+      .receipt::before, .receipt::after {
+        content: "";
+        position: absolute;
+        left: 0; right: 0;
+        height: 14px;
+        background:
+          radial-gradient(circle at 12px 0, transparent 7px, #fff 8px) 0 0/24px 14px repeat-x;
+      }
+      .receipt::before { top: -1px; transform: rotate(180deg); background-color: transparent; }
+      .receipt::after { bottom: -1px; }
+      .receipt-head {
+        text-align: center;
+        padding-bottom: 14px;
+        border-bottom: 2px dashed var(--line);
+        margin-bottom: 14px;
+      }
+      .receipt-head .stamp {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 12px;
+        background: var(--matcha);
+        color: #fff;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: .12em;
+        margin-bottom: 8px;
+        transform: rotate(-2deg);
+      }
+      .receipt-head h2 {
+        font-family: "Fraunces", serif;
+        font-weight: 900;
+        font-size: 26px;
+        line-height: 1.1;
+        margin: 0 0 4px;
+        letter-spacing: -.02em;
+      }
+      .receipt-head .when {
+        font-size: 12px;
+        color: var(--muted);
+        font-feature-settings: "tnum";
+      }
+
+      .receipt-section {
+        margin-bottom: 16px;
+      }
+      .receipt-section-title {
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: .14em;
+        color: var(--tomato);
+        text-transform: uppercase;
+        margin-bottom: 8px;
+        padding-bottom: 4px;
+        border-bottom: 1px solid var(--line);
+      }
+      .receipt-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 5px 0;
+        font-size: 14px;
+        font-variant-numeric: tabular-nums;
+      }
+      .receipt-row .ri-name { display: flex; align-items: center; gap: 8px; }
+      .receipt-row .ri-qty {
+        font-size: 11px;
+        font-weight: 800;
+        padding: 1px 7px;
+        background: var(--caramel-soft);
+        color: var(--caramel);
+        border-radius: 999px;
+      }
+      .receipt-person-row .avatar {
+        width: 24px; height: 24px;
+        font-size: 11px;
+      }
+      .receipt-note {
+        font-size: 12px;
+        line-height: 1.6;
+        padding: 4px 0;
+        border-bottom: 1px dashed var(--line);
+        color: var(--ink-2);
+      }
+      .receipt-note:last-child { border-bottom: 0; }
+      .receipt-note .who { font-weight: 800; color: var(--ink); }
+      .receipt-grand {
+        margin-top: 16px;
+        padding: 16px 18px;
+        background: var(--ink);
+        color: #fff;
+        border-radius: 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .receipt-grand .gl { font-size: 13px; font-weight: 700; opacity: .85; }
+      .receipt-grand .gn {
+        font-family: "Fraunces", serif;
+        font-weight: 900;
+        font-size: 30px;
+        line-height: 1;
+      }
+      .receipt-foot {
+        text-align: center;
+        margin-top: 16px;
+        padding-top: 12px;
+        border-top: 2px dashed var(--line);
+        font-size: 11px;
+        color: var(--muted);
+        letter-spacing: .1em;
+      }
+
+      /* End-team button on summary page */
+      .end-team-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        min-height: 56px;
+        background: var(--ink);
+        color: #fff;
+        border-radius: 16px;
+        font-weight: 900;
+        font-size: 16px;
+        margin-top: 14px;
+        box-shadow: 0 4px 0 #0a0907;
+      }
+      .end-team-btn:hover { background: #2a2620; }
+      .end-team-btn:active { box-shadow: 0 1px 0 #0a0907; }
+
+      @media (max-width: 380px) {
+        .stat-num { font-size: 19px; }
+        .group-title { font-size: 22px; }
       }
     </style>
   </head>
   <body>
-    <main class="phone-shell" aria-label="多人點餐系統">
-      <header class="app-header">
-        <div>
-          <h1>多人點餐</h1>
+    <main class="shell" aria-label="揪團點餐">
+      <!-- ─── HERO ────────────────────────────────────── -->
+      <header class="hero">
+        <div class="hero-top">
+          <div class="brand">
+            <div class="brand-emoji">🍱</div>
+            <div class="brand-text">
+              <div class="label">Let's Eat</div>
+              <h1 class="display">揪團點餐</h1>
+            </div>
+          </div>
+          <button class="icon-btn" id="shareBtn" type="button" aria-label="複製分享連結">🔗</button>
         </div>
-        <button class="icon-button" id="shareBtn" type="button" aria-label="複製分享網址">↗</button>
+
+        <div class="group-title display" id="heroGroupTitle">未命名訂餐團</div>
+
+        <div class="stats">
+          <div class="stat people">
+            <div class="stat-num" id="peopleCount">0</div>
+            <div class="stat-label">🧑 人</div>
+          </div>
+          <div class="stat">
+            <div class="stat-num" id="itemCount">0</div>
+            <div class="stat-label">🥢 份</div>
+          </div>
+          <div class="stat money">
+            <div class="stat-num" id="totalPrice">$0</div>
+            <div class="stat-label">💰 共</div>
+          </div>
+        </div>
       </header>
 
-      <section class="status-strip">
-        <div><strong id="peopleCount">0</strong><span>人已點</span></div>
-        <div><strong id="itemCount">0</strong><span>份餐點</span></div>
-        <div><strong id="totalPrice">$0</strong><span>目前總額</span></div>
-      </section>
+      <!-- ─── SYNC BAR ────────────────────────────────── -->
+      <div class="sync-bar">
+        <div class="dot" id="syncDot"></div>
+        <span id="syncText">已同步</span>
+        <span class="grow"></span>
+        <button id="refreshBtn" type="button">🔄 重新整理</button>
+      </div>
 
-      <nav class="tabs">
-        <button class="tab is-active" type="button" data-view="setup">建立</button>
-        <button class="tab" type="button" data-view="order">點餐</button>
-        <button class="tab" type="button" data-view="mine">個人</button>
-        <button class="tab" type="button" data-view="summary">統計</button>
+      <!-- ─── TABS ────────────────────────────────────── -->
+      <nav class="tabs" role="tablist">
+        <button class="tab is-active" type="button" data-view="setup" role="tab">
+          <span class="tab-emoji">⚙️</span>
+          <span>建立</span>
+        </button>
+        <button class="tab" type="button" data-view="order" role="tab">
+          <span class="tab-emoji">📝</span>
+          <span>點餐</span>
+        </button>
+        <button class="tab" type="button" data-view="mine" role="tab">
+          <span class="tab-emoji">🧾</span>
+          <span>訂單</span>
+          <span class="badge hidden" id="ordersBadge">0</span>
+        </button>
+        <button class="tab" type="button" data-view="summary" role="tab">
+          <span class="tab-emoji">📊</span>
+          <span>統計</span>
+        </button>
       </nav>
 
-      <section class="view is-active" id="view-setup">
-        <div class="section-heading">
-          <div><p class="eyebrow">主揪</p><h2>建立訂餐團</h2></div>
-          <button class="small-button" id="copyLinkBtn" type="button">複製網址</button>
-        </div>
-        <div class="form-grid">
-          <label><span>店名 / 訂餐團名稱</span><input id="groupTitleInput" type="text" placeholder="例如：五十嵐下午茶" /></label>
-          <div class="button-row">
-            <label class="upload-button"><input id="cameraInput" type="file" accept="image/*" capture="environment" />拍照</label>
-            <label class="upload-button"><input id="albumInput" type="file" accept="image/*" />相簿</label>
+      <!-- ─── VIEW: SETUP ─────────────────────────────── -->
+      <section class="view is-active" id="view-setup" role="tabpanel">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">第一步</span>
+            <h2 class="display">建立訂餐團</h2>
           </div>
-          <div class="menu-image-wrap" id="menuImageWrap"><div class="image-placeholder">菜單圖片會顯示在這裡。點圖片可放大。</div></div>
-          <button class="primary-button" id="saveGroupBtn" type="button">儲存並產生網址</button>
-          <p class="help-text">菜單圖片會壓縮後以 B64 分段存到 Google 試算表，訂單也會記錄到同一份試算表。分享網址後，大家只要看圖自己填餐點和價格。</p>
+          <button class="btn btn-ghost btn-sm" id="copyLinkBtn" type="button">📋 複製</button>
         </div>
+
+        <label class="field">
+          <span class="lbl">店名 / 團名 <span class="hint">必填</span></span>
+          <input id="groupTitleInput" type="text" placeholder="例如：五十嵐下午茶 🧋" maxlength="40" />
+        </label>
+
+        <label class="field">
+          <span class="lbl">菜單照片 <span class="hint">大家會看這張下單</span></span>
+        </label>
+        <div class="upload-row">
+          <label class="upload-btn">
+            <input id="cameraInput" type="file" accept="image/*" capture="environment" />
+            <span class="emo">📸</span> 拍照
+          </label>
+          <label class="upload-btn">
+            <input id="albumInput" type="file" accept="image/*" />
+            <span class="emo">🖼️</span> 相簿
+          </label>
+        </div>
+
+        <div class="menu-image-wrap" id="menuImageWrap">
+          <div class="placeholder">
+            <span class="emo">🍜</span>
+            菜單會顯示在這裡<br/>
+            <small>大家點開連結後就能看到</small>
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-block" id="saveGroupBtn" type="button">
+          ✨ 儲存並產生分享連結
+        </button>
+
+        <p class="help" style="margin-top:14px">
+          儲存後分享連結給大家，他們開啟就能填餐點。資料會自動同步，主揪在「統計」頁可看到全部結果。
+        </p>
       </section>
 
-      <section class="view" id="view-order">
-        <div class="section-heading">
-          <div><p class="eyebrow">大家填寫</p><h2>我的點餐</h2></div>
-          <span class="pill" id="lockStatus">開放中</span>
+      <!-- ─── VIEW: ORDER ─────────────────────────────── -->
+      <section class="view" id="view-order" role="tabpanel">
+        <div class="locked-banner" id="lockedBanner">
+          🔒 主揪已鎖單，目前無法新增訂單
         </div>
-        <div class="menu-image-wrap" id="orderMenuImageWrap"><div class="image-placeholder">主揪尚未上傳菜單圖片。</div></div>
-        <form class="form-grid" id="orderForm">
-          <label><span>名字或代號</span><input id="personName" type="text" placeholder="例如：小明、1號、A車" /></label>
-          <label><span>個人備註</span><input id="personNote" type="text" placeholder="例如：一起付款、不要香菜" /></label>
-          <div class="order-items" id="orderItems"></div>
-          <button class="small-button" id="addItemBtn" type="button">新增一個餐點</button>
-          <button class="primary-button" id="submitOrderBtn" type="submit">送出訂單</button>
+
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">第二步</span>
+            <h2 class="display">我要點餐</h2>
+          </div>
+          <span class="my-tag" id="myTag">🧑 新點餐</span>
+        </div>
+
+        <div class="menu-image-wrap" id="orderMenuImageWrap">
+          <div class="placeholder">
+            <span class="emo">📋</span>
+            主揪還沒上傳菜單
+          </div>
+        </div>
+
+        <form id="orderForm">
+          <label class="field">
+            <span class="lbl">你的名字 <span class="hint">同伴會看到</span></span>
+            <input id="personName" type="text" placeholder="例如：小明、A車、1號" maxlength="20" autocomplete="nickname" />
+          </label>
+
+          <label class="field">
+            <span class="lbl">整單備註 <span class="hint">可不填</span></span>
+            <input id="personNote" type="text" placeholder="例如：可一起付、要統一發票" maxlength="60" />
+          </label>
+
+          <div id="orderItems"></div>
+
+          <button class="add-item-btn" type="button" id="addItemBtn">
+            ➕ 再點一份
+          </button>
+
+          <div class="submit-bar">
+            <button class="btn btn-primary btn-block" type="submit" id="submitOrderBtn">
+              🚀 送出訂單
+            </button>
+          </div>
         </form>
       </section>
 
-      <section class="view" id="view-mine">
-        <div class="section-heading">
-          <div><p class="eyebrow">可修改</p><h2>個人訂單</h2></div>
-          <span class="pill">編輯 / 刪除</span>
+      <!-- ─── VIEW: MINE / ALL ORDERS ─────────────────── -->
+      <section class="view" id="view-mine" role="tabpanel">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">即時更新</span>
+            <h2 class="display">所有訂單</h2>
+          </div>
+          <span class="my-tag">🟢 同步中</span>
         </div>
-        <div class="orders" id="personOrders"></div>
+        <div id="personOrders"></div>
       </section>
 
-      <section class="view" id="view-summary">
-        <div class="section-heading">
-          <div><p class="eyebrow">主揪統計</p><h2>全部統計</h2></div>
-          <button class="small-button" id="copySummaryBtn" type="button">複製叫餐文字</button>
+      <!-- ─── VIEW: SUMMARY ───────────────────────────── -->
+      <section class="view" id="view-summary" role="tabpanel">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">主揪專用</span>
+            <h2 class="display">叫餐統計</h2>
+          </div>
+          <button class="btn btn-secondary btn-sm" id="copySummaryBtn" type="button">📋 複製</button>
         </div>
-        <div class="summary-block"><h3>依餐點統計</h3><div id="itemSummary"></div></div>
-        <div class="summary-block"><h3>依個人統計</h3><div id="personSummary"></div></div>
-        <div class="summary-block"><h3>備註彙整</h3><div id="noteSummary"></div></div>
+
+        <!-- 鎖單開關 -->
+        <div class="lock-toggle" id="lockToggle">
+          <div class="lock-info">
+            <div class="lock-title">🔒 鎖單</div>
+            <div class="lock-desc" id="lockDesc">開放中，大家可以繼續送單</div>
+          </div>
+          <div class="switch" id="lockSwitch"></div>
+        </div>
+
+        <div class="summary-card">
+          <h3>🥢 依餐點</h3>
+          <div id="itemSummary"></div>
+        </div>
+
+        <div class="summary-card">
+          <h3>🧑 依個人</h3>
+          <div id="personSummary"></div>
+        </div>
+
+        <div class="summary-card">
+          <h3>💬 備註</h3>
+          <div id="noteSummary"></div>
+        </div>
+
+        <div class="grand-total">
+          <div>
+            <div class="gt-label">總共要付</div>
+            <div class="gt-num" id="grandTotal">$0</div>
+          </div>
+          <div style="font-size:46px">💸</div>
+        </div>
+
+        <button class="end-team-btn" type="button" id="endTeamBtn">
+          🎀 結團 · 出彙整頁
+        </button>
       </section>
     </main>
 
-    <div class="modal" id="imageModal"><button class="icon-button" id="closeModalBtn" type="button">×</button><img id="modalImage" alt="放大的菜單" /></div>
+    <!-- ─── Image Modal ─────────────────────────────── -->
+    <div class="modal" id="imageModal">
+      <button class="modal-close" id="closeModalBtn" type="button">✕</button>
+      <img id="modalImage" alt="放大的菜單" />
+    </div>
+
+    <!-- ─── Confirm Sheet (送出前確認) ──────────────── -->
+    <div class="sheet-backdrop" id="confirmBackdrop"></div>
+    <div class="sheet" id="confirmSheet" role="dialog" aria-modal="true">
+      <div class="sheet-handle"></div>
+      <div class="section-head" style="margin-bottom:6px">
+        <div>
+          <span class="eyebrow" id="confirmEyebrow">送出前確認</span>
+          <h2 class="display" id="confirmTitle">確認訂單</h2>
+        </div>
+      </div>
+      <div class="sheet-header" id="confirmHeader"></div>
+      <div id="confirmItems"></div>
+      <div class="preview-total">
+        <div>
+          <div class="label">這筆訂單</div>
+          <div class="num" id="confirmTotal">$0</div>
+        </div>
+        <div style="font-size:36px">🧾</div>
+      </div>
+      <div class="button-row">
+        <button class="btn btn-ghost" type="button" id="confirmCancelBtn">← 再改一下</button>
+        <button class="btn btn-primary" type="button" id="confirmOkBtn">✓ 確認送出</button>
+      </div>
+    </div>
+
+    <!-- ─── End-team Final Receipt ──────────────────── -->
+    <div class="receipt-overlay" id="receiptOverlay">
+      <div class="receipt-overlay-top">
+        <button class="ghost" type="button" id="receiptCloseBtn">← 返回</button>
+        <button type="button" id="receiptCopyBtn">📋 複製文字</button>
+      </div>
+      <div class="receipt" id="receiptCard">
+        <div class="receipt-head">
+          <div class="stamp">✓ 已結團</div>
+          <h2 id="receiptTitle">未命名訂餐團</h2>
+          <div class="when" id="receiptWhen"></div>
+        </div>
+
+        <div class="receipt-section">
+          <div class="receipt-section-title">🥢 餐點清單</div>
+          <div id="receiptItems"></div>
+        </div>
+
+        <div class="receipt-section">
+          <div class="receipt-section-title">🧑 每人金額</div>
+          <div id="receiptPeople"></div>
+        </div>
+
+        <div class="receipt-section" id="receiptNotesSection">
+          <div class="receipt-section-title">💬 備註</div>
+          <div id="receiptNotes"></div>
+        </div>
+
+        <div class="receipt-grand">
+          <div>
+            <div class="gl">總計</div>
+            <div class="gn" id="receiptGrand">$0</div>
+          </div>
+          <div style="font-size:36px">💰</div>
+        </div>
+
+        <div class="receipt-foot">— 截圖傳 LINE 給大家 —</div>
+      </div>
+    </div>
+
+    <!-- ─── Toast ───────────────────────────────────── -->
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
     <iframe class="hidden-frame" name="uploadFrame" id="uploadFrame"></iframe>
+
     <script>
+      // ════════════════════════════════════════════════════
+      //  Config
+      // ════════════════════════════════════════════════════
       const API_URL = "https://script.google.com/macros/s/AKfycbxugZM52HlLboXW9c3MIS-331D9t6CB5hA6cXHXKekcmQURmYfIoNyIsdKKFD1CZKK_Bw/exec";
+      const POLL_INTERVAL = 8000;   // 自動同步間隔（毫秒）
+      const STORAGE_PREFIX = "orderApp.v2.";
+      const QUICK_NOTES = ["半糖", "少糖", "去冰", "微冰", "熱的", "不要香菜", "加辣", "不辣"];
+      const AVATAR_COLORS = [
+        "#e85a4f", "#5c8a3a", "#d4a05c", "#4a90a4",
+        "#a8456b", "#8b5cf6", "#0891b2", "#ea580c",
+        "#65a30d", "#dc2626", "#0284c7", "#9333ea"
+      ];
+
+      // ════════════════════════════════════════════════════
+      //  State
+      // ════════════════════════════════════════════════════
       const params = new URLSearchParams(location.search);
       const state = {
         groupId: params.get("group") || crypto.randomUUID(),
         title: params.get("title") || "未命名訂餐團",
         imageUrl: "",
-        imageFileId: "",
         selectedImageFile: null,
         selectedImageDataUrl: "",
         locked: false,
         orders: [],
         draftItems: [],
-        editingOrderId: ""
+        editingOrderId: "",
+        myOrderIds: [],     // 我送過的訂單 id（存 localStorage）
+        lastSync: 0,
+        syncing: false,
+        pollTimer: null,
+        version: 0          // 偵測有無新資料
       };
 
-      const $ = (selector) => document.querySelector(selector);
-      const $$ = (selector) => Array.from(document.querySelectorAll(selector));
-      const money = (value) => `$${Number(value || 0).toLocaleString("zh-TW")}`;
+      // ════════════════════════════════════════════════════
+      //  Helpers
+      // ════════════════════════════════════════════════════
+      const $ = (s) => document.querySelector(s);
+      const $$ = (s) => Array.from(document.querySelectorAll(s));
+      const money = (v) => `$${Number(v || 0).toLocaleString("zh-TW")}`;
 
       function escapeHtml(value) {
-        return String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+        return String(value ?? "")
+          .replaceAll("&", "&amp;").replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;").replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
       }
 
-      function showToast(message) {
-        const toast = $("#toast");
-        toast.textContent = message;
-        toast.classList.add("show");
-        setTimeout(() => toast.classList.remove("show"), 1800);
+      function hashStr(s) {
+        let h = 0;
+        for (let i = 0; i < s.length; i++) h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+        return Math.abs(h);
+      }
+      function colorFor(name) {
+        return AVATAR_COLORS[hashStr(name || "?") % AVATAR_COLORS.length];
+      }
+      function initialOf(name) {
+        const t = (name || "?").trim();
+        return t ? Array.from(t)[0].toUpperCase() : "?";
       }
 
+      function storageKey(suffix) {
+        return STORAGE_PREFIX + state.groupId + "." + suffix;
+      }
+      function loadFromStorage() {
+        try {
+          const ids = JSON.parse(localStorage.getItem(storageKey("myOrderIds")) || "[]");
+          state.myOrderIds = Array.isArray(ids) ? ids : [];
+          const name = localStorage.getItem(storageKey("myName")) || "";
+          if (name) $("#personName").value = name;
+        } catch (e) { /* ignore */ }
+      }
+      function saveMyOrderId(id) {
+        if (!state.myOrderIds.includes(id)) state.myOrderIds.push(id);
+        try {
+          localStorage.setItem(storageKey("myOrderIds"), JSON.stringify(state.myOrderIds));
+        } catch (e) {}
+      }
+      function removeMyOrderId(id) {
+        state.myOrderIds = state.myOrderIds.filter(x => x !== id);
+        try {
+          localStorage.setItem(storageKey("myOrderIds"), JSON.stringify(state.myOrderIds));
+        } catch (e) {}
+      }
+
+      function showToast(message, kind = "default") {
+        const el = $("#toast");
+        el.textContent = message;
+        el.className = "toast show " + kind;
+        clearTimeout(showToast._t);
+        showToast._t = setTimeout(() => el.classList.remove("show"), 2200);
+      }
+
+      function setSyncState(kind, text) {
+        const dot = $("#syncDot");
+        dot.className = "dot " + (kind === "ok" ? "" : kind);
+        $("#syncText").textContent = text;
+      }
+
+      // ════════════════════════════════════════════════════
+      //  API
+      // ════════════════════════════════════════════════════
       function callApi(action, payload = {}) {
-        const callback = `gasCallback_${Date.now()}_${Math.random().toString(16).slice(2)}`;
-        const query = new URLSearchParams({ action, payload: JSON.stringify(payload), callback });
+        const cb = `gasCb_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+        const q = new URLSearchParams({ action, payload: JSON.stringify(payload), callback: cb });
         return new Promise((resolve, reject) => {
           const script = document.createElement("script");
-          const timer = setTimeout(() => {
-            cleanup();
-            reject(new Error("GAS 回應逾時"));
-          }, 15000);
+          const timer = setTimeout(() => { cleanup(); reject(new Error("連線逾時")); }, 15000);
           function cleanup() {
             clearTimeout(timer);
-            delete window[callback];
+            delete window[cb];
             script.remove();
           }
-          window[callback] = (result) => {
+          window[cb] = (result) => {
             cleanup();
-            result?.ok ? resolve(result) : reject(new Error(result?.message || "GAS 呼叫失敗"));
+            result?.ok ? resolve(result) : reject(new Error(result?.message || "呼叫失敗"));
           };
-          script.onerror = () => {
-            cleanup();
-            reject(new Error("無法連線到 GAS"));
-          };
-          script.src = `${API_URL}?${query.toString()}`;
+          script.onerror = () => { cleanup(); reject(new Error("無法連線")); };
+          script.src = `${API_URL}?${q.toString()}`;
           document.body.appendChild(script);
         });
       }
@@ -392,19 +1615,17 @@
         return new Promise((resolve, reject) => {
           const requestId = `post_${Date.now()}_${Math.random().toString(16).slice(2)}`;
           const timer = setTimeout(() => {
-            window.removeEventListener("message", onMessage);
-            reject(new Error("上傳逾時，請換較小或較清楚的圖片"));
+            window.removeEventListener("message", onMsg);
+            reject(new Error("上傳逾時，換張小一點的圖試試"));
           }, 45000);
-
-          function onMessage(event) {
+          function onMsg(event) {
             const data = event.data || {};
             if (data.requestId !== requestId) return;
             clearTimeout(timer);
-            window.removeEventListener("message", onMessage);
+            window.removeEventListener("message", onMsg);
             data.ok ? resolve(data) : reject(new Error(data.message || "上傳失敗"));
           }
-
-          window.addEventListener("message", onMessage);
+          window.addEventListener("message", onMsg);
           const form = document.createElement("form");
           form.method = "POST";
           form.action = API_URL;
@@ -422,264 +1643,623 @@
 
       function compressImage(file) {
         return new Promise((resolve, reject) => {
-          const image = new Image();
-          image.onload = () => {
+          const img = new Image();
+          img.onload = () => {
             const maxSide = 1000;
-            const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
-            const canvas = document.createElement("canvas");
-            canvas.width = Math.round(image.width * scale);
-            canvas.height = Math.round(image.height * scale);
-            const ctx = canvas.getContext("2d");
-            ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-            resolve(canvas.toDataURL("image/jpeg", .58));
+            const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+            const c = document.createElement("canvas");
+            c.width = Math.round(img.width * scale);
+            c.height = Math.round(img.height * scale);
+            c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+            resolve(c.toDataURL("image/jpeg", .6));
           };
-          image.onerror = reject;
-          image.src = URL.createObjectURL(file);
+          img.onerror = reject;
+          img.src = URL.createObjectURL(file);
         });
       }
 
+      // ════════════════════════════════════════════════════
+      //  URL & sharing
+      // ════════════════════════════════════════════════════
       function shareUrl() {
-        const url = new URL(location.href);
-        url.searchParams.set("group", state.groupId);
-        url.searchParams.set("title", state.title);
-        return url.toString();
+        const u = new URL(location.href);
+        u.searchParams.set("group", state.groupId);
+        u.searchParams.set("title", state.title);
+        return u.toString();
       }
-
       function shareText() {
-        return `${state.title}\n${shareUrl()}`;
+        return `🍱 ${state.title}\n👉 點我加入：${shareUrl()}`;
       }
-
-      async function copyText(text, successMessage) {
+      async function copyText(text, successMsg) {
         try {
           await navigator.clipboard.writeText(text);
-          showToast(successMessage);
+          showToast(successMsg, "success");
         } catch {
           window.prompt("複製這段文字", text);
-          showToast("已產生文字，可手動複製");
+          showToast("可手動複製");
         }
       }
-
       function updateUrl() {
-        const url = new URL(location.href);
-        url.searchParams.set("group", state.groupId);
-        url.searchParams.set("title", state.title);
-        history.replaceState(null, "", url.toString());
+        const u = new URL(location.href);
+        u.searchParams.set("group", state.groupId);
+        u.searchParams.set("title", state.title);
+        history.replaceState(null, "", u.toString());
       }
 
-      function getOrderTotal(order) {
-        return order.items.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.qty), 0);
+      // ════════════════════════════════════════════════════
+      //  Calc
+      // ════════════════════════════════════════════════════
+      function orderTotal(o) {
+        return o.items.reduce((s, i) => s + Number(i.price || 0) * Number(i.qty || 0), 0);
       }
-
-      function allItemCount() {
-        return state.orders.reduce((sum, order) => sum + order.items.reduce((s, item) => s + Number(item.qty), 0), 0);
+      function totalQty() {
+        return state.orders.reduce((s, o) => s + o.items.reduce((x, i) => x + Number(i.qty || 0), 0), 0);
       }
-
       function grandTotal() {
-        return state.orders.reduce((sum, order) => sum + getOrderTotal(order), 0);
+        return state.orders.reduce((s, o) => s + orderTotal(o), 0);
       }
+      function isMyOrder(id) { return state.myOrderIds.includes(id); }
 
-      function updateStatus() {
+      // ════════════════════════════════════════════════════
+      //  Renderers
+      // ════════════════════════════════════════════════════
+      function renderStats() {
         $("#peopleCount").textContent = state.orders.length;
-        $("#itemCount").textContent = allItemCount();
+        $("#itemCount").textContent = totalQty();
         $("#totalPrice").textContent = money(grandTotal());
-        $("#lockStatus").textContent = state.locked ? "已鎖單" : "開放中";
+        $("#heroGroupTitle").textContent = state.title;
+
+        const mineCount = state.orders.filter(o => isMyOrder(o.id)).length;
+        const badge = $("#ordersBadge");
+        if (state.orders.length > 0) {
+          badge.classList.remove("hidden");
+          badge.textContent = state.orders.length;
+        } else {
+          badge.classList.add("hidden");
+        }
       }
 
       function renderMenuImage() {
         const src = state.selectedImageDataUrl || state.imageUrl;
-        const html = src
-          ? `<img src="${src}" alt="菜單圖片" data-menu-image />`
-          : '<div class="image-placeholder">菜單圖片會顯示在這裡。點圖片可放大。</div>';
-        $("#menuImageWrap").innerHTML = html;
-        $("#orderMenuImageWrap").innerHTML = src ? `<img src="${src}" alt="菜單圖片" data-menu-image />` : '<div class="image-placeholder">主揪尚未上傳菜單圖片。</div>';
-        $$("[data-menu-image]").forEach((img) => img.addEventListener("click", () => openImageModal(img.src)));
+        const wrap1 = $("#menuImageWrap");
+        const wrap2 = $("#orderMenuImageWrap");
+        if (src) {
+          const tag = state.selectedImageDataUrl ? '<div class="image-tag">尚未儲存</div>' : '';
+          wrap1.innerHTML = `${tag}<img src="${src}" alt="菜單" data-menu-image />`;
+          wrap2.innerHTML = `<img src="${src}" alt="菜單" data-menu-image />`;
+        } else {
+          wrap1.innerHTML = '<div class="placeholder"><span class="emo">🍜</span>菜單會顯示在這裡<br/><small>大家點開連結後就能看到</small></div>';
+          wrap2.innerHTML = '<div class="placeholder"><span class="emo">📋</span>主揪還沒上傳菜單</div>';
+        }
+        $$("[data-menu-image]").forEach(img => img.addEventListener("click", () => openImageModal(img.src)));
       }
 
       function renderDraftItems() {
-        if (!state.draftItems.length) state.draftItems.push({ name: "", price: "", qty: 1, note: "" });
-        $("#orderItems").innerHTML = state.draftItems.map((item, index) => `
-          <div class="entry-card" data-index="${index}">
-            <label><span>商品</span><input data-field="name" value="${escapeHtml(item.name)}" placeholder="例如：珍珠奶茶" /></label>
-            <label><span>價格</span><input data-field="price" type="number" min="0" value="${escapeHtml(item.price)}" placeholder="可不填" /></label>
-            <button class="danger-button" type="button" data-action="remove">×</button>
-            <label><span>數量</span><input data-field="qty" type="number" min="1" value="${escapeHtml(item.qty || 1)}" /></label>
-            <textarea data-field="note" placeholder="單品備註，例如：半糖去冰">${escapeHtml(item.note)}</textarea>
+        if (!state.draftItems.length) {
+          state.draftItems.push({ name: "", price: "", qty: 1, note: "" });
+        }
+        const box = $("#orderItems");
+        box.innerHTML = state.draftItems.map((item, idx) => `
+          <div class="item-card" data-idx="${idx}">
+            <div class="item-no">第 ${idx + 1} 樣</div>
+            ${state.draftItems.length > 1 ? `<button class="remove" data-act="remove" type="button" aria-label="刪除">✕</button>` : ''}
+            <label class="field" style="margin: 6px 0 8px">
+              <span class="lbl">餐點</span>
+              <input data-field="name" value="${escapeHtml(item.name)}" placeholder="例如：奶茶 / 雞腿便當" />
+            </label>
+            <div class="item-grid">
+              <label class="field" style="margin:0">
+                <span class="lbl">單價 <span class="hint">可不填</span></span>
+                <input data-field="price" type="number" min="0" inputmode="numeric" value="${escapeHtml(item.price)}" placeholder="0" />
+              </label>
+              <label class="field" style="margin:0">
+                <span class="lbl">數量</span>
+                <div class="qty-stepper">
+                  <button type="button" data-act="qty-" aria-label="減少">−</button>
+                  <input data-field="qty" type="number" min="1" value="${escapeHtml(item.qty || 1)}" inputmode="numeric" />
+                  <button type="button" data-act="qty+" aria-label="增加">+</button>
+                </div>
+              </label>
+            </div>
+            <label class="field" style="margin: 10px 0 0">
+              <span class="lbl">這份的備註 <span class="hint">點一下快選</span></span>
+              <input data-field="note" value="${escapeHtml(item.note)}" placeholder="例如：半糖去冰" />
+              <div class="quick-notes">
+                ${QUICK_NOTES.map(n => `<button class="chip" type="button" data-quick="${escapeHtml(n)}">${escapeHtml(n)}</button>`).join("")}
+              </div>
+            </label>
           </div>
         `).join("");
-        $$("#orderItems .entry-card").forEach((card) => {
-          const index = Number(card.dataset.index);
-          card.querySelectorAll("[data-field]").forEach((input) => {
+
+        $$("#orderItems .item-card").forEach(card => {
+          const idx = Number(card.dataset.idx);
+          card.querySelectorAll("[data-field]").forEach(input => {
             input.addEventListener("input", () => {
-              state.draftItems[index][input.dataset.field] = input.value;
-              updateDraftTotalLabel();
+              state.draftItems[idx][input.dataset.field] = input.value;
+              updateSubmitLabel();
             });
           });
-          card.querySelector('[data-action="remove"]').addEventListener("click", () => {
-            state.draftItems.splice(index, 1);
+          const removeBtn = card.querySelector('[data-act="remove"]');
+          if (removeBtn) removeBtn.addEventListener("click", () => {
+            state.draftItems.splice(idx, 1);
             renderDraftItems();
           });
+          card.querySelector('[data-act="qty-"]').addEventListener("click", () => {
+            const cur = Number(state.draftItems[idx].qty || 1);
+            state.draftItems[idx].qty = Math.max(1, cur - 1);
+            renderDraftItems();
+          });
+          card.querySelector('[data-act="qty+"]').addEventListener("click", () => {
+            const cur = Number(state.draftItems[idx].qty || 1);
+            state.draftItems[idx].qty = Math.min(99, cur + 1);
+            renderDraftItems();
+          });
+          card.querySelectorAll("[data-quick]").forEach(chip => {
+            chip.addEventListener("click", () => {
+              const noteInput = card.querySelector('[data-field="note"]');
+              const cur = noteInput.value.trim();
+              const v = chip.dataset.quick;
+              const parts = cur ? cur.split(/[\s,，、]+/).filter(Boolean) : [];
+              const i = parts.indexOf(v);
+              if (i >= 0) parts.splice(i, 1); else parts.push(v);
+              const newVal = parts.join(" ");
+              noteInput.value = newVal;
+              state.draftItems[idx].note = newVal;
+              chip.classList.toggle("is-on", parts.includes(v));
+            });
+            if ((state.draftItems[idx].note || "").includes(chip.dataset.quick)) {
+              chip.classList.add("is-on");
+            }
+          });
         });
-        updateDraftTotalLabel();
+        updateSubmitLabel();
       }
 
-      function updateDraftTotalLabel() {
-        const total = state.draftItems.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.qty || 1), 0);
-        $("#submitOrderBtn").textContent = total ? `送出訂單 ${money(total)}` : "送出訂單";
+      function updateSubmitLabel() {
+        const total = state.draftItems.reduce((s, i) => s + Number(i.price || 0) * Number(i.qty || 1), 0);
+        const btn = $("#submitOrderBtn");
+        btn.innerHTML = state.editingOrderId
+          ? `💾 更新訂單${total ? ` <span style="opacity:.85">· ${money(total)}</span>` : ""}`
+          : `🚀 送出訂單${total ? ` <span style="opacity:.85">· ${money(total)}</span>` : ""}`;
       }
 
       function renderOrders() {
+        const box = $("#personOrders");
         if (!state.orders.length) {
-          $("#personOrders").innerHTML = '<div class="empty-state">目前沒有個人訂單。</div>';
+          box.innerHTML = `<div class="empty">
+            <span class="emo">🍽️</span>
+            <strong>還沒有人點餐</strong>
+            點「點餐」分頁送出第一單吧
+          </div>`;
           return;
         }
-        $("#personOrders").innerHTML = state.orders.map((order) => `
-          <article class="order-card" data-order-id="${order.id}">
-            <div class="person-top">
-              <div><strong>${escapeHtml(order.person)}</strong><div class="muted">${escapeHtml(order.note || "無個人備註")}</div></div>
-              <strong>${money(getOrderTotal(order))}</strong>
+        // 我的訂單排前面
+        const sorted = [...state.orders].sort((a, b) => {
+          const am = isMyOrder(a.id) ? 0 : 1;
+          const bm = isMyOrder(b.id) ? 0 : 1;
+          return am - bm;
+        });
+        box.innerHTML = sorted.map(o => {
+          const mine = isMyOrder(o.id);
+          const color = colorFor(o.person);
+          return `
+          <article class="order-card ${mine ? "is-mine" : ""}" data-id="${o.id}">
+            <div class="order-head">
+              <div class="avatar" style="background:${color}">${escapeHtml(initialOf(o.person))}</div>
+              <div class="who">
+                <div class="name">${escapeHtml(o.person)}</div>
+                ${o.note ? `<div class="note">💬 ${escapeHtml(o.note)}</div>` : ''}
+              </div>
+              <div class="order-total">${money(orderTotal(o))}</div>
             </div>
             <ul class="line-items">
-              ${order.items.map((item) => `<li><span>${escapeHtml(item.name)} × ${item.qty}<br><span class="muted">${escapeHtml(item.note || "")}</span></span><b>${item.price ? money(Number(item.price) * Number(item.qty)) : "未填"}</b></li>`).join("")}
+              ${o.items.map(i => `
+                <li>
+                  <div>
+                    <span class="item-name">${escapeHtml(i.name)}</span>
+                    <span class="qty"> × ${i.qty}</span>
+                    ${i.note ? `<span class="item-note">📝 ${escapeHtml(i.note)}</span>` : ''}
+                  </div>
+                  <div class="item-price">${i.price ? money(Number(i.price) * Number(i.qty)) : '<span style="color:var(--muted);font-weight:600">未填</span>'}</div>
+                </li>
+              `).join("")}
             </ul>
-            <div class="order-actions">
-              <button class="small-button" type="button" data-action="edit">編輯</button>
-              <button class="danger-button" type="button" data-action="delete">刪除</button>
-            </div>
+            ${mine ? `
+              <div class="order-actions">
+                <button class="btn btn-secondary btn-sm" type="button" data-act="edit">✏️ 編輯</button>
+                <button class="btn btn-danger btn-sm" type="button" data-act="delete">🗑️ 刪除</button>
+              </div>
+            ` : ''}
           </article>
-        `).join("");
-        $$("#personOrders .order-card").forEach((card) => {
-          const id = card.dataset.orderId;
-          card.querySelector('[data-action="edit"]').addEventListener("click", () => editOrder(id));
-          card.querySelector('[data-action="delete"]').addEventListener("click", () => deleteOrder(id));
+        `}).join("");
+
+        $$("#personOrders .order-card").forEach(card => {
+          const id = card.dataset.id;
+          const editBtn = card.querySelector('[data-act="edit"]');
+          const delBtn = card.querySelector('[data-act="delete"]');
+          if (editBtn) editBtn.addEventListener("click", () => editOrder(id));
+          if (delBtn) delBtn.addEventListener("click", () => deleteOrder(id));
         });
       }
 
-      function itemSummary() {
+      function buildItemSummary() {
         const map = new Map();
-        state.orders.forEach((order) => {
-          order.items.forEach((item) => {
-            const key = item.name.trim();
-            const existing = map.get(key) || { name: key, qty: 0, subtotal: 0 };
-            existing.qty += Number(item.qty);
-            existing.subtotal += Number(item.price || 0) * Number(item.qty);
-            map.set(key, existing);
-          });
-        });
-        return [...map.values()];
+        state.orders.forEach(o => o.items.forEach(i => {
+          const key = i.name.trim();
+          if (!key) return;
+          const v = map.get(key) || { name: key, qty: 0, subtotal: 0, hasPrice: false };
+          v.qty += Number(i.qty || 0);
+          v.subtotal += Number(i.price || 0) * Number(i.qty || 0);
+          if (Number(i.price) > 0) v.hasPrice = true;
+          map.set(key, v);
+        }));
+        return [...map.values()].sort((a, b) => b.qty - a.qty);
       }
 
       function renderSummary() {
-        const items = itemSummary();
-        $("#itemSummary").innerHTML = items.length ? items.map((item) => `<div class="summary-row"><span>${escapeHtml(item.name)} × ${item.qty}</span><b>${money(item.subtotal)}</b></div>`).join("") : '<div class="empty-state">目前沒有統計資料。</div>';
-        $("#personSummary").innerHTML = state.orders.length ? state.orders.map((order) => `<div class="summary-row"><span>${escapeHtml(order.person)}</span><b>${money(getOrderTotal(order))}</b></div>`).join("") : '<div class="empty-state">目前沒有個人資料。</div>';
+        // 餐點統計
+        const items = buildItemSummary();
+        $("#itemSummary").innerHTML = items.length ? items.map(i => `
+          <div class="summary-row">
+            <div class="label-w">
+              <span>${escapeHtml(i.name)}</span>
+              <span class="qty-pill">×${i.qty}</span>
+            </div>
+            <b>${i.hasPrice ? money(i.subtotal) : '<span style="color:var(--muted)">—</span>'}</b>
+          </div>
+        `).join("") : '<div style="color:var(--muted);text-align:center;padding:14px">尚無資料</div>';
+
+        // 個人統計
+        $("#personSummary").innerHTML = state.orders.length ? state.orders.map(o => `
+          <div class="summary-row">
+            <div class="label-w">
+              <div class="avatar" style="width:26px;height:26px;font-size:12px;background:${colorFor(o.person)}">${escapeHtml(initialOf(o.person))}</div>
+              <span>${escapeHtml(o.person)}</span>
+            </div>
+            <b>${money(orderTotal(o))}</b>
+          </div>
+        `).join("") : '<div style="color:var(--muted);text-align:center;padding:14px">尚無資料</div>';
+
+        // 備註
         const notes = [];
-        state.orders.forEach((order) => {
-          if (order.note) notes.push(`${order.person}：${order.note}`);
-          order.items.forEach((item) => { if (item.note) notes.push(`${order.person} ${item.name}：${item.note}`); });
+        state.orders.forEach(o => {
+          if (o.note) notes.push({ who: o.person, what: o.note });
+          o.items.forEach(i => { if (i.note) notes.push({ who: `${o.person} · ${i.name}`, what: i.note }); });
         });
-        $("#noteSummary").innerHTML = notes.length ? notes.map((note) => `<div class="note-chip">${escapeHtml(note)}</div>`).join("") : '<div class="note-chip">目前沒有備註</div>';
+        $("#noteSummary").innerHTML = notes.length ? notes.map(n => `
+          <div class="note-line"><span class="who">${escapeHtml(n.who)}</span>：${escapeHtml(n.what)}</div>
+        `).join("") : '<div style="color:var(--muted);text-align:center;padding:14px">沒有備註</div>';
+
+        $("#grandTotal").textContent = money(grandTotal());
+      }
+
+      function renderLockUI() {
+        const sw = $("#lockSwitch");
+        const wrap = $("#lockToggle");
+        const desc = $("#lockDesc");
+        const banner = $("#lockedBanner");
+        const submitBtn = $("#submitOrderBtn");
+
+        sw.classList.toggle("on", state.locked);
+        wrap.classList.toggle("is-locked", state.locked);
+        desc.textContent = state.locked ? "已鎖單，沒人能再送單" : "開放中，大家可以繼續送單";
+        banner.classList.toggle("show", state.locked);
+        submitBtn.disabled = state.locked;
+        submitBtn.style.opacity = state.locked ? .5 : 1;
+        submitBtn.style.pointerEvents = state.locked ? "none" : "auto";
       }
 
       function renderAll() {
-        $("#groupTitleInput").value = state.title;
-        updateStatus();
+        renderStats();
         renderMenuImage();
         renderDraftItems();
         renderOrders();
         renderSummary();
+        renderLockUI();
       }
 
-      async function loadGroup() {
-        const result = await callApi("getGroupData", { groupId: state.groupId, title: state.title });
-        if (result.group) {
-          state.title = result.group.title || state.title;
-          state.imageUrl = result.group.imageUrl || "";
-          state.imageFileId = result.group.imageFileId || "";
-          state.locked = Boolean(result.group.locked);
+      // ════════════════════════════════════════════════════
+      //  Data loading & polling
+      // ════════════════════════════════════════════════════
+      async function loadGroup(silent = false) {
+        if (state.syncing) return;
+        state.syncing = true;
+        if (!silent) setSyncState("syncing", "同步中…");
+        try {
+          const r = await callApi("getGroupData", { groupId: state.groupId, title: state.title });
+          if (r.group) {
+            state.title = r.group.title || state.title;
+            state.imageUrl = r.group.imageUrl || "";
+            state.locked = Boolean(r.group.locked);
+          }
+          state.orders = Array.isArray(r.orders) ? r.orders : [];
+          state.lastSync = Date.now();
+          setSyncState("ok", `已同步 · ${new Date().toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit" })}`);
+          renderAll();
+        } catch (e) {
+          setSyncState("error", "同步失敗，點重新整理");
+          if (!silent) showToast(`連線失敗：${e.message}`, "error");
+        } finally {
+          state.syncing = false;
         }
-        state.orders = Array.isArray(result.orders) ? result.orders : [];
       }
 
+      function startPolling() {
+        stopPolling();
+        state.pollTimer = setInterval(() => {
+          if (document.visibilityState === "visible") loadGroup(true);
+        }, POLL_INTERVAL);
+      }
+      function stopPolling() {
+        if (state.pollTimer) clearInterval(state.pollTimer);
+        state.pollTimer = null;
+      }
+
+      // ════════════════════════════════════════════════════
+      //  Actions
+      // ════════════════════════════════════════════════════
       async function saveGroup() {
-        state.title = $("#groupTitleInput").value.trim() || state.title || "未命名訂餐團";
+        const title = $("#groupTitleInput").value.trim();
+        if (!title) {
+          showToast("請先填店名/團名", "error");
+          $("#groupTitleInput").focus();
+          return;
+        }
+        state.title = title;
         updateUrl();
-        const imageDataUrl = state.selectedImageFile ? await compressImage(state.selectedImageFile) : "";
-        showToast("正在儲存菜單圖片");
-        const result = await postToGas("saveGroup", { groupId: state.groupId, title: state.title, imageDataUrl });
-        state.imageUrl = result.imageUrl || state.imageUrl;
-        state.imageFileId = result.imageFileId || state.imageFileId;
-        state.selectedImageDataUrl = "";
-        showToast("已建立訂餐團");
-        renderAll();
-        copyText(shareText(), "分享文字已複製");
+        renderStats();
+        const btn = $("#saveGroupBtn");
+        btn.disabled = true;
+        btn.innerHTML = "⏳ 儲存中…";
+        try {
+          const imageDataUrl = state.selectedImageFile ? await compressImage(state.selectedImageFile) : "";
+          const result = await postToGas("saveGroup", { groupId: state.groupId, title: state.title, imageDataUrl });
+          state.imageUrl = result.imageUrl || state.imageUrl;
+          state.selectedImageDataUrl = "";
+          state.selectedImageFile = null;
+          renderAll();
+          showToast("已建立 · 分享連結已複製", "success");
+          copyText(shareText(), "已建立 · 分享連結已複製");
+        } catch (e) {
+          showToast(`儲存失敗：${e.message}`, "error");
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = "✨ 儲存並產生分享連結";
+        }
       }
 
       function submitOrder(event) {
         event.preventDefault();
-        if (state.locked) {
-          showToast("已鎖單，不能再送出");
-          return;
-        }
+        if (state.locked) { showToast("已鎖單", "error"); return; }
         const person = $("#personName").value.trim();
-        if (!person) {
-          showToast("請輸入名字");
-          return;
-        }
+        if (!person) { showToast("請輸入名字", "error"); $("#personName").focus(); return; }
+
         const items = state.draftItems
-          .map((item) => ({ name: String(item.name || "").trim(), price: Number(item.price || 0), qty: Number(item.qty || 1), note: String(item.note || "").trim() }))
-          .filter((item) => item.name);
-        if (!items.length) {
-          showToast("請至少輸入一個商品");
-          return;
-        }
-        const order = { id: state.editingOrderId || crypto.randomUUID(), person, note: $("#personNote").value.trim(), items };
-        state.orders = state.orders.filter((entry) => entry.id !== order.id);
+          .map(i => ({
+            name: String(i.name || "").trim(),
+            price: Number(i.price || 0),
+            qty: Math.max(1, Number(i.qty || 1)),
+            note: String(i.note || "").trim()
+          }))
+          .filter(i => i.name);
+
+        if (!items.length) { showToast("至少填一個餐點", "error"); return; }
+
+        // 開啟確認 sheet，不直接送出
+        openConfirmSheet({
+          person,
+          note: $("#personNote").value.trim(),
+          items
+        });
+      }
+
+      function openConfirmSheet(orderData) {
+        const isEdit = !!state.editingOrderId;
+        $("#confirmEyebrow").textContent = isEdit ? "確認修改" : "送出前確認";
+        $("#confirmTitle").textContent = isEdit ? "更新訂單" : "確認訂單";
+
+        const color = colorFor(orderData.person);
+        $("#confirmHeader").innerHTML = `
+          <div class="avatar" style="background:${color}">${escapeHtml(initialOf(orderData.person))}</div>
+          <div>
+            <div class="name">${escapeHtml(orderData.person)}</div>
+            ${orderData.note ? `<div class="note">💬 ${escapeHtml(orderData.note)}</div>` : '<div class="note">無整單備註</div>'}
+          </div>
+        `;
+
+        let total = 0;
+        $("#confirmItems").innerHTML = orderData.items.map(i => {
+          const sub = Number(i.price || 0) * Number(i.qty || 0);
+          total += sub;
+          return `
+            <div class="preview-item">
+              <div style="flex:1;min-width:0">
+                <div class="pi-name">${escapeHtml(i.name)} <span style="color:var(--caramel)">× ${i.qty}</span></div>
+                ${i.note ? `<div class="pi-meta">📝 ${escapeHtml(i.note)}</div>` : ''}
+              </div>
+              <div class="pi-price">${i.price ? money(sub) : '<span style="color:var(--muted);font-weight:600">未填價</span>'}</div>
+            </div>
+          `;
+        }).join("");
+        $("#confirmTotal").textContent = money(total);
+
+        // 暫存待送的 order
+        state._pendingOrder = orderData;
+
+        $("#confirmBackdrop").classList.add("show");
+        $("#confirmSheet").classList.add("show");
+      }
+
+      function closeConfirmSheet() {
+        $("#confirmBackdrop").classList.remove("show");
+        $("#confirmSheet").classList.remove("show");
+        state._pendingOrder = null;
+      }
+
+      function doSubmitOrder() {
+        const orderData = state._pendingOrder;
+        if (!orderData) return;
+
+        const order = {
+          id: state.editingOrderId || crypto.randomUUID(),
+          person: orderData.person,
+          note: orderData.note,
+          items: orderData.items
+        };
+        const isEdit = !!state.editingOrderId;
+        state.orders = state.orders.filter(o => o.id !== order.id);
         state.orders.push(order);
+        saveMyOrderId(order.id);
+        try { localStorage.setItem(storageKey("myName"), order.person); } catch (e) {}
         state.editingOrderId = "";
         state.draftItems = [];
-        $("#personName").value = "";
         $("#personNote").value = "";
+        closeConfirmSheet();
         renderAll();
         activateView("mine");
-        showToast("訂單已送出");
-        callApi("submitOrder", { groupId: state.groupId, order }).catch((error) => showToast(`背景儲存失敗：${error.message}`));
+        showToast(isEdit ? "訂單已更新 ✨" : "訂單送出 🎉", "success");
+        callApi("submitOrder", { groupId: state.groupId, order })
+          .then(() => setSyncState("ok", "已同步"))
+          .catch(e => {
+            setSyncState("error", "背景儲存失敗");
+            showToast(`背景儲存失敗：${e.message}`, "error");
+          });
       }
 
       function editOrder(id) {
-        const order = state.orders.find((entry) => entry.id === id);
-        if (!order) return;
-        state.editingOrderId = order.id;
-        $("#personName").value = order.person;
-        $("#personNote").value = order.note || "";
-        state.draftItems = order.items.map((item) => ({ ...item }));
+        const o = state.orders.find(x => x.id === id);
+        if (!o) return;
+        if (!isMyOrder(id)) { showToast("只能編輯自己的訂單", "error"); return; }
+        state.editingOrderId = o.id;
+        $("#personName").value = o.person;
+        $("#personNote").value = o.note || "";
+        state.draftItems = o.items.map(i => ({ ...i }));
         renderDraftItems();
         activateView("order");
-        showToast("已載入訂單，可修改後送出");
+        showToast("已載入，編輯後再送出");
       }
 
       function deleteOrder(id) {
-        const order = state.orders.find((entry) => entry.id === id);
-        if (!order) return;
-        if (!confirm(`確定刪除 ${order.person} 的訂單嗎？`)) return;
-        state.orders = state.orders.filter((entry) => entry.id !== id);
+        const o = state.orders.find(x => x.id === id);
+        if (!o) return;
+        if (!isMyOrder(id)) { showToast("只能刪除自己的訂單", "error"); return; }
+        if (!confirm(`確定刪除 ${o.person} 的訂單？`)) return;
+        state.orders = state.orders.filter(x => x.id !== id);
+        removeMyOrderId(id);
         renderAll();
-        showToast("訂單已刪除");
-        callApi("deleteOrder", { groupId: state.groupId, orderId: id }).catch((error) => showToast(`背景刪除失敗：${error.message}`));
+        showToast("已刪除", "success");
+        callApi("deleteOrder", { groupId: state.groupId, orderId: id })
+          .catch(e => showToast(`背景刪除失敗：${e.message}`, "error"));
+      }
+
+      async function toggleLock() {
+        const next = !state.locked;
+        if (next && !confirm("鎖單後沒人能再送單，確定？")) return;
+        state.locked = next;
+        renderLockUI();
+        try {
+          await callApi("lockGroup", { groupId: state.groupId, title: state.title, locked: next });
+          showToast(next ? "🔒 已鎖單" : "🔓 已開放", "success");
+        } catch (e) {
+          state.locked = !next;
+          renderLockUI();
+          showToast(`切換失敗：${e.message}`, "error");
+        }
       }
 
       function summaryText() {
-        const lines = [`${state.title} 叫餐統計`];
-        itemSummary().forEach((item) => lines.push(`${item.name} x${item.qty}`));
-        lines.push("", `總金額：${money(grandTotal())}`, "", "依個人：");
-        state.orders.forEach((order) => lines.push(`${order.person} ${money(getOrderTotal(order))}`));
+        const lines = [`🍱 ${state.title}`, "─────────"];
+        buildItemSummary().forEach(i => lines.push(`${i.name} × ${i.qty}${i.hasPrice ? ` ${money(i.subtotal)}` : ""}`));
+        lines.push("─────────", `💰 總計：${money(grandTotal())}`, "");
+        lines.push("【每人】");
+        state.orders.forEach(o => lines.push(`${o.person}：${money(orderTotal(o))}`));
         const noteText = $("#noteSummary").innerText.trim();
-        lines.push("", "備註：", noteText || "無");
+        if (noteText && noteText !== "沒有備註") lines.push("", "【備註】", noteText);
         return lines.join("\n");
       }
 
+      // ════════════════════════════════════════════════════
+      //  結團 - 彙整頁
+      // ════════════════════════════════════════════════════
+      async function endTeam() {
+        if (!state.orders.length) {
+          showToast("還沒人點餐，無法結團", "error");
+          return;
+        }
+        if (!confirm(`確定結團？\n\n• 將自動鎖單，沒人能再點餐\n• 跳出彙整頁可截圖傳 LINE\n• 24 小時內仍可查看`)) return;
+
+        // 鎖單（如果還沒鎖）
+        if (!state.locked) {
+          state.locked = true;
+          renderLockUI();
+          callApi("lockGroup", { groupId: state.groupId, title: state.title, locked: true })
+            .catch(e => console.warn("鎖單失敗", e));
+        }
+
+        renderReceipt();
+        $("#receiptOverlay").classList.add("show");
+        document.body.style.overflow = "hidden";
+      }
+
+      function renderReceipt() {
+        $("#receiptTitle").textContent = state.title;
+        const now = new Date();
+        $("#receiptWhen").textContent = now.toLocaleString("zh-TW", {
+          month: "2-digit", day: "2-digit", weekday: "short",
+          hour: "2-digit", minute: "2-digit"
+        });
+
+        // 餐點清單
+        const items = buildItemSummary();
+        $("#receiptItems").innerHTML = items.map(i => `
+          <div class="receipt-row">
+            <div class="ri-name">
+              <span>${escapeHtml(i.name)}</span>
+              <span class="ri-qty">×${i.qty}</span>
+            </div>
+            <b>${i.hasPrice ? money(i.subtotal) : '—'}</b>
+          </div>
+        `).join("");
+
+        // 每人金額
+        $("#receiptPeople").innerHTML = state.orders.map(o => `
+          <div class="receipt-row receipt-person-row">
+            <div class="ri-name">
+              <div class="avatar" style="background:${colorFor(o.person)}">${escapeHtml(initialOf(o.person))}</div>
+              <span>${escapeHtml(o.person)}</span>
+            </div>
+            <b>${money(orderTotal(o))}</b>
+          </div>
+        `).join("");
+
+        // 備註
+        const notes = [];
+        state.orders.forEach(o => {
+          if (o.note) notes.push({ who: o.person, what: o.note });
+          o.items.forEach(i => { if (i.note) notes.push({ who: `${o.person} · ${i.name}`, what: i.note }); });
+        });
+        const notesSection = $("#receiptNotesSection");
+        if (notes.length) {
+          notesSection.style.display = "block";
+          $("#receiptNotes").innerHTML = notes.map(n => `
+            <div class="receipt-note"><span class="who">${escapeHtml(n.who)}</span>：${escapeHtml(n.what)}</div>
+          `).join("");
+        } else {
+          notesSection.style.display = "none";
+        }
+
+        $("#receiptGrand").textContent = money(grandTotal());
+      }
+
+      function closeReceipt() {
+        $("#receiptOverlay").classList.remove("show");
+        document.body.style.overflow = "";
+      }
+
       function activateView(view) {
-        $$(".tab").forEach((tab) => tab.classList.toggle("is-active", tab.dataset.view === view));
-        $$(".view").forEach((panel) => panel.classList.toggle("is-active", panel.id === `view-${view}`));
+        $$(".tab").forEach(t => t.classList.toggle("is-active", t.dataset.view === view));
+        $$(".view").forEach(p => p.classList.toggle("is-active", p.id === `view-${view}`));
+        window.scrollTo({ top: 0, behavior: "smooth" });
       }
 
       function openImageModal(src) {
@@ -687,34 +2267,98 @@
         $("#imageModal").classList.add("show");
       }
 
-      function setupEvents() {
-        $$(".tab").forEach((tab) => tab.addEventListener("click", () => activateView(tab.dataset.view)));
-        $("#cameraInput").addEventListener("change", (event) => handleImage(event.target.files[0]));
-        $("#albumInput").addEventListener("change", (event) => handleImage(event.target.files[0]));
-        $("#saveGroupBtn").addEventListener("click", () => saveGroup().catch((error) => showToast(error.message)));
-        $("#copyLinkBtn").addEventListener("click", () => copyText(shareText(), "分享文字已複製"));
-        $("#shareBtn").addEventListener("click", () => copyText(shareText(), "分享文字已複製"));
-        $("#addItemBtn").addEventListener("click", () => { state.draftItems.push({ name: "", price: "", qty: 1, note: "" }); renderDraftItems(); });
-        $("#orderForm").addEventListener("submit", submitOrder);
-        $("#copySummaryBtn").addEventListener("click", () => copyText(summaryText(), "叫餐文字已複製"));
-        $("#closeModalBtn").addEventListener("click", () => $("#imageModal").classList.remove("show"));
-        $("#imageModal").addEventListener("click", (event) => { if (event.target.id === "imageModal") $("#imageModal").classList.remove("show"); });
-        $("#groupTitleInput").addEventListener("input", () => { state.title = $("#groupTitleInput").value.trim() || "未命名訂餐團"; updateStatus(); updateUrl(); });
-      }
-
       function handleImage(file) {
         if (!file) return;
+        if (file.size > 8 * 1024 * 1024) {
+          showToast("圖片太大，請選 < 8MB", "error");
+          return;
+        }
         state.selectedImageFile = file;
         state.selectedImageDataUrl = URL.createObjectURL(file);
         renderMenuImage();
-        showToast("已載入菜單圖片，請儲存");
+        showToast("已選好菜單，點儲存才會上傳");
+      }
+
+      // ════════════════════════════════════════════════════
+      //  Events
+      // ════════════════════════════════════════════════════
+      function setupEvents() {
+        $$(".tab").forEach(t => t.addEventListener("click", () => activateView(t.dataset.view)));
+        $("#cameraInput").addEventListener("change", e => handleImage(e.target.files[0]));
+        $("#albumInput").addEventListener("change", e => handleImage(e.target.files[0]));
+        $("#saveGroupBtn").addEventListener("click", saveGroup);
+        $("#copyLinkBtn").addEventListener("click", () => copyText(shareText(), "已複製分享連結 📋"));
+        $("#shareBtn").addEventListener("click", () => copyText(shareText(), "已複製分享連結 📋"));
+        $("#addItemBtn").addEventListener("click", () => {
+          state.draftItems.push({ name: "", price: "", qty: 1, note: "" });
+          renderDraftItems();
+          setTimeout(() => {
+            const cards = $$("#orderItems .item-card");
+            const last = cards[cards.length - 1];
+            last?.querySelector('[data-field="name"]')?.focus();
+            last?.scrollIntoView({ behavior: "smooth", block: "center" });
+          }, 50);
+        });
+        $("#orderForm").addEventListener("submit", submitOrder);
+        $("#copySummaryBtn").addEventListener("click", () => copyText(summaryText(), "已複製統計 📋"));
+        $("#closeModalBtn").addEventListener("click", () => $("#imageModal").classList.remove("show"));
+        $("#imageModal").addEventListener("click", e => {
+          if (e.target.id === "imageModal") $("#imageModal").classList.remove("show");
+        });
+        $("#groupTitleInput").addEventListener("input", () => {
+          state.title = $("#groupTitleInput").value.trim() || "未命名訂餐團";
+          $("#heroGroupTitle").textContent = state.title;
+          updateUrl();
+        });
+        $("#refreshBtn").addEventListener("click", () => loadGroup(false));
+        $("#lockSwitch").addEventListener("click", toggleLock);
+        document.addEventListener("visibilitychange", () => {
+          if (document.visibilityState === "visible") loadGroup(true);
+        });
+        $("#personName").addEventListener("blur", () => {
+          const v = $("#personName").value.trim();
+          if (v) try { localStorage.setItem(storageKey("myName"), v); } catch (e) {}
+        });
+
+        // 確認 sheet
+        $("#confirmCancelBtn").addEventListener("click", closeConfirmSheet);
+        $("#confirmBackdrop").addEventListener("click", closeConfirmSheet);
+        $("#confirmOkBtn").addEventListener("click", doSubmitOrder);
+
+        // 結團
+        $("#endTeamBtn").addEventListener("click", endTeam);
+        $("#receiptCloseBtn").addEventListener("click", closeReceipt);
+        $("#receiptCopyBtn").addEventListener("click", () => copyText(summaryText(), "已複製彙整文字 📋"));
+
+        // ESC 關閉
+        document.addEventListener("keydown", (e) => {
+          if (e.key !== "Escape") return;
+          if ($("#receiptOverlay").classList.contains("show")) closeReceipt();
+          else if ($("#confirmSheet").classList.contains("show")) closeConfirmSheet();
+          else if ($("#imageModal").classList.contains("show")) $("#imageModal").classList.remove("show");
+        });
+      }
+
+      function detectInitialView() {
+        // 有圖片 + 已從 URL 進來 → 直接到點餐
+        // 否則停在「建立」
+        const hasGroupParam = params.has("group");
+        if (hasGroupParam) {
+          setTimeout(() => activateView("order"), 100);
+        }
       }
 
       async function init() {
         setupEvents();
+        $("#groupTitleInput").value = state.title;
+        $("#heroGroupTitle").textContent = state.title;
         updateUrl();
+        loadFromStorage();
         renderAll();
-        loadGroup().then(renderAll).catch(() => renderAll());
+        detectInitialView();
+        setSyncState("syncing", "載入中…");
+        await loadGroup(true);
+        startPolling();
       }
 
       init();
