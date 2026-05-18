@@ -630,15 +630,25 @@
         margin-bottom: 10px;
       }
       .avatar {
-        width: 38px; height: 38px;
-        border-radius: 50%;
-        display: grid;
-        place-items: center;
-        font-family: "Fraunces", serif;
-        font-weight: 900;
-        font-size: 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px 10px;
+        min-height: 26px;
+        border-radius: 8px;
+        font-family: "Noto Sans TC", sans-serif;
+        font-weight: 800;
+        font-size: 13px;
         color: #fff;
         flex-shrink: 0;
+        white-space: nowrap;
+        letter-spacing: .02em;
+      }
+      .order-head .avatar {
+        font-size: 15px;
+        padding: 6px 12px;
+        min-height: 32px;
+        border-radius: 10px;
       }
       .order-head .who {
         flex: 1;
@@ -1148,8 +1158,9 @@
         border-radius: 999px;
       }
       .receipt-person-row .avatar {
-        width: 24px; height: 24px;
-        font-size: 11px;
+        font-size: 12px;
+        padding: 3px 8px;
+        min-height: 22px;
       }
       .receipt-note {
         font-size: 12px;
@@ -1632,8 +1643,8 @@
           const requestId = `post_${Date.now()}_${Math.random().toString(16).slice(2)}`;
           const timer = setTimeout(() => {
             window.removeEventListener("message", onMsg);
-            reject(new Error("上傳逾時，換張小一點的圖試試"));
-          }, 45000);
+            reject(new Error("回應逾時（資料可能已寫入）"));
+          }, 10000);
           function onMsg(event) {
             const data = event.data || {};
             if (data.requestId !== requestId) return;
@@ -1870,9 +1881,8 @@
           return `
           <article class="order-card ${mine ? "is-mine" : ""}" data-id="${o.id}">
             <div class="order-head">
-              <div class="avatar" style="background:${color}">${escapeHtml(initialOf(o.person))}</div>
+              <div class="avatar" style="background:${color}">${escapeHtml(o.person)}</div>
               <div class="who">
-                <div class="name">${escapeHtml(o.person)}</div>
                 ${o.note ? `<div class="note">💬 ${escapeHtml(o.note)}</div>` : ''}
               </div>
               <div class="order-total">${money(orderTotal(o))}</div>
@@ -1909,10 +1919,15 @@
 
       function buildItemSummary() {
         const map = new Map();
+        const normalize = (s) => String(s || "").trim().replace(/\s+/g, " ");
         state.orders.forEach(o => o.items.forEach(i => {
-          const key = i.name.trim();
-          if (!key) return;
-          const v = map.get(key) || { name: key, qty: 0, subtotal: 0, hasPrice: false };
+          const name = normalize(i.name);
+          if (!name) return;
+          const note = normalize(i.note);
+          // key 用「名稱 + 備註」合併同款同備註的，分開不同備註
+          const key = note ? `${name}__${note}` : name;
+          const display = note ? `${name}（${note}）` : name;
+          const v = map.get(key) || { name: display, qty: 0, subtotal: 0, hasPrice: false };
           v.qty += Number(i.qty || 0);
           v.subtotal += Number(i.price || 0) * Number(i.qty || 0);
           if (Number(i.price) > 0) v.hasPrice = true;
@@ -1938,18 +1953,16 @@
         $("#personSummary").innerHTML = state.orders.length ? state.orders.map(o => `
           <div class="summary-row">
             <div class="label-w">
-              <div class="avatar" style="width:26px;height:26px;font-size:12px;background:${colorFor(o.person)}">${escapeHtml(initialOf(o.person))}</div>
-              <span>${escapeHtml(o.person)}</span>
+              <div class="avatar" style="background:${colorFor(o.person)}">${escapeHtml(o.person)}</div>
             </div>
             <b>${money(orderTotal(o))}</b>
           </div>
         `).join("") : '<div style="color:var(--muted);text-align:center;padding:14px">尚無資料</div>';
 
-        // 備註
+        // 備註（只列整單備註，單品備註已合進「依餐點」裡）
         const notes = [];
         state.orders.forEach(o => {
           if (o.note) notes.push({ who: o.person, what: o.note });
-          o.items.forEach(i => { if (i.note) notes.push({ who: `${o.person} · ${i.name}`, what: i.note }); });
         });
         $("#noteSummary").innerHTML = notes.length ? notes.map(n => `
           <div class="note-line"><span class="who">${escapeHtml(n.who)}</span>：${escapeHtml(n.what)}</div>
@@ -2038,17 +2051,31 @@
         stopPolling();
         try {
           const imageDataUrl = state.selectedImageFile ? await compressImage(state.selectedImageFile) : "";
-          // 有圖才用 POST（圖片太大塞不進 URL），沒圖直接 JSONP 快很多
-          const result = imageDataUrl
-            ? await postToGas("saveGroup", { groupId: state.groupId, title: state.title, imageDataUrl })
-            : await callApi("saveGroup", { groupId: state.groupId, title: state.title, imageDataUrl: "" });
-          // 用後端回傳的，沒回傳就用剛壓縮好的 dataUrl
-          state.imageUrl = result.imageUrl || imageDataUrl || state.imageUrl;
+
+          // 樂觀更新：先在本機把狀態清掉，UI 立刻顯示「已儲存」
+          // 不等 GAS 回傳（postMessage 常常掉訊息），讓背景輪詢確認
+          state.imageUrl = imageDataUrl || state.imageUrl;
           state.selectedImageDataUrl = "";
           state.selectedImageFile = null;
+
+          if (imageDataUrl) {
+            // 有圖：用 POST iframe，但不等回應太久
+            postToGas("saveGroup", { groupId: state.groupId, title: state.title, imageDataUrl })
+              .catch(e => console.warn("postToGas 回應未收到（試算表通常仍有寫入）", e.message));
+            // 給 GAS 一點時間寫入（不阻塞 UI）
+            await new Promise(r => setTimeout(r, 800));
+          } else {
+            // 沒圖：JSONP 等回應就好，本來就快
+            try {
+              await callApi("saveGroup", { groupId: state.groupId, title: state.title, imageDataUrl: "" });
+            } catch (e) {
+              console.warn("callApi saveGroup 失敗", e.message);
+            }
+          }
+
           renderAll();
-          showToast("已建立 · 分享連結已複製", "success");
-          copyText(shareText(), "已建立 · 分享連結已複製");
+          showToast("已儲存 · 分享連結已複製", "success");
+          copyText(shareText(), "已儲存 · 分享連結已複製");
         } catch (e) {
           showToast(`儲存失敗：${e.message}`, "error");
         } finally {
@@ -2090,9 +2117,8 @@
 
         const color = colorFor(orderData.person);
         $("#confirmHeader").innerHTML = `
-          <div class="avatar" style="background:${color}">${escapeHtml(initialOf(orderData.person))}</div>
+          <div class="avatar" style="background:${color}">${escapeHtml(orderData.person)}</div>
           <div>
-            <div class="name">${escapeHtml(orderData.person)}</div>
             ${orderData.note ? `<div class="note">💬 ${escapeHtml(orderData.note)}</div>` : '<div class="note">無整單備註</div>'}
           </div>
         `;
@@ -2255,18 +2281,16 @@
         $("#receiptPeople").innerHTML = state.orders.map(o => `
           <div class="receipt-row receipt-person-row">
             <div class="ri-name">
-              <div class="avatar" style="background:${colorFor(o.person)}">${escapeHtml(initialOf(o.person))}</div>
-              <span>${escapeHtml(o.person)}</span>
+              <div class="avatar" style="background:${colorFor(o.person)}">${escapeHtml(o.person)}</div>
             </div>
             <b>${money(orderTotal(o))}</b>
           </div>
         `).join("");
 
-        // 備註
+        // 備註（只列整單備註，單品備註已合進「依餐點」裡）
         const notes = [];
         state.orders.forEach(o => {
           if (o.note) notes.push({ who: o.person, what: o.note });
-          o.items.forEach(i => { if (i.note) notes.push({ who: `${o.person} · ${i.name}`, what: i.note }); });
         });
         const notesSection = $("#receiptNotesSection");
         if (notes.length) {
