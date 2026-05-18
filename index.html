@@ -347,6 +347,7 @@
         groupId: params.get("group") || crypto.randomUUID(),
         title: params.get("title") || "未命名訂餐團",
         imageUrl: "",
+        imageFileId: "",
         selectedImageFile: null,
         selectedImageDataUrl: "",
         locked: false,
@@ -600,6 +601,7 @@
         if (result.group) {
           state.title = result.group.title || state.title;
           state.imageUrl = result.group.imageUrl || "";
+          state.imageFileId = result.group.imageFileId || "";
           state.locked = Boolean(result.group.locked);
         }
         state.orders = Array.isArray(result.orders) ? result.orders : [];
@@ -612,6 +614,7 @@
         showToast("正在儲存菜單圖片");
         const result = await postToGas("saveGroup", { groupId: state.groupId, title: state.title, imageDataUrl });
         state.imageUrl = result.imageUrl || state.imageUrl;
+        state.imageFileId = result.imageFileId || state.imageFileId;
         state.selectedImageDataUrl = "";
         showToast("已建立訂餐團");
         renderAll();
