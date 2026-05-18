@@ -258,7 +258,6 @@
     <main class="phone-shell" aria-label="多人點餐系統">
       <header class="app-header">
         <div>
-          <p class="eyebrow" id="groupLabel">訂餐團</p>
           <h1>多人點餐</h1>
         </div>
         <button class="icon-button" id="shareBtn" type="button" aria-label="複製分享網址">↗</button>
@@ -268,14 +267,6 @@
         <div><strong id="peopleCount">0</strong><span>人已點</span></div>
         <div><strong id="itemCount">0</strong><span>份餐點</span></div>
         <div><strong id="totalPrice">$0</strong><span>目前總額</span></div>
-      </section>
-
-      <section class="sync-panel">
-        <div>
-          <strong id="syncTitle">讀取中</strong>
-          <span id="syncText">正在同步試算表</span>
-        </div>
-        <button class="small-button" id="refreshBtn" type="button">重新整理</button>
       </section>
 
       <nav class="tabs">
@@ -454,6 +445,10 @@
         return url.toString();
       }
 
+      function shareText() {
+        return `${state.title}\n${shareUrl()}`;
+      }
+
       async function copyText(text, successMessage) {
         try {
           await navigator.clipboard.writeText(text);
@@ -472,7 +467,7 @@
       }
 
       function getOrderTotal(order) {
-        return order.items.reduce((sum, item) => sum + Number(item.price) * Number(item.qty), 0);
+        return order.items.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.qty), 0);
       }
 
       function allItemCount() {
@@ -484,12 +479,9 @@
       }
 
       function updateStatus() {
-        $("#groupLabel").textContent = state.title;
         $("#peopleCount").textContent = state.orders.length;
         $("#itemCount").textContent = allItemCount();
         $("#totalPrice").textContent = money(grandTotal());
-        $("#syncTitle").textContent = state.imageUrl ? "已建立訂餐團" : "尚未上傳菜單";
-        $("#syncText").textContent = state.imageUrl ? "可分享網址給大家點餐" : "主揪先上傳菜單圖片";
         $("#lockStatus").textContent = state.locked ? "已鎖單" : "開放中";
       }
 
@@ -508,7 +500,7 @@
         $("#orderItems").innerHTML = state.draftItems.map((item, index) => `
           <div class="entry-card" data-index="${index}">
             <label><span>商品</span><input data-field="name" value="${escapeHtml(item.name)}" placeholder="例如：珍珠奶茶" /></label>
-            <label><span>價格</span><input data-field="price" type="number" min="0" value="${escapeHtml(item.price)}" placeholder="55" /></label>
+            <label><span>價格</span><input data-field="price" type="number" min="0" value="${escapeHtml(item.price)}" placeholder="可不填" /></label>
             <button class="danger-button" type="button" data-action="remove">×</button>
             <label><span>數量</span><input data-field="qty" type="number" min="1" value="${escapeHtml(item.qty || 1)}" /></label>
             <textarea data-field="note" placeholder="單品備註，例如：半糖去冰">${escapeHtml(item.note)}</textarea>
@@ -547,7 +539,7 @@
               <strong>${money(getOrderTotal(order))}</strong>
             </div>
             <ul class="line-items">
-              ${order.items.map((item) => `<li><span>${escapeHtml(item.name)} × ${item.qty}<br><span class="muted">${escapeHtml(item.note || "")}</span></span><b>${money(Number(item.price) * Number(item.qty))}</b></li>`).join("")}
+              ${order.items.map((item) => `<li><span>${escapeHtml(item.name)} × ${item.qty}<br><span class="muted">${escapeHtml(item.note || "")}</span></span><b>${item.price ? money(Number(item.price) * Number(item.qty)) : "未填"}</b></li>`).join("")}
             </ul>
             <div class="order-actions">
               <button class="small-button" type="button" data-action="edit">編輯</button>
@@ -569,7 +561,7 @@
             const key = item.name.trim();
             const existing = map.get(key) || { name: key, qty: 0, subtotal: 0 };
             existing.qty += Number(item.qty);
-            existing.subtotal += Number(item.price) * Number(item.qty);
+            existing.subtotal += Number(item.price || 0) * Number(item.qty);
             map.set(key, existing);
           });
         });
@@ -619,7 +611,7 @@
         state.selectedImageDataUrl = "";
         showToast("已建立訂餐團");
         renderAll();
-        copyText(shareUrl(), "分享網址已複製");
+        copyText(shareText(), "分享文字已複製");
       }
 
       function submitOrder(event) {
@@ -635,9 +627,9 @@
         }
         const items = state.draftItems
           .map((item) => ({ name: String(item.name || "").trim(), price: Number(item.price || 0), qty: Number(item.qty || 1), note: String(item.note || "").trim() }))
-          .filter((item) => item.name && item.price > 0);
+          .filter((item) => item.name);
         if (!items.length) {
-          showToast("請至少輸入一個商品和價格");
+          showToast("請至少輸入一個商品");
           return;
         }
         const order = { id: state.editingOrderId || crypto.randomUUID(), person, note: $("#personNote").value.trim(), items };
@@ -700,9 +692,8 @@
         $("#cameraInput").addEventListener("change", (event) => handleImage(event.target.files[0]));
         $("#albumInput").addEventListener("change", (event) => handleImage(event.target.files[0]));
         $("#saveGroupBtn").addEventListener("click", () => saveGroup().catch((error) => showToast(error.message)));
-        $("#copyLinkBtn").addEventListener("click", () => copyText(shareUrl(), "分享網址已複製"));
-        $("#shareBtn").addEventListener("click", () => copyText(shareUrl(), "分享網址已複製"));
-        $("#refreshBtn").addEventListener("click", () => loadGroup().then(renderAll).catch((error) => showToast(error.message)));
+        $("#copyLinkBtn").addEventListener("click", () => copyText(shareText(), "分享文字已複製"));
+        $("#shareBtn").addEventListener("click", () => copyText(shareText(), "分享文字已複製"));
         $("#addItemBtn").addEventListener("click", () => { state.draftItems.push({ name: "", price: "", qty: 1, note: "" }); renderDraftItems(); });
         $("#orderForm").addEventListener("submit", submitOrder);
         $("#copySummaryBtn").addEventListener("click", () => copyText(summaryText(), "叫餐文字已複製"));
