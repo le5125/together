@@ -733,6 +733,74 @@
         return items;
       }
 
+      function cleanOcrName(value) {
+        return normalizeOcrText(value)
+          .replace(/(推薦|新品|加料|甜度|冰量|菜單|找好茶|找奶茶|找拿鐵|季節限定|新鮮|FLAVORED|MILK|TEA|LATTE|FRESH|JUICE|SEASONAL|SPECIAL)/gi, "")
+          .replace(/[^\u3400-\u9fff（）()·.\- ]/g, "")
+          .replace(/[一—–\-]{2,}/g, "")
+          .replace(/\s+/g, "")
+          .trim();
+      }
+
+      function isLikelyPrice(text) {
+        const value = Number(normalizeOcrText(text).replace(/[^\d]/g, ""));
+        return Number.isInteger(value) && value >= 10 && value <= 999;
+      }
+
+      function parseMenuItemsFromOcrData(data) {
+        const words = (data.words || [])
+          .map((word) => {
+            const text = normalizeOcrText(word.text || "").trim();
+            const bbox = word.bbox || {};
+            const x0 = Number(bbox.x0 || 0);
+            const x1 = Number(bbox.x1 || 0);
+            const y0 = Number(bbox.y0 || 0);
+            const y1 = Number(bbox.y1 || 0);
+            return { text, x0, x1, y0, y1, cy: (y0 + y1) / 2, conf: Number(word.confidence || 0) };
+          })
+          .filter((word) => word.text && word.conf > 25);
+
+        const priceWords = words
+          .filter((word) => /^\d{2,3}$/.test(word.text) && isLikelyPrice(word.text))
+          .sort((a, b) => a.y0 - b.y0 || a.x0 - b.x0);
+
+        const items = [];
+        const seenRows = [];
+        const seenItems = new Set();
+
+        priceWords.forEach((priceWord) => {
+          if (seenRows.some((row) => Math.abs(row.y - priceWord.cy) < 14 && Math.abs(row.x - priceWord.x0) < 80)) return;
+
+          const sameLine = words
+            .filter((word) => Math.abs(word.cy - priceWord.cy) < 16 && word.x1 < priceWord.x0 - 4)
+            .sort((a, b) => a.x0 - b.x0);
+
+          let leftBoundary = 0;
+          priceWords.forEach((otherPrice) => {
+            if (otherPrice.cy < priceWord.cy + 24 && otherPrice.cy > priceWord.cy - 24 && otherPrice.x0 < priceWord.x0) {
+              leftBoundary = Math.max(leftBoundary, otherPrice.x1 + 8);
+            }
+          });
+
+          const nameText = sameLine
+            .filter((word) => word.x0 >= leftBoundary)
+            .map((word) => word.text)
+            .join("");
+          const name = cleanOcrName(nameText);
+          const price = Number(priceWord.text);
+          const chineseCount = (name.match(/[\u3400-\u9fff]/g) || []).length;
+
+          if (!name || chineseCount < 2 || price < 10 || price > 999) return;
+          const key = `${name}-${price}`;
+          if (seenItems.has(key)) return;
+          seenRows.push({ y: priceWord.cy, x: priceWord.x0 });
+          seenItems.add(key);
+          items.push({ id: uid("menu"), name, price, category: "OCR" });
+        });
+
+        return items;
+      }
+
       function preprocessImageForOcr(file) {
         return new Promise((resolve, reject) => {
           const image = new Image();
@@ -775,12 +843,15 @@
         setOcrProgress("正在擷取菜單文字，第一次可能需要稍等...");
         try {
           const ocrImage = await preprocessImageForOcr(file);
-          const result = await Tesseract.recognize(ocrImage, "chi_tra", {
+          const result = await Tesseract.recognize(ocrImage, "chi_tra+eng", {
             logger: (event) => {
               if (event.status === "recognizing text" && event.progress) setOcrProgress(`正在辨識文字 ${Math.round(event.progress * 100)}%`);
-            }
+            },
+            tessedit_pageseg_mode: "1",
+            preserve_interword_spaces: "1"
           });
-          const items = parseMenuItemsFromText(result.data.text);
+          const itemsByPosition = parseMenuItemsFromOcrData(result.data);
+          const items = itemsByPosition.length ? itemsByPosition : parseMenuItemsFromText(result.data.text);
           if (!items.length) {
             setOcrProgress("沒有自動抓到餐點與價格，請拍清楚一點或手動新增餐點。");
             showToast("沒有抓到餐點，請手動新增或重拍");
