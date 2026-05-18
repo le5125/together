@@ -338,8 +338,6 @@
 
     <div class="modal" id="imageModal"><button class="icon-button" id="closeModalBtn" type="button">×</button><img id="modalImage" alt="放大的菜單" /></div>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
-    <iframe class="hidden-frame" name="uploadFrame" id="uploadFrame"></iframe>
-
     <script>
       const API_URL = "https://script.google.com/macros/s/AKfycbxugZM52HlLboXW9c3MIS-331D9t6CB5hA6cXHXKekcmQURmYfIoNyIsdKKFD1CZKK_Bw/exec";
       const params = new URLSearchParams(location.search);
@@ -398,48 +396,18 @@
         });
       }
 
-      function postToGas(action, payload) {
-        return new Promise((resolve, reject) => {
-          const requestId = `post_${Date.now()}_${Math.random().toString(16).slice(2)}`;
-          const timer = setTimeout(() => {
-            window.removeEventListener("message", onMessage);
-            reject(new Error("上傳逾時"));
-          }, 30000);
-          function onMessage(event) {
-            const data = event.data || {};
-            if (data.requestId !== requestId) return;
-            clearTimeout(timer);
-            window.removeEventListener("message", onMessage);
-            data.ok ? resolve(data) : reject(new Error(data.message || "上傳失敗"));
-          }
-          window.addEventListener("message", onMessage);
-          const form = document.createElement("form");
-          form.method = "POST";
-          form.action = API_URL;
-          form.target = "uploadFrame";
-          form.style.display = "none";
-          const input = document.createElement("textarea");
-          input.name = "payload";
-          input.value = JSON.stringify({ requestId, action, payload });
-          form.appendChild(input);
-          document.body.appendChild(form);
-          form.submit();
-          form.remove();
-        });
-      }
-
       function compressImage(file) {
         return new Promise((resolve, reject) => {
           const image = new Image();
           image.onload = () => {
-            const maxSide = 1600;
+            const maxSide = 900;
             const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
             const canvas = document.createElement("canvas");
             canvas.width = Math.round(image.width * scale);
             canvas.height = Math.round(image.height * scale);
             const ctx = canvas.getContext("2d");
             ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-            resolve(canvas.toDataURL("image/jpeg", .82));
+            resolve(canvas.toDataURL("image/jpeg", .68));
           };
           image.onerror = reject;
           image.src = URL.createObjectURL(file);
@@ -612,7 +580,7 @@
         updateUrl();
         const imageDataUrl = state.selectedImageFile ? await compressImage(state.selectedImageFile) : "";
         showToast("正在儲存菜單圖片");
-        const result = await postToGas("saveGroup", { groupId: state.groupId, title: state.title, imageDataUrl });
+        const result = await callApi("saveGroup", { groupId: state.groupId, title: state.title, imageDataUrl });
         state.imageUrl = result.imageUrl || state.imageUrl;
         state.imageFileId = result.imageFileId || state.imageFileId;
         state.selectedImageDataUrl = "";
