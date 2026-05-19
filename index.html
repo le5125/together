@@ -1069,6 +1069,56 @@
         line-height: 1;
       }
 
+      /* ─── Share Link Sheet ─────────────────────────────── */
+      .share-preview {
+        background: linear-gradient(135deg, var(--matcha-soft), #f0f5e6);
+        border-radius: 14px;
+        padding: 16px;
+        margin: 4px 0 14px;
+        text-align: center;
+        border: 1.5px solid rgba(92,138,58,.2);
+      }
+      .share-preview .sp-emoji {
+        font-size: 38px;
+        line-height: 1;
+        margin-bottom: 6px;
+      }
+      .share-preview .sp-title {
+        font-family: "Fraunces", serif;
+        font-weight: 900;
+        font-size: 20px;
+        color: var(--ink);
+        line-height: 1.2;
+        margin-bottom: 4px;
+      }
+      .share-preview .sp-hint {
+        font-size: 13px;
+        color: var(--ink-2);
+        font-weight: 600;
+      }
+      .share-url-box {
+        background: var(--cream);
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 16px;
+        border: 1px solid var(--line-2);
+      }
+      .share-url-label {
+        font-size: 11px;
+        font-weight: 900;
+        color: var(--matcha-dark);
+        letter-spacing: .1em;
+        margin-bottom: 5px;
+      }
+      .share-url-text {
+        font-family: ui-monospace, "SF Mono", Consolas, monospace;
+        font-size: 12px;
+        color: var(--ink-2);
+        word-break: break-all;
+        line-height: 1.5;
+        font-weight: 600;
+      }
+
       /* ─── End-team Final Receipt ──────────────────────── */
       .receipt-overlay {
         position: fixed;
@@ -1345,7 +1395,6 @@
             <span class="eyebrow">第一步</span>
             <h2 class="display">建立訂餐團</h2>
           </div>
-          <button class="btn btn-ghost btn-sm" id="copyLinkBtn" type="button">📋 複製</button>
         </div>
 
         <label class="field">
@@ -1518,6 +1567,27 @@
       <div class="button-row">
         <button class="btn btn-ghost" type="button" id="confirmCancelBtn">← 再改一下</button>
         <button class="btn btn-primary" type="button" id="confirmOkBtn">✓ 確認送出</button>
+      </div>
+    </div>
+
+    <!-- ─── Share Link Sheet (儲存成功後) ──────────────── -->
+    <div class="sheet-backdrop" id="shareBackdrop"></div>
+    <div class="sheet" id="shareSheet" role="dialog" aria-modal="true">
+      <div class="sheet-handle"></div>
+      <div class="section-head" style="margin-bottom:8px">
+        <div>
+          <span class="eyebrow" style="color:var(--matcha-dark)">✨ 訂餐團已建立</span>
+          <h2 class="display">分享給大家吧</h2>
+        </div>
+      </div>
+      <div class="share-preview" id="sharePreview"></div>
+      <div class="share-url-box">
+        <div class="share-url-label">🔗 連結預覽</div>
+        <div class="share-url-text" id="shareUrlText"></div>
+      </div>
+      <div class="button-row">
+        <button class="btn btn-ghost" type="button" id="shareCancelBtn">稍後再說</button>
+        <button class="btn btn-primary" type="button" id="shareCopyBtn">📋 複製連結</button>
       </div>
     </div>
 
@@ -2214,8 +2284,8 @@
           // 確保訂閱有開（如果是新建立第一次儲存）
           if (!state.unsubGroup) subscribeGroup();
           if (!state.unsubOrders) subscribeOrders();
-          // 直接複製連結（不另外 toast，由 copyText 處理）
-          copyText(shareText(), "已儲存 · 連結已複製");
+          // 開分享 sheet（按確定才複製，user gesture 內 clipboard 100% 成功）
+          openShareSheet();
         } catch (e) {
           console.error(e);
           showToast(`儲存失敗：${e.message}`, "error");
@@ -2288,6 +2358,22 @@
         $("#confirmBackdrop").classList.remove("show");
         $("#confirmSheet").classList.remove("show");
         state._pendingOrder = null;
+      }
+
+      function openShareSheet() {
+        $("#sharePreview").innerHTML = `
+          <div class="sp-emoji">🎉</div>
+          <div class="sp-title">${escapeHtml(state.title)}</div>
+          <div class="sp-hint">按下「複製連結」傳給夥伴吧</div>
+        `;
+        $("#shareUrlText").textContent = shareUrl();
+        $("#shareBackdrop").classList.add("show");
+        $("#shareSheet").classList.add("show");
+      }
+
+      function closeShareSheet() {
+        $("#shareBackdrop").classList.remove("show");
+        $("#shareSheet").classList.remove("show");
       }
 
       async function doSubmitOrder() {
@@ -2495,8 +2581,14 @@
         $("#cameraInput").addEventListener("change", e => handleImage(e.target.files[0]));
         $("#albumInput").addEventListener("change", e => handleImage(e.target.files[0]));
         $("#saveGroupBtn").addEventListener("click", saveGroup);
-        $("#copyLinkBtn").addEventListener("click", () => copyText(shareText(), "已複製分享連結 📋"));
-        $("#shareBtn").addEventListener("click", () => copyText(shareText(), "已複製分享連結 📋"));
+        // 右上角 🔗 圖示按下：如果團已存在就開分享 sheet，否則提示先儲存
+        $("#shareBtn").addEventListener("click", () => {
+          if (!state.groupExists) {
+            showToast("請先儲存訂餐團", "error");
+            return;
+          }
+          openShareSheet();
+        });
         $("#addItemBtn").addEventListener("click", () => {
           state.draftItems.push({ name: "", price: "", qty: 1, note: "" });
           renderDraftItems();
@@ -2535,6 +2627,15 @@
         $("#confirmBackdrop").addEventListener("click", closeConfirmSheet);
         $("#confirmOkBtn").addEventListener("click", doSubmitOrder);
 
+        // Share sheet
+        $("#shareCancelBtn").addEventListener("click", closeShareSheet);
+        $("#shareBackdrop").addEventListener("click", closeShareSheet);
+        $("#shareCopyBtn").addEventListener("click", async () => {
+          // 在直接 user click 內，clipboard API 100% 成功
+          await copyText(shareText(), "已複製連結 🎉");
+          closeShareSheet();
+        });
+
         $("#endTeamBtn").addEventListener("click", endTeam);
         $("#receiptCloseBtn").addEventListener("click", closeReceipt);
         $("#receiptCopyBtn").addEventListener("click", () => copyText(summaryText(), "已複製彙整文字 📋"));
@@ -2542,6 +2643,7 @@
         document.addEventListener("keydown", (e) => {
           if (e.key !== "Escape") return;
           if ($("#receiptOverlay").classList.contains("show")) closeReceipt();
+          else if ($("#shareSheet").classList.contains("show")) closeShareSheet();
           else if ($("#confirmSheet").classList.contains("show")) closeConfirmSheet();
           else if ($("#imageModal").classList.contains("show")) $("#imageModal").classList.remove("show");
         });
