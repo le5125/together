@@ -1557,15 +1557,34 @@
     <!-- ─── Toast ───────────────────────────────────── -->
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-    <iframe class="hidden-frame" name="uploadFrame" id="uploadFrame"></iframe>
+    <script type="module">
+      // ════════════════════════════════════════════════════
+      //  Firebase 初始化
+      // ════════════════════════════════════════════════════
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+      import {
+        getFirestore, doc, getDoc, setDoc, deleteDoc, updateDoc,
+        collection, query, where, onSnapshot, serverTimestamp,
+        Timestamp, writeBatch, getDocs
+      } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyB3bJv09FzHehZQDjCSfURsNudOZ5OKb_c",
+        authDomain: "together-order.firebaseapp.com",
+        projectId: "together-order",
+        storageBucket: "together-order.firebasestorage.app",
+        messagingSenderId: "76192415342",
+        appId: "1:76192415342:web:3646db69fc1c913788f07f"
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+
       // ════════════════════════════════════════════════════
       //  Config
       // ════════════════════════════════════════════════════
-      const API_URL = "https://script.google.com/macros/s/AKfycbxugZM52HlLboXW9c3MIS-331D9t6CB5hA6cXHXKekcmQURmYfIoNyIsdKKFD1CZKK_Bw/exec";
-      const POLL_INTERVAL = 8000;   // 自動同步間隔（毫秒）
-      const STORAGE_PREFIX = "orderApp.v2.";
+      const STORAGE_PREFIX = "orderApp.fb.";
+      const EXPIRE_HOURS = 24;
       const QUICK_NOTES = ["半糖", "少糖", "去冰", "微冰", "熱的", "不要香菜", "加辣", "不辣"];
       const AVATAR_COLORS = [
         "#e85a4f", "#5c8a3a", "#d4a05c", "#4a90a4",
@@ -1587,13 +1606,13 @@
         orders: [],
         draftItems: [],
         editingOrderId: "",
-        myOrderIds: [],     // 我送過的訂單 id（存 localStorage）
-        pendingOrders: new Map(),  // 本機剛送出、後端尚未確認的訂單（id → order）
-        lastSync: 0,
-        syncing: false,
-        pollTimer: null,
+        myOrderIds: [],
+        pendingOrders: new Map(),
+        groupExists: false,    // 後端是否真的有這個團
         imageLoading: false,
-        version: 0          // 偵測有無新資料
+        unsubGroup: null,      // Firestore listener cleanup
+        unsubOrders: null,
+        _pendingOrder: null
       };
 
       // ════════════════════════════════════════════════════
@@ -1618,26 +1637,20 @@
       function colorFor(name) {
         return AVATAR_COLORS[hashStr(name || "?") % AVATAR_COLORS.length];
       }
-      function initialOf(name) {
-        const t = (name || "?").trim();
-        return t ? Array.from(t)[0].toUpperCase() : "?";
-      }
 
       function storageKey(suffix) {
         return STORAGE_PREFIX + state.groupId + "." + suffix;
       }
       function cacheImage(dataUrl) {
         try {
-          // 太大就不快取（localStorage 通常 5-10MB 上限）
           if (dataUrl && dataUrl.length < 500000) {
             localStorage.setItem(storageKey("img"), dataUrl);
           }
-        } catch (e) { /* quota exceeded - ignore */ }
+        } catch (e) { /* quota */ }
       }
       function getCachedImage() {
-        try {
-          return localStorage.getItem(storageKey("img")) || "";
-        } catch (e) { return ""; }
+        try { return localStorage.getItem(storageKey("img")) || ""; }
+        catch (e) { return ""; }
       }
       function loadFromStorage() {
         try {
@@ -1645,23 +1658,19 @@
           state.myOrderIds = Array.isArray(ids) ? ids : [];
           const name = localStorage.getItem(storageKey("myName")) || "";
           if (name) $("#personName").value = name;
-          // 從 localStorage 撈快取的菜單圖，立刻顯示，不用等 GAS
           const cached = getCachedImage();
           if (cached) state.imageUrl = cached;
-        } catch (e) { /* ignore */ }
+        } catch (e) {}
       }
       function saveMyOrderId(id) {
         if (!state.myOrderIds.includes(id)) state.myOrderIds.push(id);
-        try {
-          localStorage.setItem(storageKey("myOrderIds"), JSON.stringify(state.myOrderIds));
-        } catch (e) {}
+        try { localStorage.setItem(storageKey("myOrderIds"), JSON.stringify(state.myOrderIds)); } catch (e) {}
       }
       function removeMyOrderId(id) {
         state.myOrderIds = state.myOrderIds.filter(x => x !== id);
-        try {
-          localStorage.setItem(storageKey("myOrderIds"), JSON.stringify(state.myOrderIds));
-        } catch (e) {}
+        try { localStorage.setItem(storageKey("myOrderIds"), JSON.stringify(state.myOrderIds)); } catch (e) {}
       }
+      function isMyOrder(id) { return state.myOrderIds.includes(id); }
 
       function showToast(message, kind = "default") {
         const el = $("#toast");
@@ -1677,60 +1686,6 @@
         $("#syncText").textContent = text;
       }
 
-      // ════════════════════════════════════════════════════
-      //  API
-      // ════════════════════════════════════════════════════
-      function callApi(action, payload = {}) {
-        const cb = `gasCb_${Date.now()}_${Math.random().toString(16).slice(2)}`;
-        const q = new URLSearchParams({ action, payload: JSON.stringify(payload), callback: cb });
-        return new Promise((resolve, reject) => {
-          const script = document.createElement("script");
-          const timer = setTimeout(() => { cleanup(); reject(new Error("連線逾時")); }, 30000);
-          function cleanup() {
-            clearTimeout(timer);
-            delete window[cb];
-            script.remove();
-          }
-          window[cb] = (result) => {
-            cleanup();
-            result?.ok ? resolve(result) : reject(new Error(result?.message || "呼叫失敗"));
-          };
-          script.onerror = () => { cleanup(); reject(new Error("無法連線")); };
-          script.src = `${API_URL}?${q.toString()}`;
-          document.body.appendChild(script);
-        });
-      }
-
-      function postToGas(action, payload) {
-        return new Promise((resolve, reject) => {
-          const requestId = `post_${Date.now()}_${Math.random().toString(16).slice(2)}`;
-          const timer = setTimeout(() => {
-            window.removeEventListener("message", onMsg);
-            reject(new Error("回應逾時（資料可能已寫入）"));
-          }, 10000);
-          function onMsg(event) {
-            const data = event.data || {};
-            if (data.requestId !== requestId) return;
-            clearTimeout(timer);
-            window.removeEventListener("message", onMsg);
-            data.ok ? resolve(data) : reject(new Error(data.message || "上傳失敗"));
-          }
-          window.addEventListener("message", onMsg);
-          const form = document.createElement("form");
-          form.method = "POST";
-          form.action = API_URL;
-          form.target = "uploadFrame";
-          form.style.display = "none";
-          const input = document.createElement("textarea");
-          input.name = "payload";
-          input.value = JSON.stringify({ requestId, action, payload });
-          form.appendChild(input);
-          document.body.appendChild(form);
-          form.submit();
-          form.remove();
-        });
-      }
-
       function compressImage(file) {
         return new Promise((resolve, reject) => {
           const img = new Image();
@@ -1741,16 +1696,13 @@
             c.width = Math.round(img.width * scale);
             c.height = Math.round(img.height * scale);
             c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
-            resolve(c.toDataURL("image/jpeg", .6));
+            resolve(c.toDataURL("image/jpeg", .58));
           };
           img.onerror = reject;
           img.src = URL.createObjectURL(file);
         });
       }
 
-      // ════════════════════════════════════════════════════
-      //  URL & sharing
-      // ════════════════════════════════════════════════════
       function shareUrl() {
         const u = new URL(location.href);
         u.searchParams.set("group", state.groupId);
@@ -1777,7 +1729,7 @@
       }
 
       // ════════════════════════════════════════════════════
-      //  Calc
+      //  Calculations
       // ════════════════════════════════════════════════════
       function orderTotal(o) {
         return o.items.reduce((s, i) => s + Number(i.price || 0) * Number(i.qty || 0), 0);
@@ -1788,7 +1740,148 @@
       function grandTotal() {
         return state.orders.reduce((s, o) => s + orderTotal(o), 0);
       }
-      function isMyOrder(id) { return state.myOrderIds.includes(id); }
+
+      // 把 Firestore 拿到的訂單跟本機 pending 合併
+      function mergeOrdersWithPending(serverOrders) {
+        const result = [];
+        const usedPendingIds = new Set();
+        serverOrders.forEach(o => {
+          if (state.pendingOrders.has(o.id)) {
+            const pendingValue = state.pendingOrders.get(o.id);
+            if (pendingValue === null) {
+              // 本機已刪除，跳過
+            } else {
+              result.push(pendingValue);
+            }
+            usedPendingIds.add(o.id);
+          } else {
+            result.push(o);
+          }
+        });
+        state.pendingOrders.forEach((value, id) => {
+          if (!usedPendingIds.has(id) && value !== null) {
+            result.push(value);
+          }
+        });
+        return result;
+      }
+
+      // ════════════════════════════════════════════════════
+      //  Firestore 操作
+      // ════════════════════════════════════════════════════
+      function isExpired(createdAt) {
+        if (!createdAt) return false;
+        const t = createdAt.toMillis ? createdAt.toMillis() : new Date(createdAt).getTime();
+        return Date.now() - t > EXPIRE_HOURS * 3600 * 1000;
+      }
+
+      async function saveGroupToFirestore(title, imageDataUrl) {
+        const ref = doc(db, "groups", state.groupId);
+        const existing = await getDoc(ref);
+        const data = {
+          title: title,
+          locked: state.locked,
+          updatedAt: serverTimestamp()
+        };
+        if (imageDataUrl) data.imageUrl = imageDataUrl;
+        if (!existing.exists()) data.createdAt = serverTimestamp();
+        await setDoc(ref, data, { merge: true });
+      }
+
+      async function submitOrderToFirestore(order) {
+        const ref = doc(db, "groups", state.groupId, "orders", order.id);
+        await setDoc(ref, {
+          person: order.person,
+          note: order.note || "",
+          items: order.items,
+          updatedAt: serverTimestamp(),
+          createdAt: serverTimestamp()
+        }, { merge: true });
+      }
+
+      async function deleteOrderFromFirestore(orderId) {
+        await deleteDoc(doc(db, "groups", state.groupId, "orders", orderId));
+      }
+
+      async function setLockInFirestore(locked) {
+        const ref = doc(db, "groups", state.groupId);
+        const snap = await getDoc(ref);
+        if (!snap.exists()) {
+          await setDoc(ref, {
+            title: state.title,
+            locked: locked,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          });
+        } else {
+          await updateDoc(ref, { locked: locked, updatedAt: serverTimestamp() });
+        }
+      }
+
+      // 訂閱訂餐團 (即時)
+      function subscribeGroup() {
+        if (state.unsubGroup) state.unsubGroup();
+        const ref = doc(db, "groups", state.groupId);
+        state.unsubGroup = onSnapshot(ref,
+          (snap) => {
+            if (!snap.exists()) {
+              state.groupExists = false;
+              state.imageLoading = false;
+              setSyncState("ok", "等待主揪建立");
+              renderAll();
+              return;
+            }
+            const d = snap.data();
+            if (isExpired(d.createdAt)) {
+              state.groupExists = false;
+              setSyncState("error", "此訂餐團已過期（24h）");
+              renderAll();
+              return;
+            }
+            state.groupExists = true;
+            state.title = d.title || state.title;
+            state.locked = Boolean(d.locked);
+            if (d.imageUrl) {
+              state.imageUrl = d.imageUrl;
+              cacheImage(d.imageUrl);
+            }
+            state.imageLoading = false;
+            const timeStr = new Date().toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit" });
+            setSyncState("ok", `即時同步 · ${timeStr}`);
+            renderAll();
+          },
+          (err) => {
+            console.error("subscribeGroup error", err);
+            setSyncState("error", "連線異常");
+          }
+        );
+      }
+
+      // 訂閱訂單 (即時)
+      function subscribeOrders() {
+        if (state.unsubOrders) state.unsubOrders();
+        const q = collection(db, "groups", state.groupId, "orders");
+        state.unsubOrders = onSnapshot(q,
+          (snap) => {
+            const serverOrders = snap.docs.map(d => ({
+              id: d.id,
+              person: d.data().person || "",
+              note: d.data().note || "",
+              items: Array.isArray(d.data().items) ? d.data().items : []
+            }));
+            state.orders = mergeOrdersWithPending(serverOrders);
+            renderAll();
+          },
+          (err) => {
+            console.error("subscribeOrders error", err);
+          }
+        );
+      }
+
+      function unsubscribeAll() {
+        if (state.unsubGroup) { state.unsubGroup(); state.unsubGroup = null; }
+        if (state.unsubOrders) { state.unsubOrders(); state.unsubOrders = null; }
+      }
 
       // ════════════════════════════════════════════════════
       //  Renderers
@@ -1799,7 +1892,6 @@
         $("#totalPrice").textContent = money(grandTotal());
         $("#heroGroupTitle").textContent = state.title;
 
-        const mineCount = state.orders.filter(o => isMyOrder(o.id)).length;
         const badge = $("#ordersBadge");
         if (state.orders.length > 0) {
           badge.classList.remove("hidden");
@@ -1932,7 +2024,6 @@
           </div>`;
           return;
         }
-        // 我的訂單排前面
         const sorted = [...state.orders].sort((a, b) => {
           const am = isMyOrder(a.id) ? 0 : 1;
           const bm = isMyOrder(b.id) ? 0 : 1;
@@ -1987,7 +2078,6 @@
           const name = normalize(i.name);
           if (!name) return;
           const note = normalize(i.note);
-          // key 用「名稱 + 備註」合併同款同備註的，分開不同備註
           const key = note ? `${name}__${note}` : name;
           const display = note ? `${name}（${note}）` : name;
           const v = map.get(key) || { name: display, qty: 0, subtotal: 0, hasPrice: false };
@@ -2000,7 +2090,6 @@
       }
 
       function renderSummary() {
-        // 餐點統計
         const items = buildItemSummary();
         $("#itemSummary").innerHTML = items.length ? items.map(i => `
           <div class="summary-row">
@@ -2012,7 +2101,6 @@
           </div>
         `).join("") : '<div style="color:var(--muted);text-align:center;padding:14px">尚無資料</div>';
 
-        // 個人統計
         $("#personSummary").innerHTML = state.orders.length ? state.orders.map(o => `
           <div class="summary-row">
             <div class="label-w">
@@ -2022,7 +2110,6 @@
           </div>
         `).join("") : '<div style="color:var(--muted);text-align:center;padding:14px">尚無資料</div>';
 
-        // 備註（只列整單備註，單品備註已合進「依餐點」裡）
         const notes = [];
         state.orders.forEach(o => {
           if (o.note) notes.push({ who: o.person, what: o.note });
@@ -2060,83 +2147,6 @@
       }
 
       // ════════════════════════════════════════════════════
-      //  Data loading & polling
-      // ════════════════════════════════════════════════════
-      // 把後端拿到的訂單和本機 pending 合併
-      // - pending 是新增/編輯：用本機版本（後端可能還沒寫完）
-      // - pending 是 null：本機已刪除，過濾掉
-      function mergeOrdersWithPending(serverOrders) {
-        const result = [];
-        const usedPendingIds = new Set();
-        serverOrders.forEach(o => {
-          if (state.pendingOrders.has(o.id)) {
-            const pendingValue = state.pendingOrders.get(o.id);
-            if (pendingValue === null) {
-              // 本機已刪除，跳過
-            } else {
-              // 用本機版本（編輯中的內容比後端新）
-              result.push(pendingValue);
-            }
-            usedPendingIds.add(o.id);
-          } else {
-            result.push(o);
-          }
-        });
-        // 本機新增但後端還沒有的訂單
-        state.pendingOrders.forEach((value, id) => {
-          if (!usedPendingIds.has(id) && value !== null) {
-            result.push(value);
-          }
-        });
-        return result;
-      }
-
-      async function loadGroup(silent = false) {
-        if (state.syncing) return;
-        state.syncing = true;
-        if (!silent) setSyncState("syncing", "同步中…");
-        try {
-          const r = await callApi("getGroupData", { groupId: state.groupId, title: state.title });
-          if (r.group) {
-            state.title = r.group.title || state.title;
-            // ⚠️ 只在後端真的有回圖時才覆蓋，避免 JSONP 截斷大圖時把本地圖洗掉
-            if (r.group.imageUrl) {
-              state.imageUrl = r.group.imageUrl;
-              cacheImage(r.group.imageUrl);  // 拿到圖就快取，下次同個人開不用再拉
-            }
-            state.locked = Boolean(r.group.locked);
-          }
-          state.orders = mergeOrdersWithPending(
-            Array.isArray(r.orders) ? r.orders : []
-          );
-          state.lastSync = Date.now();
-          state.imageLoading = false;
-          const hasImg = !!(r.group && r.group.imageUrl);
-          const timeStr = new Date().toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit" });
-          setSyncState("ok", hasImg ? `已同步 · ${timeStr}` : `已同步（無圖）· ${timeStr}`);
-          renderAll();
-        } catch (e) {
-          state.imageLoading = false;
-          setSyncState("error", "同步失敗，點重新整理");
-          if (!silent) showToast(`連線失敗：${e.message}`, "error");
-          renderAll();
-        } finally {
-          state.syncing = false;
-        }
-      }
-
-      function startPolling() {
-        stopPolling();
-        state.pollTimer = setInterval(() => {
-          if (document.visibilityState === "visible") loadGroup(true);
-        }, POLL_INTERVAL);
-      }
-      function stopPolling() {
-        if (state.pollTimer) clearInterval(state.pollTimer);
-        state.pollTimer = null;
-      }
-
-      // ════════════════════════════════════════════════════
       //  Actions
       // ════════════════════════════════════════════════════
       async function saveGroup() {
@@ -2147,43 +2157,27 @@
         const btn = $("#saveGroupBtn");
         btn.disabled = true;
         btn.innerHTML = "⏳ 儲存中…";
-        // 暫停輪詢，避免跟儲存搶 GAS
-        stopPolling();
         try {
           const imageDataUrl = state.selectedImageFile ? await compressImage(state.selectedImageFile) : "";
-
-          // 樂觀更新：先在本機把狀態清掉，UI 立刻顯示「已儲存」
-          // 不等 GAS 回傳（postMessage 常常掉訊息），讓背景輪詢確認
           state.imageUrl = imageDataUrl || state.imageUrl;
           state.selectedImageDataUrl = "";
           state.selectedImageFile = null;
-          // 快取本地圖，下次打開立刻顯示，不用等 GAS
           if (imageDataUrl) cacheImage(imageDataUrl);
 
-          if (imageDataUrl) {
-            // 有圖：用 POST iframe，但不等回應太久
-            postToGas("saveGroup", { groupId: state.groupId, title: state.title, imageDataUrl })
-              .catch(e => console.warn("postToGas 回應未收到（試算表通常仍有寫入）", e.message));
-            // 給 GAS 一點時間寫入（不阻塞 UI）
-            await new Promise(r => setTimeout(r, 800));
-          } else {
-            // 沒圖：JSONP 等回應就好，本來就快
-            try {
-              await callApi("saveGroup", { groupId: state.groupId, title: state.title, imageDataUrl: "" });
-            } catch (e) {
-              console.warn("callApi saveGroup 失敗", e.message);
-            }
-          }
+          await saveGroupToFirestore(state.title, imageDataUrl);
 
           renderAll();
+          // 確保訂閱有開（如果是新建立第一次儲存）
+          if (!state.unsubGroup) subscribeGroup();
+          if (!state.unsubOrders) subscribeOrders();
           showToast("已儲存 · 分享連結已複製", "success");
           copyText(shareText(), "已儲存 · 分享連結已複製");
         } catch (e) {
+          console.error(e);
           showToast(`儲存失敗：${e.message}`, "error");
         } finally {
           btn.disabled = false;
           btn.innerHTML = "✨ 儲存並產生分享連結";
-          startPolling();
         }
       }
 
@@ -2204,7 +2198,6 @@
 
         if (!items.length) { showToast("至少填一個餐點", "error"); return; }
 
-        // 開啟確認 sheet，不直接送出
         openConfirmSheet({
           person,
           note: $("#personNote").value.trim(),
@@ -2241,7 +2234,6 @@
         }).join("");
         $("#confirmTotal").textContent = money(total);
 
-        // 暫存待送的 order
         state._pendingOrder = orderData;
 
         $("#confirmBackdrop").classList.add("show");
@@ -2254,7 +2246,7 @@
         state._pendingOrder = null;
       }
 
-      function doSubmitOrder() {
+      async function doSubmitOrder() {
         const orderData = state._pendingOrder;
         if (!orderData) return;
 
@@ -2265,10 +2257,11 @@
           items: orderData.items
         };
         const isEdit = !!state.editingOrderId;
+
+        // 本機立即更新
         state.orders = state.orders.filter(o => o.id !== order.id);
         state.orders.push(order);
         saveMyOrderId(order.id);
-        // 加入 pending：輪詢時要保留這筆，避免被 GAS 還沒寫好的回應覆蓋掉
         state.pendingOrders.set(order.id, order);
         try { localStorage.setItem(storageKey("myName"), order.person); } catch (e) {}
         state.editingOrderId = "";
@@ -2278,18 +2271,20 @@
         renderAll();
         activateView("mine");
         showToast(isEdit ? "訂單已更新 ✨" : "訂單送出 🎉", "success");
-        callApi("submitOrder", { groupId: state.groupId, order })
-          .then(() => {
-            // GAS 確認寫入完成，移除 pending 標記，下次輪詢用後端資料覆蓋
-            state.pendingOrders.delete(order.id);
-            setSyncState("ok", "已同步");
-          })
-          .catch(e => {
-            // 失敗也別把 pending 留著 — 不然永遠卡住
-            state.pendingOrders.delete(order.id);
-            setSyncState("error", "背景儲存失敗");
-            showToast(`背景儲存失敗：${e.message}`, "error");
-          });
+
+        // 確保有訂閱
+        if (!state.unsubGroup) subscribeGroup();
+        if (!state.unsubOrders) subscribeOrders();
+
+        try {
+          await submitOrderToFirestore(order);
+          state.pendingOrders.delete(order.id);
+          setSyncState("ok", "已同步");
+        } catch (e) {
+          console.error(e);
+          state.pendingOrders.delete(order.id);
+          showToast(`送出失敗：${e.message}`, "error");
+        }
       }
 
       function editOrder(id) {
@@ -2305,23 +2300,24 @@
         showToast("已載入，編輯後再送出");
       }
 
-      function deleteOrder(id) {
+      async function deleteOrder(id) {
         const o = state.orders.find(x => x.id === id);
         if (!o) return;
         if (!isMyOrder(id)) { showToast("只能刪除自己的訂單", "error"); return; }
         if (!confirm(`確定刪除 ${o.person} 的訂單？`)) return;
         state.orders = state.orders.filter(x => x.id !== id);
         removeMyOrderId(id);
-        // 標記為「待刪除」— pending value 是 null 表示要刪除
         state.pendingOrders.set(id, null);
         renderAll();
         showToast("已刪除", "success");
-        callApi("deleteOrder", { groupId: state.groupId, orderId: id })
-          .then(() => state.pendingOrders.delete(id))
-          .catch(e => {
-            state.pendingOrders.delete(id);
-            showToast(`背景刪除失敗：${e.message}`, "error");
-          });
+        try {
+          await deleteOrderFromFirestore(id);
+          state.pendingOrders.delete(id);
+        } catch (e) {
+          console.error(e);
+          state.pendingOrders.delete(id);
+          showToast(`刪除失敗：${e.message}`, "error");
+        }
       }
 
       async function toggleLock() {
@@ -2330,7 +2326,7 @@
         state.locked = next;
         renderLockUI();
         try {
-          await callApi("lockGroup", { groupId: state.groupId, title: state.title, locked: next });
+          await setLockInFirestore(next);
           showToast(next ? "🔒 已鎖單" : "🔓 已開放", "success");
         } catch (e) {
           state.locked = !next;
@@ -2351,7 +2347,7 @@
       }
 
       // ════════════════════════════════════════════════════
-      //  結團 - 彙整頁
+      //  結團彙整頁
       // ════════════════════════════════════════════════════
       async function endTeam() {
         if (!state.orders.length) {
@@ -2360,12 +2356,10 @@
         }
         if (!confirm(`確定結團？\n\n• 將自動鎖單，沒人能再點餐\n• 跳出彙整頁可截圖傳 LINE\n• 24 小時內仍可查看`)) return;
 
-        // 鎖單（如果還沒鎖）
         if (!state.locked) {
           state.locked = true;
           renderLockUI();
-          callApi("lockGroup", { groupId: state.groupId, title: state.title, locked: true })
-            .catch(e => console.warn("鎖單失敗", e));
+          setLockInFirestore(true).catch(e => console.warn("鎖單失敗", e));
         }
 
         renderReceipt();
@@ -2381,7 +2375,6 @@
           hour: "2-digit", minute: "2-digit"
         });
 
-        // 餐點清單
         const items = buildItemSummary();
         $("#receiptItems").innerHTML = items.map(i => `
           <div class="receipt-row">
@@ -2393,7 +2386,6 @@
           </div>
         `).join("");
 
-        // 每人金額
         $("#receiptPeople").innerHTML = state.orders.map(o => `
           <div class="receipt-row receipt-person-row">
             <div class="ri-name">
@@ -2403,7 +2395,6 @@
           </div>
         `).join("");
 
-        // 備註（只列整單備註，單品備註已合進「依餐點」裡）
         const notes = [];
         state.orders.forEach(o => {
           if (o.note) notes.push({ who: o.person, what: o.note });
@@ -2426,6 +2417,9 @@
         document.body.style.overflow = "";
       }
 
+      // ════════════════════════════════════════════════════
+      //  Navigation
+      // ════════════════════════════════════════════════════
       function activateView(view) {
         $$(".tab").forEach(t => t.classList.toggle("is-active", t.dataset.view === view));
         $$(".view").forEach(p => p.classList.toggle("is-active", p.id === `view-${view}`));
@@ -2480,45 +2474,46 @@
           $("#heroGroupTitle").textContent = state.title;
           updateUrl();
         });
-        $("#refreshBtn").addEventListener("click", () => loadGroup(false));
-        $("#lockSwitch").addEventListener("click", toggleLock);
-        document.addEventListener("visibilitychange", () => {
-          if (document.visibilityState === "visible") loadGroup(true);
+        $("#refreshBtn").addEventListener("click", () => {
+          // Firestore 是即時的，重新整理 = 重啟訂閱
+          unsubscribeAll();
+          subscribeGroup();
+          subscribeOrders();
+          showToast("已重新連線");
         });
+        $("#lockSwitch").addEventListener("click", toggleLock);
         $("#personName").addEventListener("blur", () => {
           const v = $("#personName").value.trim();
           if (v) try { localStorage.setItem(storageKey("myName"), v); } catch (e) {}
         });
 
-        // 確認 sheet
         $("#confirmCancelBtn").addEventListener("click", closeConfirmSheet);
         $("#confirmBackdrop").addEventListener("click", closeConfirmSheet);
         $("#confirmOkBtn").addEventListener("click", doSubmitOrder);
 
-        // 結團
         $("#endTeamBtn").addEventListener("click", endTeam);
         $("#receiptCloseBtn").addEventListener("click", closeReceipt);
         $("#receiptCopyBtn").addEventListener("click", () => copyText(summaryText(), "已複製彙整文字 📋"));
 
-        // ESC 關閉
         document.addEventListener("keydown", (e) => {
           if (e.key !== "Escape") return;
           if ($("#receiptOverlay").classList.contains("show")) closeReceipt();
           else if ($("#confirmSheet").classList.contains("show")) closeConfirmSheet();
           else if ($("#imageModal").classList.contains("show")) $("#imageModal").classList.remove("show");
         });
+
+        // 視窗關閉時取消訂閱
+        window.addEventListener("beforeunload", unsubscribeAll);
       }
 
       function detectInitialView() {
-        // 有圖片 + 已從 URL 進來 → 直接到點餐
-        // 否則停在「建立」
         const hasGroupParam = params.has("group");
         if (hasGroupParam) {
           setTimeout(() => activateView("order"), 100);
         }
       }
 
-      async function init() {
+      function init() {
         setupEvents();
         $("#groupTitleInput").value = state.title === "未命名訂餐團" ? "" : state.title;
         $("#heroGroupTitle").textContent = state.title;
@@ -2527,16 +2522,16 @@
         renderAll();
         detectInitialView();
 
-        // 只有從分享連結進來（URL 帶 group）才打後端拉資料
-        // 否則是主揪建立中，先不要呼叫，避免後端建出空團
         if (params.has("group")) {
-          state.imageLoading = true;
+          // 從分享連結進來，立刻訂閱即時資料
+          state.imageLoading = !state.imageUrl;
           renderAll();
-          setSyncState("syncing", "載入中…");
-          loadGroup(true).finally(() => startPolling());
+          setSyncState("syncing", "連線中…");
+          subscribeGroup();
+          subscribeOrders();
         } else {
+          // 主揪建立中，先不連線
           setSyncState("ok", "等待建立");
-          // 主揪按下儲存後才開始輪詢
         }
       }
 
