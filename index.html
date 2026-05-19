@@ -254,13 +254,19 @@
       }
       .sync-bar button:hover { background: var(--matcha-soft); }
       .host-badge {
-        font-size: 11px;
+        font-size: 12px;
         font-weight: 900;
-        color: var(--caramel);
-        background: var(--caramel-soft);
-        padding: 2px 8px;
+        color: #fff;
+        background: linear-gradient(135deg, var(--tomato), var(--tomato-dark));
+        padding: 4px 10px;
         border-radius: 999px;
         letter-spacing: .04em;
+        box-shadow: 0 2px 6px rgba(232,90,79,.35);
+        animation: hostPulse 2.4s ease-in-out infinite;
+      }
+      @keyframes hostPulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
       }
 
       /* ─── Tabs ─────────────────────────────────────────── */
@@ -611,30 +617,28 @@
         background: var(--paper);
         border: 1.5px solid var(--line);
         border-radius: var(--radius-md);
-        padding: 16px;
+        padding: 14px 16px 16px;
         margin-bottom: 12px;
         position: relative;
-        overflow: hidden;
       }
       .order-card.is-mine {
         border-color: var(--matcha);
         background: linear-gradient(180deg, var(--matcha-soft), var(--paper) 30%);
-        padding-top: 32px;
       }
       .order-card.is-host-editable {
         border-color: var(--caramel);
         background: linear-gradient(180deg, rgba(212,160,92,.08), var(--paper) 30%);
-        padding-top: 32px;
       }
       .order-card .mine-tag {
-        position: absolute;
-        top: 10px; left: 12px;
+        display: inline-block;
         background: var(--matcha);
         color: #fff;
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 900;
         padding: 3px 10px;
         border-radius: 999px;
+        margin-bottom: 10px;
+        letter-spacing: .05em;
       }
       .order-card .mine-tag.host {
         background: var(--caramel);
@@ -1155,48 +1159,6 @@
         font-weight: 600;
       }
 
-      /* 主揪救援連結 */
-      .rescue-box {
-        background: linear-gradient(135deg, rgba(212,160,92,.12), rgba(212,160,92,.04));
-        border: 1.5px dashed var(--caramel);
-        border-radius: 12px;
-        padding: 12px 14px;
-        margin-bottom: 16px;
-      }
-      .rescue-head {
-        display: flex;
-        align-items: flex-start;
-        gap: 10px;
-        margin-bottom: 10px;
-      }
-      .rescue-icon {
-        font-size: 24px;
-        line-height: 1;
-        flex-shrink: 0;
-      }
-      .rescue-title {
-        font-weight: 900;
-        font-size: 14px;
-        color: var(--caramel);
-        margin-bottom: 2px;
-      }
-      .rescue-hint {
-        font-size: 12px;
-        color: var(--ink-2);
-        font-weight: 600;
-        line-height: 1.4;
-      }
-      .rescue-box button {
-        width: 100%;
-        background: var(--paper);
-        border: 1px solid var(--caramel);
-        color: var(--caramel);
-        font-weight: 800;
-      }
-      .rescue-box button:hover {
-        background: var(--caramel-soft);
-      }
-
       /* ─── End-team Final Receipt ──────────────────────── */
       .receipt-overlay {
         position: fixed;
@@ -1664,17 +1626,6 @@
         <div class="share-url-label">🔗 連結預覽（給大家）</div>
         <div class="share-url-text" id="shareUrlText"></div>
       </div>
-      <!-- 主揪救援連結（只有主揪看得到） -->
-      <div class="rescue-box" id="rescueBox" style="display:none">
-        <div class="rescue-head">
-          <span class="rescue-icon">🔑</span>
-          <div>
-            <div class="rescue-title">主揪救援連結</div>
-            <div class="rescue-hint">換手機/清快取時用，傳給自己 LINE 即可</div>
-          </div>
-        </div>
-        <button class="btn btn-ghost btn-sm" type="button" id="copyRescueBtn">📋 複製救援連結</button>
-      </div>
       <div class="button-row">
         <button class="btn btn-ghost" type="button" id="shareCancelBtn">稍後再說</button>
         <button class="btn btn-primary" type="button" id="shareCopyBtn">📋 複製連結</button>
@@ -1786,18 +1737,6 @@
         serverHostToken: ""    // Firestore 上記錄的主揪 token
       };
 
-      // 如果網址有 ?host=xxx，把它寫進本機 localStorage 然後清掉網址參數（救援連結邏輯）
-      const hostParam = params.get("host");
-      if (hostParam) {
-        try {
-          localStorage.setItem("orderApp.fb." + state.groupId + ".hostToken", hostParam);
-        } catch (e) {}
-        // 從網址移除 host param，但保留 group、title
-        const cleanUrl = new URL(location.href);
-        cleanUrl.searchParams.delete("host");
-        history.replaceState(null, "", cleanUrl.toString());
-      }
-
       // ════════════════════════════════════════════════════
       //  Helpers
       // ════════════════════════════════════════════════════
@@ -1869,14 +1808,6 @@
       function saveHostToken(token) {
         try { localStorage.setItem(storageKey("hostToken"), token); }
         catch (e) {}
-      }
-      function rescueUrl() {
-        // 主揪救援連結（含 host token）
-        const u = new URL(location.href);
-        u.searchParams.set("group", state.groupId);
-        u.searchParams.set("title", state.title);
-        u.searchParams.set("host", state.hostToken);
-        return u.toString();
       }
       // 判斷當前使用者能否編輯/刪除這筆訂單（自己的 OR 主揪都可以）
       function canEditOrder(id) {
@@ -2590,8 +2521,6 @@
           <div class="sp-hint">按下「複製連結」傳給夥伴吧</div>
         `;
         $("#shareUrlText").textContent = shareUrl();
-        // 主揪才顯示救援區
-        $("#rescueBox").style.display = state.isHost ? "block" : "none";
         $("#shareBackdrop").classList.add("show");
         $("#shareSheet").classList.add("show");
       }
@@ -2867,14 +2796,6 @@
           // 在直接 user click 內，clipboard API 100% 成功
           await copyText(shareText(), "已複製連結 🎉");
           closeShareSheet();
-        });
-        $("#copyRescueBtn").addEventListener("click", async () => {
-          if (!state.hostToken) {
-            showToast("找不到主揪識別，請重新儲存", "error");
-            return;
-          }
-          const text = `🔑 揪團點餐主揪救援連結\n（換手機/清快取時用這條進入即可恢復主揪權限）\n\n${rescueUrl()}`;
-          await copyText(text, "已複製救援連結 🔑");
         });
 
         $("#endTeamBtn").addEventListener("click", endTeam);
