@@ -112,7 +112,7 @@
       /* ─── Header ───────────────────────────────────────── */
       .hero {
         position: relative;
-        padding: 22px 22px 14px;
+        padding: 16px 22px 12px;
         background:
           radial-gradient(circle at 85% 0%, rgba(232,90,79,.18), transparent 50%),
           radial-gradient(circle at 0% 100%, rgba(92,138,58,.16), transparent 55%),
@@ -133,7 +133,7 @@
         justify-content: space-between;
         align-items: center;
         gap: 10px;
-        margin-bottom: 12px;
+        margin-bottom: 8px;
       }
       .brand {
         display: flex;
@@ -141,33 +141,33 @@
         gap: 10px;
       }
       .brand-emoji {
-        width: 44px; height: 44px;
+        width: 38px; height: 38px;
         display: grid; place-items: center;
-        font-size: 26px;
+        font-size: 22px;
         background: var(--paper);
-        border-radius: 14px;
+        border-radius: 12px;
         box-shadow: var(--shadow-sm);
         transform: rotate(-6deg);
       }
       .brand-text .label {
-        font-size: 11px;
-        letter-spacing: .18em;
+        font-size: 10px;
+        letter-spacing: .16em;
         color: var(--tomato);
         font-weight: 900;
         text-transform: uppercase;
       }
       .brand-text h1 {
         margin: 0;
-        font-size: 22px;
+        font-size: 18px;
         line-height: 1.1;
       }
 
       .icon-btn {
-        width: 42px; height: 42px;
+        width: 38px; height: 38px;
         display: grid; place-items: center;
         background: var(--paper);
         border-radius: 12px;
-        font-size: 18px;
+        font-size: 16px;
         box-shadow: var(--shadow-sm);
         color: var(--ink);
       }
@@ -189,9 +189,9 @@
       }
 
       .group-title {
-        font-size: 26px;
+        font-size: 21px;
         line-height: 1.15;
-        margin: 4px 0 12px;
+        margin: 2px 0 10px;
       }
 
       .stats {
@@ -202,22 +202,22 @@
       .stat {
         background: rgba(255,255,255,.7);
         backdrop-filter: blur(6px);
-        border-radius: 14px;
-        padding: 10px;
+        border-radius: 12px;
+        padding: 8px 6px;
         text-align: center;
         border: 1px solid rgba(255,255,255,.6);
       }
       .stat-num {
         font-family: "Fraunces", serif;
         font-weight: 900;
-        font-size: 22px;
+        font-size: 20px;
         line-height: 1;
         color: var(--ink);
       }
       .stat-label {
-        font-size: 11px;
+        font-size: 10.5px;
         color: var(--ink-2);
-        margin-top: 4px;
+        margin-top: 3px;
         font-weight: 700;
       }
       .stat.money .stat-num { color: var(--tomato-dark); }
@@ -602,7 +602,7 @@
         background: var(--paper);
         border: 1.5px solid var(--line);
         border-radius: var(--radius-md);
-        padding: 14px;
+        padding: 16px;
         margin-bottom: 12px;
         position: relative;
         overflow: hidden;
@@ -610,7 +610,7 @@
       .order-card.is-mine {
         border-color: var(--matcha);
         background: linear-gradient(180deg, var(--matcha-soft), var(--paper) 30%);
-        padding-top: 30px;
+        padding-top: 32px;
       }
       .order-card.is-mine::before {
         content: "我";
@@ -668,16 +668,16 @@
         font-size: 16px;
       }
       .order-head .note {
-        font-size: 13px;
+        font-size: 14px;
         color: var(--ink-2);
-        font-weight: 500;
+        font-weight: 600;
         line-height: 1.4;
         margin-top: 2px;
       }
       .order-total {
         font-family: "Fraunces", "Noto Sans TC", serif;
         font-weight: 900;
-        font-size: 20px;
+        font-size: 24px;
         color: var(--tomato-dark);
         font-variant-numeric: tabular-nums;
       }
@@ -689,7 +689,7 @@
         border-top: 1px dashed var(--line);
       }
       .line-items li {
-        padding: 10px 0;
+        padding: 12px 0;
         border-bottom: 1px dashed var(--line);
         display: flex;
         justify-content: space-between;
@@ -699,19 +699,20 @@
       .line-items li:last-child { border-bottom: 0; }
       .line-items .item-name {
         font-weight: 800;
-        font-size: 16px;
+        font-size: 18px;
+        color: var(--ink);
       }
       .line-items .item-note {
         display: block;
         font-size: 14px;
         color: var(--ink-2);
-        font-weight: 500;
-        margin-top: 4px;
+        font-weight: 600;
+        margin-top: 5px;
         line-height: 1.4;
       }
       .line-items .item-price {
         font-weight: 800;
-        font-size: 16px;
+        font-size: 17px;
         white-space: nowrap;
         font-variant-numeric: tabular-nums;
         color: var(--ink);
@@ -719,7 +720,7 @@
       .line-items .qty {
         color: var(--caramel);
         font-weight: 900;
-        font-size: 15px;
+        font-size: 17px;
       }
 
       .order-actions {
@@ -763,10 +764,10 @@
         justify-content: space-between;
         align-items: center;
         gap: 12px;
-        padding: 10px 0;
+        padding: 12px 0;
         border-bottom: 1px dashed var(--line);
-        font-size: 16px;
-        font-weight: 700;
+        font-size: 17px;
+        font-weight: 800;
       }
       .summary-row:last-child { border-bottom: 0; }
       .summary-row .label-w {
@@ -777,9 +778,9 @@
         flex: 1;
       }
       .summary-row .qty-pill {
-        font-size: 13px;
-        font-weight: 800;
-        padding: 3px 9px;
+        font-size: 14px;
+        font-weight: 900;
+        padding: 4px 11px;
         background: var(--caramel-soft);
         color: var(--caramel);
         border-radius: 999px;
@@ -787,7 +788,7 @@
       }
       .summary-row b {
         font-variant-numeric: tabular-nums;
-        font-size: 16px;
+        font-size: 17px;
         font-weight: 900;
       }
 
