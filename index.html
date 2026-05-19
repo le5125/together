@@ -1593,7 +1593,7 @@
       <div class="sync-bar">
         <div class="dot" id="syncDot"></div>
         <span id="syncText">已同步</span>
-        <span class="host-badge" id="hostBadge" style="display:none">🔑 主揪</span>
+        <span class="host-badge" id="hostBadge" style="display:none">🔑 辛苦主揪</span>
         <span class="grow"></span>
         <button id="refreshBtn" type="button">🔄 重新整理</button>
       </div>
@@ -1602,15 +1602,15 @@
       <nav class="tabs" role="tablist">
         <button class="tab is-active host-only" type="button" data-view="setup" role="tab">
           <span class="tab-emoji">⚙️</span>
-          <span>建立</span>
+          <span>建立菜單</span>
         </button>
         <button class="tab" type="button" data-view="order" role="tab">
           <span class="tab-emoji">📝</span>
-          <span>點餐</span>
+          <span>我要點餐</span>
         </button>
         <button class="tab" type="button" data-view="mine" role="tab">
           <span class="tab-emoji">🧾</span>
-          <span>訂單</span>
+          <span>大家訂單</span>
           <span class="badge hidden" id="ordersBadge">0</span>
         </button>
         <button class="tab host-only" type="button" data-view="summary" role="tab">
@@ -2475,7 +2475,7 @@
             ${state.draftItems.length > 1 ? `<button class="remove" data-act="remove" type="button" aria-label="刪除">✕</button>` : ''}
             <label class="field" style="margin: 6px 0 8px">
               <span class="lbl">餐點</span>
-              <input data-field="name" value="${escapeHtml(item.name)}" placeholder="例如：奶茶 " />
+              <input data-field="name" value="${escapeHtml(item.name)}" placeholder="例如：QQㄋㄟㄋㄟ好喝到咩噗茶 " />
             </label>
             <div class="item-grid">
               <label class="field" style="margin:0">
@@ -2493,7 +2493,7 @@
             </div>
             <label class="field" style="margin: 10px 0 0">
               <span class="lbl">這份的備註 <span class="hint">點一下快選</span></span>
-              <input data-field="note" value="${escapeHtml(item.note)}" placeholder="例如：半糖去冰" />
+              <input data-field="note" value="${escapeHtml(item.note)}" placeholder="例如：珍奶不要珍珠不要奶" />
               <div class="quick-notes">
                 ${QUICK_NOTES.map(n => `<button class="chip" type="button" data-quick="${escapeHtml(n)}">${escapeHtml(n)}</button>`).join("")}
               </div>
