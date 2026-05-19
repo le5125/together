@@ -1971,8 +1971,10 @@
         unsubOrders: null,
         _pendingOrder: null,
         // 主揪識別
+        // - 沒有 ?group= → 正在建新團，預設是主揪
+        // - 有 ?group= → 等 Firestore 回應再判斷（subscribeGroup 內處理）
         hostToken: "",         // 本機儲存的 token
-        isHost: false,         // 是否為主揪（本機 token 跟 Firestore 一致）
+        isHost: !params.has("group"),  // 預設：建新團者就是主揪
         serverHostToken: ""    // Firestore 上記錄的主揪 token
       };
 
@@ -2021,6 +2023,13 @@
           if (name) $("#personName").value = name;
           const cached = getCachedImage();
           if (cached) state.imageUrl = cached;
+          // 預讀本機 hostToken：如果本機有存，先暫定為主揪
+          // 之後 subscribeGroup 收到 server hostToken 會再驗證
+          const localHostToken = localStorage.getItem(storageKey("hostToken"));
+          if (localHostToken) {
+            state.hostToken = localHostToken;
+            state.isHost = true; // 樂觀預判，避免閃爍
+          }
         } catch (e) {}
       }
       function saveMyOrderId(id) {
