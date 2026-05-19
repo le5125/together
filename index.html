@@ -253,6 +253,15 @@
         border-radius: 8px;
       }
       .sync-bar button:hover { background: var(--matcha-soft); }
+      .host-badge {
+        font-size: 11px;
+        font-weight: 900;
+        color: var(--caramel);
+        background: var(--caramel-soft);
+        padding: 2px 8px;
+        border-radius: 999px;
+        letter-spacing: .04em;
+      }
 
       /* ─── Tabs ─────────────────────────────────────────── */
       .tabs {
@@ -612,8 +621,12 @@
         background: linear-gradient(180deg, var(--matcha-soft), var(--paper) 30%);
         padding-top: 32px;
       }
-      .order-card.is-mine::before {
-        content: "我";
+      .order-card.is-host-editable {
+        border-color: var(--caramel);
+        background: linear-gradient(180deg, rgba(212,160,92,.08), var(--paper) 30%);
+        padding-top: 32px;
+      }
+      .order-card .mine-tag {
         position: absolute;
         top: 10px; left: 12px;
         background: var(--matcha);
@@ -622,6 +635,9 @@
         font-weight: 900;
         padding: 3px 10px;
         border-radius: 999px;
+      }
+      .order-card .mine-tag.host {
+        background: var(--caramel);
       }
       .order-head {
         display: flex;
@@ -790,6 +806,26 @@
         font-variant-numeric: tabular-nums;
         font-size: 17px;
         font-weight: 900;
+      }
+      .summary-row.host-can-rename {
+        cursor: pointer;
+        margin: 0 -8px;
+        padding: 12px 8px;
+        border-radius: 8px;
+        transition: background .15s;
+      }
+      .summary-row.host-can-rename:hover {
+        background: var(--caramel-soft);
+      }
+      .summary-row .rename-hint {
+        opacity: 0;
+        font-size: 13px;
+        transition: opacity .15s;
+        margin-left: 4px;
+      }
+      .summary-row.host-can-rename:hover .rename-hint { opacity: 1; }
+      @media (hover: none) {
+        .summary-row .rename-hint { opacity: .55; }
       }
 
       .grand-total {
@@ -1119,6 +1155,48 @@
         font-weight: 600;
       }
 
+      /* 主揪救援連結 */
+      .rescue-box {
+        background: linear-gradient(135deg, rgba(212,160,92,.12), rgba(212,160,92,.04));
+        border: 1.5px dashed var(--caramel);
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 16px;
+      }
+      .rescue-head {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      .rescue-icon {
+        font-size: 24px;
+        line-height: 1;
+        flex-shrink: 0;
+      }
+      .rescue-title {
+        font-weight: 900;
+        font-size: 14px;
+        color: var(--caramel);
+        margin-bottom: 2px;
+      }
+      .rescue-hint {
+        font-size: 12px;
+        color: var(--ink-2);
+        font-weight: 600;
+        line-height: 1.4;
+      }
+      .rescue-box button {
+        width: 100%;
+        background: var(--paper);
+        border: 1px solid var(--caramel);
+        color: var(--caramel);
+        font-weight: 800;
+      }
+      .rescue-box button:hover {
+        background: var(--caramel-soft);
+      }
+
       /* ─── End-team Final Receipt ──────────────────────── */
       .receipt-overlay {
         position: fixed;
@@ -1363,6 +1441,7 @@
       <div class="sync-bar">
         <div class="dot" id="syncDot"></div>
         <span id="syncText">已同步</span>
+        <span class="host-badge" id="hostBadge" style="display:none">🔑 主揪</span>
         <span class="grow"></span>
         <button id="refreshBtn" type="button">🔄 重新整理</button>
       </div>
@@ -1582,8 +1661,19 @@
       </div>
       <div class="share-preview" id="sharePreview"></div>
       <div class="share-url-box">
-        <div class="share-url-label">🔗 連結預覽</div>
+        <div class="share-url-label">🔗 連結預覽（給大家）</div>
         <div class="share-url-text" id="shareUrlText"></div>
+      </div>
+      <!-- 主揪救援連結（只有主揪看得到） -->
+      <div class="rescue-box" id="rescueBox" style="display:none">
+        <div class="rescue-head">
+          <span class="rescue-icon">🔑</span>
+          <div>
+            <div class="rescue-title">主揪救援連結</div>
+            <div class="rescue-hint">換手機/清快取時用，傳給自己 LINE 即可</div>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" type="button" id="copyRescueBtn">📋 複製救援連結</button>
       </div>
       <div class="button-row">
         <button class="btn btn-ghost" type="button" id="shareCancelBtn">稍後再說</button>
@@ -1689,8 +1779,24 @@
         imageLoading: false,
         unsubGroup: null,      // Firestore listener cleanup
         unsubOrders: null,
-        _pendingOrder: null
+        _pendingOrder: null,
+        // 主揪識別
+        hostToken: "",         // 本機儲存的 token
+        isHost: false,         // 是否為主揪（本機 token 跟 Firestore 一致）
+        serverHostToken: ""    // Firestore 上記錄的主揪 token
       };
+
+      // 如果網址有 ?host=xxx，把它寫進本機 localStorage 然後清掉網址參數（救援連結邏輯）
+      const hostParam = params.get("host");
+      if (hostParam) {
+        try {
+          localStorage.setItem("orderApp.fb." + state.groupId + ".hostToken", hostParam);
+        } catch (e) {}
+        // 從網址移除 host param，但保留 group、title
+        const cleanUrl = new URL(location.href);
+        cleanUrl.searchParams.delete("host");
+        history.replaceState(null, "", cleanUrl.toString());
+      }
 
       // ════════════════════════════════════════════════════
       //  Helpers
@@ -1748,6 +1854,34 @@
         try { localStorage.setItem(storageKey("myOrderIds"), JSON.stringify(state.myOrderIds)); } catch (e) {}
       }
       function isMyOrder(id) { return state.myOrderIds.includes(id); }
+
+      // === Host Token (主揪識別) ===
+      function generateHostToken() {
+        // 32 字元隨機 token，base36 編碼，不可猜
+        const arr = new Uint8Array(16);
+        crypto.getRandomValues(arr);
+        return Array.from(arr, b => b.toString(36)).join("").slice(0, 32);
+      }
+      function loadHostToken() {
+        try { return localStorage.getItem(storageKey("hostToken")) || ""; }
+        catch (e) { return ""; }
+      }
+      function saveHostToken(token) {
+        try { localStorage.setItem(storageKey("hostToken"), token); }
+        catch (e) {}
+      }
+      function rescueUrl() {
+        // 主揪救援連結（含 host token）
+        const u = new URL(location.href);
+        u.searchParams.set("group", state.groupId);
+        u.searchParams.set("title", state.title);
+        u.searchParams.set("host", state.hostToken);
+        return u.toString();
+      }
+      // 判斷當前使用者能否編輯/刪除這筆訂單（自己的 OR 主揪都可以）
+      function canEditOrder(id) {
+        return state.isHost || isMyOrder(id);
+      }
 
       function showToast(message, kind = "default") {
         const el = $("#toast");
@@ -1889,7 +2023,16 @@
           expiresAt: expiryTimestamp()    // ← TTL: 24h 後自動刪
         };
         if (imageDataUrl) data.imageUrl = imageDataUrl;
-        if (!existing.exists()) data.createdAt = serverTimestamp();
+        if (!existing.exists()) {
+          // 首次建立：生成 hostToken
+          data.createdAt = serverTimestamp();
+          if (!state.hostToken) {
+            state.hostToken = generateHostToken();
+            saveHostToken(state.hostToken);
+          }
+          data.hostToken = state.hostToken;
+          state.isHost = true;
+        }
         await setDoc(ref, data, { merge: true });
       }
 
@@ -1958,6 +2101,13 @@
             if (d.imageUrl) {
               state.imageUrl = d.imageUrl;
               cacheImage(d.imageUrl);
+            }
+            // 主揪識別：本機 token 跟 server token 一致 → 是主揪
+            if (d.hostToken) {
+              state.serverHostToken = d.hostToken;
+              const localToken = loadHostToken();
+              state.hostToken = localToken;
+              state.isHost = (localToken === d.hostToken);
             }
             state.imageLoading = false;
             const timeStr = new Date().toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit" });
@@ -2145,9 +2295,15 @@
         });
         box.innerHTML = sorted.map(o => {
           const mine = isMyOrder(o.id);
+          const canEdit = canEditOrder(o.id);
           const color = colorFor(o.person);
+          // 主揪標籤：是我的就顯示「我」、不是我的但我是主揪則顯示「可編輯」小標
+          let mineTag = "";
+          if (mine) mineTag = `<div class="mine-tag">我</div>`;
+          else if (state.isHost) mineTag = `<div class="mine-tag host">主揪可改</div>`;
           return `
-          <article class="order-card ${mine ? "is-mine" : ""}" data-id="${o.id}">
+          <article class="order-card ${mine ? "is-mine" : ""} ${!mine && state.isHost ? "is-host-editable" : ""}" data-id="${o.id}">
+            ${mineTag}
             <div class="order-head">
               <div class="avatar" style="background:${color}">${escapeHtml(o.person)}</div>
               <div class="who">
@@ -2167,7 +2323,7 @@
                 </li>
               `).join("")}
             </ul>
-            ${mine ? `
+            ${canEdit ? `
               <div class="order-actions">
                 <button class="btn btn-secondary btn-sm" type="button" data-act="edit">✏️ 編輯</button>
                 <button class="btn btn-danger btn-sm" type="button" data-act="delete">🗑️ 刪除</button>
@@ -2194,7 +2350,7 @@
           const note = normalize(i.note);
           const key = note ? `${name}__${note}` : name;
           const display = note ? `${name}（${note}）` : name;
-          const v = map.get(key) || { name: display, qty: 0, subtotal: 0, hasPrice: false };
+          const v = map.get(key) || { name: display, rawName: name, qty: 0, subtotal: 0, hasPrice: false };
           v.qty += Number(i.qty || 0);
           v.subtotal += Number(i.price || 0) * Number(i.qty || 0);
           if (Number(i.price) > 0) v.hasPrice = true;
@@ -2205,15 +2361,26 @@
 
       function renderSummary() {
         const items = buildItemSummary();
-        $("#itemSummary").innerHTML = items.length ? items.map(i => `
-          <div class="summary-row">
+        $("#itemSummary").innerHTML = items.length ? items.map((i, idx) => `
+          <div class="summary-row ${state.isHost ? 'host-can-rename' : ''}" ${state.isHost ? `data-rename-from="${escapeHtml(i.rawName)}"` : ''}>
             <div class="label-w">
               <span>${escapeHtml(i.name)}</span>
               <span class="qty-pill">×${i.qty}</span>
+              ${state.isHost ? '<span class="rename-hint">✏️</span>' : ''}
             </div>
             <b>${i.hasPrice ? money(i.subtotal) : '<span style="color:var(--muted)">—</span>'}</b>
           </div>
         `).join("") : '<div style="color:var(--muted);text-align:center;padding:14px">尚無資料</div>';
+
+        // 主揪：點清單列可重新命名（統一改）
+        if (state.isHost) {
+          $$("#itemSummary .summary-row[data-rename-from]").forEach(row => {
+            row.addEventListener("click", () => {
+              const from = row.dataset.renameFrom;
+              promptRenameItem(from);
+            });
+          });
+        }
 
         $("#personSummary").innerHTML = state.orders.length ? state.orders.map(o => `
           <div class="summary-row">
@@ -2233,6 +2400,59 @@
         `).join("") : '<div style="color:var(--muted);text-align:center;padding:14px">沒有備註</div>';
 
         $("#grandTotal").textContent = money(grandTotal());
+      }
+
+      // === 主揪：統一重新命名某餐點（合併同類） ===
+      async function promptRenameItem(fromName) {
+        // 收集所有不同寫法（包含這個）讓主揪知道有哪些變體
+        const allVariants = new Set();
+        const normalize = (s) => String(s || "").trim().replace(/\s+/g, " ");
+        state.orders.forEach(o => o.items.forEach(i => {
+          const n = normalize(i.name);
+          if (n) allVariants.add(n);
+        }));
+
+        const newName = window.prompt(
+          `將「${fromName}」重新命名為：\n\n（會把所有同名訂單一起改）\n` +
+          `目前清單裡的所有餐點：\n${[...allVariants].map(v => "• " + v).join("\n")}`,
+          fromName
+        );
+        if (!newName || newName.trim() === "" || newName.trim() === fromName) return;
+        const finalName = newName.trim();
+
+        // 找到所有要改的訂單
+        const affectedOrders = [];
+        state.orders.forEach(o => {
+          let changed = false;
+          o.items.forEach(i => {
+            if (normalize(i.name) === fromName) {
+              i.name = finalName;
+              changed = true;
+            }
+          });
+          if (changed) affectedOrders.push(o);
+        });
+
+        if (!affectedOrders.length) {
+          showToast("沒有訂單需要更新", "error");
+          return;
+        }
+
+        renderAll();
+        showToast(`✏️ 已改 ${affectedOrders.length} 筆 「${fromName}」→「${finalName}」`, "success");
+
+        // 寫回 Firestore（每筆訂單都更新）
+        try {
+          for (const o of affectedOrders) {
+            state.pendingOrders.set(o.id, o);
+            await submitOrderToFirestore(o);
+            state.pendingOrders.delete(o.id);
+          }
+          setSyncState("ok", "已同步");
+        } catch (e) {
+          console.error(e);
+          showToast(`同步失敗：${e.message}`, "error");
+        }
       }
 
       function renderLockUI() {
@@ -2258,6 +2478,9 @@
         renderOrders();
         renderSummary();
         renderLockUI();
+        // 主揪徽章
+        const badge = $("#hostBadge");
+        if (badge) badge.style.display = state.isHost ? "inline-block" : "none";
       }
 
       // ════════════════════════════════════════════════════
@@ -2367,6 +2590,8 @@
           <div class="sp-hint">按下「複製連結」傳給夥伴吧</div>
         `;
         $("#shareUrlText").textContent = shareUrl();
+        // 主揪才顯示救援區
+        $("#rescueBox").style.display = state.isHost ? "block" : "none";
         $("#shareBackdrop").classList.add("show");
         $("#shareSheet").classList.add("show");
       }
@@ -2387,13 +2612,20 @@
           items: orderData.items
         };
         const isEdit = !!state.editingOrderId;
+        // 判斷這筆訂單是否屬於「我」：
+        // - 不是編輯模式：新訂單，預設算我的
+        // - 編輯模式 + 本來就是我的：保持是我的
+        // - 編輯模式 + 主揪改別人的：不算我的（不污染 myOrderIds）
+        const willBeMine = !isEdit || isMyOrder(order.id);
 
         // 本機立即更新
         state.orders = state.orders.filter(o => o.id !== order.id);
         state.orders.push(order);
-        saveMyOrderId(order.id);
+        if (willBeMine) {
+          saveMyOrderId(order.id);
+          try { localStorage.setItem(storageKey("myName"), order.person); } catch (e) {}
+        }
         state.pendingOrders.set(order.id, order);
-        try { localStorage.setItem(storageKey("myName"), order.person); } catch (e) {}
         state.editingOrderId = "";
         state.draftItems = [];
         $("#personNote").value = "";
@@ -2420,20 +2652,21 @@
       function editOrder(id) {
         const o = state.orders.find(x => x.id === id);
         if (!o) return;
-        if (!isMyOrder(id)) { showToast("只能編輯自己的訂單", "error"); return; }
+        if (!canEditOrder(id)) { showToast("沒有編輯權限", "error"); return; }
         state.editingOrderId = o.id;
         $("#personName").value = o.person;
         $("#personNote").value = o.note || "";
         state.draftItems = o.items.map(i => ({ ...i }));
         renderDraftItems();
         activateView("order");
-        showToast("已載入，編輯後再送出");
+        const tag = isMyOrder(id) ? "" : "（以主揪身份）";
+        showToast(`已載入${tag}，編輯後再送出`);
       }
 
       async function deleteOrder(id) {
         const o = state.orders.find(x => x.id === id);
         if (!o) return;
-        if (!isMyOrder(id)) { showToast("只能刪除自己的訂單", "error"); return; }
+        if (!canEditOrder(id)) { showToast("沒有刪除權限", "error"); return; }
         if (!confirm(`確定刪除 ${o.person} 的訂單？`)) return;
         state.orders = state.orders.filter(x => x.id !== id);
         removeMyOrderId(id);
@@ -2634,6 +2867,14 @@
           // 在直接 user click 內，clipboard API 100% 成功
           await copyText(shareText(), "已複製連結 🎉");
           closeShareSheet();
+        });
+        $("#copyRescueBtn").addEventListener("click", async () => {
+          if (!state.hostToken) {
+            showToast("找不到主揪識別，請重新儲存", "error");
+            return;
+          }
+          const text = `🔑 揪團點餐主揪救援連結\n（換手機/清快取時用這條進入即可恢復主揪權限）\n\n${rescueUrl()}`;
+          await copyText(text, "已複製救援連結 🔑");
         });
 
         $("#endTeamBtn").addEventListener("click", endTeam);
