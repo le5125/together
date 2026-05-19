@@ -291,6 +291,12 @@
         z-index: 5;
         border-bottom: 1px solid var(--line-2);
       }
+      /* 客人模式：隱藏主揪專屬功能、tabs 改成 2 欄置中 */
+      body.is-guest .host-only { display: none !important; }
+      body.is-guest .tabs {
+        grid-template-columns: repeat(2, minmax(0, 200px));
+        justify-content: center;
+      }
       .tab {
         padding: 12px 4px;
         border-radius: 14px;
@@ -411,6 +417,15 @@
         color: var(--tomato-dark);
       }
       .btn-danger:hover { background: #fcd0c9; }
+      .btn-copy {
+        background: linear-gradient(135deg, var(--matcha-soft), #d8e8c8);
+        color: var(--matcha-dark);
+        font-weight: 800;
+        width: 100%;
+      }
+      .btn-copy:hover {
+        background: linear-gradient(135deg, #d8e8c8, #c8dcb0);
+      }
       .btn-block { width: 100%; }
       .btn-sm { min-height: 38px; padding: 0 12px; font-size: 13px; border-radius: 10px; }
 
@@ -507,6 +522,17 @@
         color: var(--matcha-dark);
         font-size: 12px;
         font-weight: 700;
+      }
+      .zoom-hint {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: var(--matcha-soft);
+        color: var(--matcha-dark);
+        font-size: 12px;
+        font-weight: 800;
       }
 
       .item-card {
@@ -1172,7 +1198,73 @@
         font-weight: 600;
       }
 
-      /* ─── End-team Final Receipt ──────────────────────── */
+      /* ─── Universal Dialog ─────────────────────────────── */
+      .dialog-body {
+        padding: 10px 4px 18px;
+        text-align: center;
+      }
+      .dialog-emoji {
+        font-size: 44px;
+        line-height: 1;
+        margin-bottom: 10px;
+      }
+      .dialog-title {
+        font-family: "Fraunces", "Noto Sans TC", serif;
+        font-size: 22px;
+        font-weight: 900;
+        color: var(--ink);
+        margin-bottom: 8px;
+        line-height: 1.2;
+      }
+      .dialog-message {
+        font-size: 15px;
+        color: var(--ink-2);
+        font-weight: 600;
+        line-height: 1.55;
+        margin-bottom: 14px;
+        white-space: pre-line;
+      }
+      .dialog-message:empty { display: none; }
+      .dialog-input-wrap {
+        margin: 6px 0 12px;
+      }
+      .dialog-input {
+        width: 100%;
+        padding: 13px 16px;
+        font-size: 17px;
+        font-weight: 700;
+        border: 1.5px solid var(--line);
+        border-radius: 12px;
+        background: var(--cream);
+        font-family: inherit;
+        color: var(--ink);
+        text-align: center;
+      }
+      .dialog-input:focus {
+        outline: none;
+        border-color: var(--tomato);
+        background: var(--paper);
+      }
+      .dialog-list {
+        background: var(--cream);
+        border-radius: 12px;
+        padding: 10px 14px;
+        margin: 8px 0 12px;
+        max-height: 180px;
+        overflow-y: auto;
+        text-align: left;
+      }
+      .dialog-list-item {
+        padding: 4px 0;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--ink-2);
+      }
+      .dialog-list-item::before {
+        content: "•  ";
+        color: var(--caramel);
+        font-weight: 900;
+      }
       .receipt-overlay {
         position: fixed;
         inset: 0;
@@ -1508,7 +1600,7 @@
 
       <!-- ─── TABS ────────────────────────────────────── -->
       <nav class="tabs" role="tablist">
-        <button class="tab is-active" type="button" data-view="setup" role="tab">
+        <button class="tab is-active host-only" type="button" data-view="setup" role="tab">
           <span class="tab-emoji">⚙️</span>
           <span>建立</span>
         </button>
@@ -1521,14 +1613,14 @@
           <span>訂單</span>
           <span class="badge hidden" id="ordersBadge">0</span>
         </button>
-        <button class="tab" type="button" data-view="summary" role="tab">
+        <button class="tab host-only" type="button" data-view="summary" role="tab">
           <span class="tab-emoji">📊</span>
           <span>統計</span>
         </button>
       </nav>
 
       <!-- ─── VIEW: SETUP ─────────────────────────────── -->
-      <section class="view is-active" id="view-setup" role="tabpanel">
+      <section class="view is-active host-only" id="view-setup" role="tabpanel">
         <div class="section-head">
           <div>
             <span class="eyebrow">第一步</span>
@@ -1583,6 +1675,7 @@
             <span class="eyebrow">第二步</span>
             <h2 class="display">我要點餐</h2>
           </div>
+          <span class="zoom-hint" id="zoomHint" style="display:none">🔍 點圖放大</span>
         </div>
 
         <div class="menu-image-wrap" id="orderMenuImageWrap">
@@ -1630,7 +1723,7 @@
       </section>
 
       <!-- ─── VIEW: SUMMARY ───────────────────────────── -->
-      <section class="view" id="view-summary" role="tabpanel">
+      <section class="view host-only" id="view-summary" role="tabpanel">
         <div class="section-head">
           <div>
             <span class="eyebrow">主揪專用</span>
@@ -1726,6 +1819,25 @@
       <div class="button-row">
         <button class="btn btn-ghost" type="button" id="shareCancelBtn">稍後再說</button>
         <button class="btn btn-primary" type="button" id="shareCopyBtn">📋 複製連結</button>
+      </div>
+    </div>
+
+    <!-- ─── Universal Dialog Sheet (取代 confirm/prompt) ──────────────── -->
+    <div class="sheet-backdrop" id="dialogBackdrop"></div>
+    <div class="sheet" id="dialogSheet" role="dialog" aria-modal="true">
+      <div class="sheet-handle"></div>
+      <div class="dialog-body">
+        <div class="dialog-emoji" id="dialogEmoji">🤔</div>
+        <div class="dialog-title" id="dialogTitle">確認</div>
+        <div class="dialog-message" id="dialogMessage"></div>
+        <div class="dialog-input-wrap" id="dialogInputWrap" style="display:none">
+          <input type="text" id="dialogInput" class="dialog-input" />
+        </div>
+        <div class="dialog-list" id="dialogList" style="display:none"></div>
+      </div>
+      <div class="button-row">
+        <button class="btn btn-ghost" type="button" id="dialogCancelBtn">取消</button>
+        <button class="btn btn-primary" type="button" id="dialogOkBtn">確定</button>
       </div>
     </div>
 
@@ -1948,6 +2060,83 @@
             gtag("event", eventName, params || {});
           }
         } catch (e) { /* GA 還沒載入或被擋，靜默 */ }
+      }
+
+      // === 通用對話框（取代原生 confirm/prompt）===
+      // openDialog({type, emoji, title, message, list, defaultValue, okText, cancelText}) → Promise<value|null>
+      //   type "confirm": 回傳 true/false
+      //   type "prompt": 回傳 string 或 null（取消）
+      //   list: 字串陣列，會以項目列表顯示
+      function openDialog(opts) {
+        return new Promise(resolve => {
+          const {
+            type = "confirm",
+            emoji = (type === "prompt" ? "✏️" : "🤔"),
+            title = "確認",
+            message = "",
+            list = null,
+            defaultValue = "",
+            okText = "確定",
+            cancelText = "取消",
+            danger = false
+          } = opts || {};
+          const okBtn = $("#dialogOkBtn");
+          const cancelBtn = $("#dialogCancelBtn");
+          const input = $("#dialogInput");
+          $("#dialogEmoji").textContent = emoji;
+          $("#dialogTitle").textContent = title;
+          $("#dialogMessage").textContent = message;
+          // list
+          const listEl = $("#dialogList");
+          if (list && list.length) {
+            listEl.innerHTML = list.map(t => `<div class="dialog-list-item">${escapeHtml(t)}</div>`).join("");
+            listEl.style.display = "block";
+          } else {
+            listEl.style.display = "none";
+          }
+          // input
+          const wrap = $("#dialogInputWrap");
+          if (type === "prompt") {
+            wrap.style.display = "block";
+            input.value = defaultValue || "";
+            setTimeout(() => { input.focus(); input.select(); }, 100);
+          } else {
+            wrap.style.display = "none";
+          }
+          okBtn.textContent = okText;
+          cancelBtn.textContent = cancelText;
+          okBtn.className = "btn " + (danger ? "btn-danger" : "btn-primary");
+          $("#dialogBackdrop").classList.add("show");
+          $("#dialogSheet").classList.add("show");
+
+          const close = (val) => {
+            $("#dialogBackdrop").classList.remove("show");
+            $("#dialogSheet").classList.remove("show");
+            okBtn.onclick = null;
+            cancelBtn.onclick = null;
+            input.onkeydown = null;
+            $("#dialogBackdrop").onclick = null;
+            resolve(val);
+          };
+          okBtn.onclick = () => {
+            if (type === "prompt") close(input.value);
+            else close(true);
+          };
+          cancelBtn.onclick = () => close(type === "prompt" ? null : false);
+          $("#dialogBackdrop").onclick = () => close(type === "prompt" ? null : false);
+          if (type === "prompt") {
+            input.onkeydown = (e) => {
+              if (e.key === "Enter") { e.preventDefault(); close(input.value); }
+              else if (e.key === "Escape") { e.preventDefault(); close(null); }
+            };
+          }
+        });
+      }
+      async function confirmDialog(opts) {
+        return await openDialog({ ...opts, type: "confirm" });
+      }
+      async function promptDialog(opts) {
+        return await openDialog({ ...opts, type: "prompt" });
       }
 
       function showToast(message, kind = "default") {
@@ -2180,6 +2369,13 @@
             const timeStr = new Date().toLocaleTimeString("zh-TW", { hour: "2-digit", minute: "2-digit" });
             setSyncState("ok", `即時同步 · ${timeStr}`);
             renderAll();
+            // 客人若停在主揪專屬分頁（如直接打開 setup），自動切到點餐
+            if (!state.isHost) {
+              const activeView = $$(".view.is-active")[0];
+              if (activeView && (activeView.id === "view-setup" || activeView.id === "view-summary")) {
+                activateView("order");
+              }
+            }
           },
           (err) => {
             console.error("subscribeGroup error", err);
@@ -2254,6 +2450,9 @@
           wrap2.innerHTML = '<div class="placeholder"><span class="emo">📋</span>主揪還沒上傳菜單</div>';
         }
         $$("[data-menu-image]").forEach(img => img.addEventListener("click", () => openImageModal(img.src)));
+        // 點餐頁有菜單圖時才顯示「點圖放大」提示
+        const zh = $("#zoomHint");
+        if (zh) zh.style.display = src ? "inline-flex" : "none";
       }
 
       function renderDraftItems() {
@@ -2395,7 +2594,11 @@
                 <button class="btn btn-secondary btn-sm" type="button" data-act="edit">✏️ 編輯</button>
                 <button class="btn btn-danger btn-sm" type="button" data-act="delete">🗑️ 刪除</button>
               </div>
-            ` : ''}
+            ` : (!state.locked ? `
+              <div class="order-actions">
+                <button class="btn btn-copy btn-sm" type="button" data-act="copy">📥 我也要點一樣的</button>
+              </div>
+            ` : '')}
           </article>
         `}).join("");
 
@@ -2403,8 +2606,10 @@
           const id = card.dataset.id;
           const editBtn = card.querySelector('[data-act="edit"]');
           const delBtn = card.querySelector('[data-act="delete"]');
+          const copyBtn = card.querySelector('[data-act="copy"]');
           if (editBtn) editBtn.addEventListener("click", () => editOrder(id));
           if (delBtn) delBtn.addEventListener("click", () => deleteOrder(id));
+          if (copyBtn) copyBtn.addEventListener("click", () => copyOrderToMe(id));
         });
       }
 
@@ -2479,11 +2684,16 @@
           if (n) allVariants.add(n);
         }));
 
-        const newName = window.prompt(
-          `將「${fromName}」重新命名為：\n\n（會把所有同名訂單一起改）\n` +
-          `目前清單裡的所有餐點：\n${[...allVariants].map(v => "• " + v).join("\n")}`,
-          fromName
-        );
+        const newName = await promptDialog({
+          emoji: "✏️",
+          title: "統一餐點名稱",
+          message: `將「${fromName}」改成：\n（所有同名訂單會一起改）`,
+          list: [...allVariants],
+          defaultValue: fromName,
+          okText: "確定改名",
+          cancelText: "取消"
+        });
+        if (newName === null) return;
         if (!newName || newName.trim() === "" || newName.trim() === fromName) return;
         const finalName = newName.trim();
 
@@ -2548,6 +2758,8 @@
         // 主揪徽章
         const badge = $("#hostBadge");
         if (badge) badge.style.display = state.isHost ? "inline-block" : "none";
+        // 切換主揪/客人模式（影響 host-only 元素顯示）
+        document.body.classList.toggle("is-guest", !state.isHost);
       }
 
       // ════════════════════════════════════════════════════
@@ -2728,6 +2940,34 @@
         }
       }
 
+      // 「我也要」：複製別人的訂單到自己的點餐草稿
+      function copyOrderToMe(id) {
+        const o = state.orders.find(x => x.id === id);
+        if (!o) return;
+        // 把別人的餐點複製過來（不含名字、不含整單備註）
+        state.editingOrderId = ""; // 確保不是編輯模式
+        state.draftItems = o.items.map(i => ({
+          name: i.name,
+          price: i.price,
+          qty: i.qty,
+          note: i.note
+        }));
+        $("#personNote").value = ""; // 整單備註不複製
+        // 保留自己原本的名字（如果有的話）
+        renderDraftItems();
+        activateView("order");
+        showToast(`已複製「${o.person}」的餐點，記得改名再送出 ✨`, "success");
+        trackEvent("order_copied_from_other");
+        // 滾到頂部讓使用者看到名字欄位
+        setTimeout(() => {
+          const nameInput = $("#personName");
+          if (nameInput) {
+            if (!nameInput.value) nameInput.focus();
+          }
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }, 200);
+      }
+
       function editOrder(id) {
         const o = state.orders.find(x => x.id === id);
         if (!o) return;
@@ -2746,7 +2986,15 @@
         const o = state.orders.find(x => x.id === id);
         if (!o) return;
         if (!canEditOrder(id)) { showToast("沒有刪除權限", "error"); return; }
-        if (!confirm(`確定刪除 ${o.person} 的訂單？`)) return;
+        const ok = await confirmDialog({
+          emoji: "🗑️",
+          title: "確定刪除？",
+          message: `將刪除「${o.person}」的訂單\n此動作無法復原`,
+          okText: "刪除",
+          cancelText: "取消",
+          danger: true
+        });
+        if (!ok) return;
         state.orders = state.orders.filter(x => x.id !== id);
         removeMyOrderId(id);
         state.pendingOrders.set(id, null);
@@ -2764,7 +3012,16 @@
 
       async function toggleLock() {
         const next = !state.locked;
-        if (next && !confirm("鎖單後沒人能再送單，確定？")) return;
+        if (next) {
+          const ok = await confirmDialog({
+            emoji: "🔒",
+            title: "鎖單？",
+            message: "鎖單後沒人能再送單，要繼續嗎？",
+            okText: "鎖單",
+            cancelText: "取消"
+          });
+          if (!ok) return;
+        }
         state.locked = next;
         renderLockUI();
         try {
@@ -2796,7 +3053,14 @@
           showToast("還沒人點餐，無法結團", "error");
           return;
         }
-        if (!confirm(`確定結團？\n\n• 將自動鎖單，沒人能再點餐\n• 跳出彙整頁可截圖傳 LINE\n• 24 小時內仍可查看`)) return;
+        const ok = await confirmDialog({
+          emoji: "🎀",
+          title: "確定結團？",
+          message: "結團後將自動鎖單，沒人能再點餐\n會跳出彙整頁可截圖傳 LINE\n24 小時內仍可查看",
+          okText: "結團",
+          cancelText: "再想想"
+        });
+        if (!ok) return;
 
         if (!state.locked) {
           state.locked = true;
@@ -2871,6 +3135,10 @@
       //  Navigation
       // ════════════════════════════════════════════════════
       function activateView(view) {
+        // 客人模式不能切到主揪專屬分頁（setup、summary）
+        if (!state.isHost && (view === "setup" || view === "summary")) {
+          view = "order";
+        }
         $$(".tab").forEach(t => t.classList.toggle("is-active", t.dataset.view === view));
         $$(".view").forEach(p => p.classList.toggle("is-active", p.id === `view-${view}`));
         window.scrollTo({ top: 0, behavior: "smooth" });
