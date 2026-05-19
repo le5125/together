@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#fef3c7" />
     <title>🍱 揪團點餐</title>
+
+    <!-- ─── Google Analytics 4 ─────────────────────────── -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-8J8283ZRQM"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-8J8283ZRQM');
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -1024,18 +1034,21 @@
 
       .sheet {
         position: fixed;
-        left: 0; right: 0; bottom: 0;
+        left: 50%;
+        bottom: 0;
         z-index: 151;
         background: var(--paper);
         border-radius: 28px 28px 0 0;
         max-height: 90vh;
+        width: 100%;
+        max-width: 480px;
         overflow: auto;
-        transform: translateY(100%);
+        transform: translate(-50%, 100%);
         transition: transform .28s cubic-bezier(.2,.9,.3,1);
         padding: 8px 18px 24px;
         box-shadow: 0 -12px 40px rgba(0,0,0,.18);
       }
-      .sheet.show { transform: translateY(0); }
+      .sheet.show { transform: translate(-50%, 0); }
       .sheet-handle {
         width: 40px; height: 4px;
         background: var(--line);
@@ -1341,6 +1354,91 @@
         letter-spacing: .1em;
       }
 
+      /* ─── 贊助店家版位 ─────────────────────────────────── */
+      .sponsor-section {
+        margin-top: 20px;
+        padding-top: 18px;
+        border-top: 2px dashed var(--line);
+      }
+      .sponsor-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .sponsor-eyebrow {
+        font-size: 9px;
+        font-weight: 900;
+        letter-spacing: .18em;
+        color: var(--caramel);
+        background: var(--caramel-soft);
+        padding: 2px 7px;
+        border-radius: 4px;
+      }
+      .sponsor-heading {
+        font-size: 13px;
+        font-weight: 800;
+        color: var(--ink-2);
+      }
+      .sponsor-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+      }
+      .sponsor-card {
+        background: var(--cream);
+        border: 1px solid var(--line-2);
+        border-radius: 12px;
+        padding: 12px 8px;
+        text-align: center;
+        text-decoration: none;
+        color: var(--ink);
+        transition: transform .15s, box-shadow .15s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+      }
+      .sponsor-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+      }
+      .sponsor-card-emoji {
+        font-size: 32px;
+        line-height: 1;
+      }
+      .sponsor-card-name {
+        font-size: 13px;
+        font-weight: 800;
+        line-height: 1.2;
+      }
+      .sponsor-card-tag {
+        font-size: 10px;
+        color: var(--ink-2);
+        font-weight: 600;
+        line-height: 1.2;
+      }
+      /* 單張版（只剩一家時）*/
+      .sponsor-grid.solo {
+        grid-template-columns: 1fr;
+      }
+      .sponsor-grid.solo .sponsor-card {
+        flex-direction: row;
+        text-align: left;
+        gap: 12px;
+        padding: 14px 16px;
+      }
+      .sponsor-grid.solo .sponsor-card-emoji {
+        font-size: 38px;
+      }
+      .sponsor-grid.solo .sponsor-card-name {
+        font-size: 16px;
+      }
+      .sponsor-grid.solo .sponsor-card-tag {
+        font-size: 12px;
+        margin-top: 2px;
+      }
+
       /* End-team button on summary page */
       .end-team-btn {
         display: flex;
@@ -1378,7 +1476,7 @@
               <h1 class="display">揪團點餐</h1>
             </div>
           </div>
-          <button class="icon-btn" id="shareBtn" type="button" aria-label="複製分享連結">🔗</button>
+          <button class="icon-btn" id="shareBtn" type="button" aria-label="分享 App">🔗</button>
         </div>
 
         <div class="group-title display" id="heroGroupTitle">未命名訂餐團</div>
@@ -1386,11 +1484,11 @@
         <div class="stats">
           <div class="stat people">
             <div class="stat-num" id="peopleCount">0</div>
-            <div class="stat-label">👤 人</div>
+            <div class="stat-label">🧑 人</div>
           </div>
           <div class="stat">
             <div class="stat-num" id="itemCount">0</div>
-            <div class="stat-label">🍱 份</div>
+            <div class="stat-label">🥢 份</div>
           </div>
           <div class="stat money">
             <div class="stat-num" id="totalPrice">$0</div>
@@ -1440,7 +1538,7 @@
 
         <label class="field">
           <span class="lbl">店名 / 團名 <span class="hint">可不填，預設「未命名訂餐團」</span></span>
-          <input id="groupTitleInput" type="text" placeholder="例如：五十嵐 🧋" maxlength="40" />
+          <input id="groupTitleInput" type="text" placeholder="例如：五十嵐下午茶 🧋" maxlength="40" />
         </label>
 
         <label class="field">
@@ -1485,7 +1583,6 @@
             <span class="eyebrow">第二步</span>
             <h2 class="display">我要點餐</h2>
           </div>
-          <span class="my-tag" id="myTag">🧑 新點餐</span>
         </div>
 
         <div class="menu-image-wrap" id="orderMenuImageWrap">
@@ -1498,12 +1595,12 @@
         <form id="orderForm">
           <label class="field">
             <span class="lbl">你的名字 <span class="hint">同伴會看到</span></span>
-            <input id="personName" type="text" placeholder="例如：小明" maxlength="20" autocomplete="nickname" />
+            <input id="personName" type="text" placeholder="例如：小明、A車、1號" maxlength="20" autocomplete="nickname" />
           </label>
 
           <label class="field">
             <span class="lbl">整單備註 <span class="hint">可不填</span></span>
-            <input id="personNote" type="text" placeholder="例如：可一起付" maxlength="60" />
+            <input id="personNote" type="text" placeholder="例如：可一起付、要統一發票" maxlength="60" />
           </label>
 
           <div id="orderItems"></div>
@@ -1552,12 +1649,12 @@
         </div>
 
         <div class="summary-card">
-          <h3>🍱 餐點</h3>
+          <h3>🥢 依餐點</h3>
           <div id="itemSummary"></div>
         </div>
 
         <div class="summary-card">
-          <h3>👤 個人</h3>
+          <h3>🧑 依個人</h3>
           <div id="personSummary"></div>
         </div>
 
@@ -1668,6 +1765,15 @@
           <div class="gemo">💰</div>
         </div>
 
+        <!-- ─── 贊助店家版位 ─────────────────── -->
+        <div class="sponsor-section" id="sponsorSection">
+          <div class="sponsor-title">
+            <span class="sponsor-eyebrow">SPONSORED</span>
+            <span class="sponsor-heading">本團贊助店家 ✨</span>
+          </div>
+          <div class="sponsor-grid" id="sponsorGrid"></div>
+        </div>
+
         <div class="receipt-foot">— 截圖傳 LINE 給大家 —</div>
       </div>
     </div>
@@ -1703,12 +1809,33 @@
       // ════════════════════════════════════════════════════
       const STORAGE_PREFIX = "orderApp.fb.";
       const EXPIRE_HOURS = 24;
-      const QUICK_NOTES = ["熱的","半糖","微糖","無糖","去冰", "少冰", "微冰", "不辣","小辣","大辣" ];
+      const QUICK_NOTES = ["半糖", "少糖", "去冰", "微冰", "熱的", "不要香菜", "加辣", "不辣"];
       const AVATAR_COLORS = [
         "#e85a4f", "#5c8a3a", "#d4a05c", "#4a90a4",
         "#a8456b", "#8b5cf6", "#0891b2", "#ea580c",
-        "#65a30d", "#dc2626", "#0284c7", "#9333ea"
+        "#65a30d", "#dc2626", "#0284c7", "#9333ea",
+        "#16a34a", "#db2777", "#7c3aed", "#0d9488",
+        "#ca8a04", "#be185d", "#1d4ed8", "#15803d"
       ];
+
+      // ════════════════════════════════════════════════════
+      //  💰 贊助店家設定（你自己接的廣告，改這裡就好）
+      // ════════════════════════════════════════════════════
+      // 設定方式：
+      // - 每家店一個物件：{ emoji, name, tag, url }
+      // - emoji: 32px 顯示的圖示（建議飲料 🧋 便當 🍱 咖啡 ☕ 早餐 🥐 麵食 🍜 等）
+      // - name: 店名（不超過 6 字最美）
+      // - tag: 一句話特色（不超過 12 字）
+      // - url: 點下去要去的網址（店家粉專 / Google Maps / IG / LINE 官方帳號都行）
+      // 留空陣列 [] = 不顯示版位
+      // 系統會自動隨機抽 3 家顯示，比較公平（多家店時）
+      const SPONSORS = [
+        // === 範例（請替換成你接到的真實店家） ===
+        { emoji: "🧋", name: "範例飲料店", tag: "全品項 9 折", url: "https://example.com" },
+        { emoji: "🍱", name: "範例便當店", tag: "團購 5 個免外送", url: "https://example.com" },
+        { emoji: "☕", name: "範例咖啡", tag: "出示此頁享 8 折", url: "https://example.com" },
+      ];
+      const SPONSOR_SHOW_COUNT = 3; // 一次顯示幾家
 
       // ════════════════════════════════════════════════════
       //  State
@@ -1812,6 +1939,15 @@
       // 判斷當前使用者能否編輯/刪除這筆訂單（自己的 OR 主揪都可以）
       function canEditOrder(id) {
         return state.isHost || isMyOrder(id);
+      }
+
+      // === Google Analytics 自訂事件 ===
+      function trackEvent(eventName, params) {
+        try {
+          if (typeof gtag === "function") {
+            gtag("event", eventName, params || {});
+          }
+        } catch (e) { /* GA 還沒載入或被擋，靜默 */ }
       }
 
       function showToast(message, kind = "default") {
@@ -2131,7 +2267,7 @@
             ${state.draftItems.length > 1 ? `<button class="remove" data-act="remove" type="button" aria-label="刪除">✕</button>` : ''}
             <label class="field" style="margin: 6px 0 8px">
               <span class="lbl">餐點</span>
-              <input data-field="name" value="${escapeHtml(item.name)}" placeholder="例如：奶茶" />
+              <input data-field="name" value="${escapeHtml(item.name)}" placeholder="例如：奶茶 / 雞腿便當" />
             </label>
             <div class="item-grid">
               <label class="field" style="margin:0">
@@ -2434,6 +2570,12 @@
 
           await saveGroupToFirestore(state.title, imageDataUrl);
 
+          // 追蹤：是新建還是更新
+          const isNew = !state.groupExists;
+          trackEvent(isNew ? "group_created" : "group_updated", {
+            has_image: !!(imageDataUrl || state.imageUrl)
+          });
+
           renderAll();
           // 確保訂閱有開（如果是新建立第一次儲存）
           if (!state.unsubGroup) subscribeGroup();
@@ -2563,6 +2705,14 @@
         activateView("mine");
         showToast(isEdit ? "訂單已更新 ✨" : "訂單送出 🎉", "success");
 
+        // 追蹤訂單事件
+        trackEvent(isEdit ? "order_updated" : "order_submitted", {
+          item_count: order.items.length,
+          total_qty: order.items.reduce((s, i) => s + Number(i.qty || 0), 0),
+          has_price: order.items.some(i => Number(i.price) > 0),
+          edited_by_host: isEdit && state.isHost && !isMyOrder(order.id)
+        });
+
         // 確保有訂閱
         if (!state.unsubGroup) subscribeGroup();
         if (!state.unsubOrders) subscribeOrders();
@@ -2657,6 +2807,14 @@
         renderReceipt();
         $("#receiptOverlay").classList.add("show");
         document.body.style.overflow = "hidden";
+
+        // 追蹤結團事件
+        trackEvent("team_ended", {
+          person_count: state.orders.length,
+          item_count: state.orders.reduce((s, o) => s + o.items.length, 0),
+          total_qty: state.orders.reduce((s, o) => s + o.items.reduce((x, i) => x + Number(i.qty || 0), 0), 0),
+          grand_total: grandTotal()
+        });
       }
 
       function renderReceipt() {
@@ -2743,13 +2901,12 @@
         $("#cameraInput").addEventListener("change", e => handleImage(e.target.files[0]));
         $("#albumInput").addEventListener("change", e => handleImage(e.target.files[0]));
         $("#saveGroupBtn").addEventListener("click", saveGroup);
-        // 右上角 🔗 圖示按下：如果團已存在就開分享 sheet，否則提示先儲存
-        $("#shareBtn").addEventListener("click", () => {
-          if (!state.groupExists) {
-            showToast("請先儲存訂餐團", "error");
-            return;
-          }
-          openShareSheet();
+        // 右上角 🔗 圖示按下：分享揪團點餐 App 本身（不是這次的團）
+        $("#shareBtn").addEventListener("click", async () => {
+          const appUrl = location.origin + location.pathname; // 不含 query string
+          const text = `🍱 揪團點餐\n免費的多人點餐工具，建團、點餐、結算一條龍！\n${appUrl}`;
+          await copyText(text, "已複製 App 連結 🎉");
+          trackEvent("app_shared");
         });
         $("#addItemBtn").addEventListener("click", () => {
           state.draftItems.push({ name: "", price: "", qty: 1, note: "" });
@@ -2795,6 +2952,7 @@
         $("#shareCopyBtn").addEventListener("click", async () => {
           // 在直接 user click 內，clipboard API 100% 成功
           await copyText(shareText(), "已複製連結 🎉");
+          trackEvent("link_copied", { from: "share_sheet" });
           closeShareSheet();
         });
 
