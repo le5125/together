@@ -1571,20 +1571,20 @@
           <button class="icon-btn" id="shareBtn" type="button" aria-label="分享 App">🔗</button>
         </div>
 
-        <div class="group-title display" id="heroGroupTitle">未命名訂餐團</div>
+        <div class="group-title display" id="heroGroupTitle">今天點這家</div>
 
         <div class="stats">
           <div class="stat people">
             <div class="stat-num" id="peopleCount">0</div>
-            <div class="stat-label">🧑 人</div>
+            <div class="stat-label">👤 人</div>
           </div>
           <div class="stat">
             <div class="stat-num" id="itemCount">0</div>
-            <div class="stat-label">🥢 份</div>
+            <div class="stat-label">🍱 份數</div>
           </div>
           <div class="stat money">
             <div class="stat-num" id="totalPrice">$0</div>
-            <div class="stat-label">💰 共</div>
+            <div class="stat-label">💰 金額</div>
           </div>
         </div>
       </header>
@@ -1629,8 +1629,8 @@
         </div>
 
         <label class="field">
-          <span class="lbl">店名 / 團名 <span class="hint">可不填，預設「未命名訂餐團」</span></span>
-          <input id="groupTitleInput" type="text" placeholder="例如：五十嵐下午茶 🧋" maxlength="40" />
+          <span class="lbl">店名 / 團名 <span class="hint">可不填，預設「今天點這家」</span></span>
+          <input id="groupTitleInput" type="text" placeholder="例如：XX飲料店 🧋" maxlength="40" />
         </label>
 
         <label class="field">
@@ -1688,12 +1688,12 @@
         <form id="orderForm">
           <label class="field">
             <span class="lbl">你的名字 <span class="hint">同伴會看到</span></span>
-            <input id="personName" type="text" placeholder="例如：小明、A車、1號" maxlength="20" autocomplete="nickname" />
+            <input id="personName" type="text" placeholder="例如：小明" maxlength="20" autocomplete="nickname" />
           </label>
 
           <label class="field">
             <span class="lbl">整單備註 <span class="hint">可不填</span></span>
-            <input id="personNote" type="text" placeholder="例如：可一起付、要統一發票" maxlength="60" />
+            <input id="personNote" type="text" placeholder="例如：可一起付" maxlength="60" />
           </label>
 
           <div id="orderItems"></div>
@@ -1742,12 +1742,12 @@
         </div>
 
         <div class="summary-card">
-          <h3>🥢 依餐點</h3>
+          <h3>🍱 餐點</h3>
           <div id="itemSummary"></div>
         </div>
 
         <div class="summary-card">
-          <h3>🧑 依個人</h3>
+          <h3>👤 個人</h3>
           <div id="personSummary"></div>
         </div>
 
@@ -1850,17 +1850,17 @@
       <div class="receipt" id="receiptCard">
         <div class="receipt-head">
           <div class="stamp">✓ 已結團</div>
-          <h2 id="receiptTitle">未命名訂餐團</h2>
+          <h2 id="receiptTitle">今天點這家</h2>
           <div class="when" id="receiptWhen"></div>
         </div>
 
         <div class="receipt-section">
-          <div class="receipt-section-title">🥢 餐點清單</div>
+          <div class="receipt-section-title">🍱 餐點清單</div>
           <div id="receiptItems"></div>
         </div>
 
         <div class="receipt-section">
-          <div class="receipt-section-title">🧑 每人金額</div>
+          <div class="receipt-section-title">👤 每人金額</div>
           <div id="receiptPeople"></div>
         </div>
 
@@ -1921,7 +1921,7 @@
       // ════════════════════════════════════════════════════
       const STORAGE_PREFIX = "orderApp.fb.";
       const EXPIRE_HOURS = 24;
-      const QUICK_NOTES = ["半糖", "少糖", "去冰", "微冰", "熱的", "不要香菜", "加辣", "不辣"];
+      const QUICK_NOTES = ["半糖", "少糖", "無糖", "少冰", "微冰","去冰", "熱的", "大辣", "小辣"];
       const AVATAR_COLORS = [
         "#e85a4f", "#5c8a3a", "#d4a05c", "#4a90a4",
         "#a8456b", "#8b5cf6", "#0891b2", "#ea580c",
@@ -1955,7 +1955,7 @@
       const params = new URLSearchParams(location.search);
       const state = {
         groupId: params.get("group") || crypto.randomUUID(),
-        title: params.get("title") || "未命名訂餐團",
+        title: params.get("title") || "今天點這家",
         imageUrl: "",
         selectedImageFile: null,
         selectedImageDataUrl: "",
@@ -2475,7 +2475,7 @@
             ${state.draftItems.length > 1 ? `<button class="remove" data-act="remove" type="button" aria-label="刪除">✕</button>` : ''}
             <label class="field" style="margin: 6px 0 8px">
               <span class="lbl">餐點</span>
-              <input data-field="name" value="${escapeHtml(item.name)}" placeholder="例如：奶茶 / 雞腿便當" />
+              <input data-field="name" value="${escapeHtml(item.name)}" placeholder="例如：奶茶 " />
             </label>
             <div class="item-grid">
               <label class="field" style="margin:0">
@@ -2775,7 +2775,7 @@
       //  Actions
       // ════════════════════════════════════════════════════
       async function saveGroup() {
-        const title = $("#groupTitleInput").value.trim() || "未命名訂餐團";
+        const title = $("#groupTitleInput").value.trim() || "今天點這家";
         state.title = title;
         updateUrl();
         renderStats();
@@ -3202,7 +3202,7 @@
           if (e.target.id === "imageModal") $("#imageModal").classList.remove("show");
         });
         $("#groupTitleInput").addEventListener("input", () => {
-          state.title = $("#groupTitleInput").value.trim() || "未命名訂餐團";
+          state.title = $("#groupTitleInput").value.trim() || "今天點這家";
           $("#heroGroupTitle").textContent = state.title;
           updateUrl();
         });
@@ -3258,7 +3258,7 @@
 
       function init() {
         setupEvents();
-        $("#groupTitleInput").value = state.title === "未命名訂餐團" ? "" : state.title;
+        $("#groupTitleInput").value = state.title === "今天點這家" ? "" : state.title;
         $("#heroGroupTitle").textContent = state.title;
         updateUrl();
         loadFromStorage();
