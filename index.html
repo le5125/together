@@ -794,7 +794,7 @@
 
       .grand-total {
         margin-top: 16px;
-        padding: 16px;
+        padding: 12px 16px;
         border-radius: var(--radius-md);
         background: linear-gradient(135deg, var(--tomato), #f0735f);
         color: #fff;
@@ -802,13 +802,18 @@
         align-items: center;
         justify-content: space-between;
       }
-      .grand-total .gt-label { font-weight: 700; font-size: 14px; opacity: .92; }
+      .grand-total .gt-label { font-weight: 700; font-size: 13px; opacity: .92; }
       .grand-total .gt-num {
         font-family: "Fraunces", "Noto Sans TC", serif;
         font-weight: 900;
-        font-size: 24px;
-        line-height: 1;
+        font-size: 22px;
+        line-height: 1.1;
         font-variant-numeric: tabular-nums;
+        margin-top: 2px;
+      }
+      .grand-total .gt-emoji {
+        font-size: 30px;
+        opacity: .92;
       }
 
       .note-line {
@@ -1214,16 +1219,16 @@
       .receipt-note .who { font-weight: 800; color: var(--ink); }
       .receipt-grand {
         margin-top: 20px;
-        padding: 16px 20px;
+        padding: 12px 18px;
         background: var(--ink);
         color: #fff;
-        border-radius: 14px;
+        border-radius: 12px;
         display: flex;
         justify-content: space-between;
         align-items: center;
       }
       .receipt-grand .gl {
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 700;
         opacity: .8;
         margin-bottom: 2px;
@@ -1231,9 +1236,10 @@
       .receipt-grand .gn {
         font-family: "Fraunces", "Noto Sans TC", serif;
         font-weight: 900;
-        font-size: 24px;
-        line-height: 1;
+        font-size: 22px;
+        line-height: 1.1;
       }
+      .receipt-grand .gemo { font-size: 26px; opacity: .9; }
       .receipt-foot {
         text-align: center;
         margin-top: 18px;
@@ -1475,7 +1481,7 @@
             <div class="gt-label">總共要付</div>
             <div class="gt-num" id="grandTotal">$0</div>
           </div>
-          <div style="font-size:46px">💸</div>
+          <div class="gt-emoji">💸</div>
         </div>
 
         <button class="end-team-btn" type="button" id="endTeamBtn">
@@ -1548,7 +1554,7 @@
             <div class="gl">總計</div>
             <div class="gn" id="receiptGrand">$0</div>
           </div>
-          <div style="font-size:36px">💰</div>
+          <div class="gemo">💰</div>
         </div>
 
         <div class="receipt-foot">— 截圖傳 LINE 給大家 —</div>
@@ -1714,13 +1720,35 @@
         return `🍱 ${state.title}\n👉 點我加入：${shareUrl()}`;
       }
       async function copyText(text, successMsg) {
-        try {
-          await navigator.clipboard.writeText(text);
-          showToast(successMsg, "success");
-        } catch {
-          window.prompt("複製這段文字", text);
-          showToast("可手動複製");
+        // 方法 1：Clipboard API（現代瀏覽器）
+        if (navigator.clipboard && window.isSecureContext) {
+          try {
+            await navigator.clipboard.writeText(text);
+            showToast(successMsg, "success");
+            return;
+          } catch (e) { /* 可能不在 user gesture，繼續 fallback */ }
         }
+        // 方法 2：execCommand fallback（iOS Safari 老方法）
+        try {
+          const ta = document.createElement("textarea");
+          ta.value = text;
+          ta.style.position = "fixed";
+          ta.style.top = "0";
+          ta.style.left = "0";
+          ta.style.opacity = "0";
+          ta.setAttribute("readonly", "");
+          document.body.appendChild(ta);
+          ta.select();
+          ta.setSelectionRange(0, text.length);
+          const ok = document.execCommand("copy");
+          document.body.removeChild(ta);
+          if (ok) {
+            showToast(successMsg, "success");
+            return;
+          }
+        } catch (e) { /* 兩種都失敗 */ }
+        // 兩種都失敗才提示
+        showToast("複製失敗，請手動長按連結", "error");
       }
       function updateUrl() {
         const u = new URL(location.href);
@@ -2186,8 +2214,8 @@
           // 確保訂閱有開（如果是新建立第一次儲存）
           if (!state.unsubGroup) subscribeGroup();
           if (!state.unsubOrders) subscribeOrders();
-          showToast("已儲存 · 分享連結已複製", "success");
-          copyText(shareText(), "已儲存 · 分享連結已複製");
+          // 直接複製連結（不另外 toast，由 copyText 處理）
+          copyText(shareText(), "已儲存 · 連結已複製");
         } catch (e) {
           console.error(e);
           showToast(`儲存失敗：${e.message}`, "error");
