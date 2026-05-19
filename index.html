@@ -1775,13 +1775,19 @@
         return Date.now() - t > EXPIRE_HOURS * 3600 * 1000;
       }
 
+      // 計算 24 小時後的 Timestamp（給 Firestore TTL 用）
+      function expiryTimestamp() {
+        return Timestamp.fromMillis(Date.now() + EXPIRE_HOURS * 3600 * 1000);
+      }
+
       async function saveGroupToFirestore(title, imageDataUrl) {
         const ref = doc(db, "groups", state.groupId);
         const existing = await getDoc(ref);
         const data = {
           title: title,
           locked: state.locked,
-          updatedAt: serverTimestamp()
+          updatedAt: serverTimestamp(),
+          expiresAt: expiryTimestamp()    // ← TTL: 24h 後自動刪
         };
         if (imageDataUrl) data.imageUrl = imageDataUrl;
         if (!existing.exists()) data.createdAt = serverTimestamp();
@@ -1795,8 +1801,16 @@
           note: order.note || "",
           items: order.items,
           updatedAt: serverTimestamp(),
-          createdAt: serverTimestamp()
+          createdAt: serverTimestamp(),
+          expiresAt: expiryTimestamp()    // ← TTL: 24h 後自動刪
         }, { merge: true });
+        // 順便延長母團的 expiresAt（避免團比訂單先過期）
+        try {
+          await updateDoc(doc(db, "groups", state.groupId), {
+            expiresAt: expiryTimestamp(),
+            updatedAt: serverTimestamp()
+          });
+        } catch (e) { /* 團可能還沒存在，下次儲存就會建立 */ }
       }
 
       async function deleteOrderFromFirestore(orderId) {
@@ -1811,7 +1825,8 @@
             title: state.title,
             locked: locked,
             createdAt: serverTimestamp(),
-            updatedAt: serverTimestamp()
+            updatedAt: serverTimestamp(),
+            expiresAt: expiryTimestamp()
           });
         } else {
           await updateDoc(ref, { locked: locked, updatedAt: serverTimestamp() });
