@@ -105,6 +105,21 @@
         border-color: var(--matcha);
         box-shadow: 0 0 0 4px rgba(92,138,58,.16);
       }
+      #orderForm input.has-value {
+        background: var(--sky-soft);
+        border-color: rgba(74, 144, 164, .35);
+      }
+      #orderForm input.has-value:focus {
+        border-color: var(--sky);
+        box-shadow: 0 0 0 4px rgba(74, 144, 164, .16);
+      }
+      .qty-stepper.has-value {
+        background: var(--sky-soft);
+        border-color: rgba(74, 144, 164, .35);
+      }
+      .qty-stepper.has-value button {
+        background: var(--sky-soft);
+      }
       textarea { min-height: 60px; resize: vertical; padding-top: 10px; }
 
       /* ─── Shell ────────────────────────────────────────── */
@@ -2464,6 +2479,31 @@
         if (zh) zh.style.display = src ? "inline-flex" : "none";
       }
 
+      function orderFieldHasValue(input) {
+        const field = input.dataset.field;
+        if (field === "qty") {
+          const n = Number(input.value);
+          return input.value !== "" && n > 1;
+        }
+        return String(input.value).trim() !== "";
+      }
+
+      function syncOrderFieldHighlight(input) {
+        const filled = orderFieldHasValue(input);
+        input.classList.toggle("has-value", filled);
+        if (input.dataset.field === "qty") {
+          input.closest(".qty-stepper")?.classList.toggle("has-value", filled);
+        }
+      }
+
+      function syncOrderFormHighlights() {
+        ["#personName", "#personNote"].forEach(sel => {
+          const el = $(sel);
+          if (el) syncOrderFieldHighlight(el);
+        });
+        $$("#orderItems [data-field]").forEach(syncOrderFieldHighlight);
+      }
+
       function renderDraftItems() {
         if (!state.draftItems.length) {
           state.draftItems.push({ name: "", price: "", qty: 1, note: "" });
@@ -2504,8 +2544,10 @@
         $$("#orderItems .item-card").forEach(card => {
           const idx = Number(card.dataset.idx);
           card.querySelectorAll("[data-field]").forEach(input => {
+            syncOrderFieldHighlight(input);
             input.addEventListener("input", () => {
               state.draftItems[idx][input.dataset.field] = input.value;
+              syncOrderFieldHighlight(input);
               updateSubmitLabel();
             });
           });
@@ -2535,6 +2577,7 @@
               const newVal = parts.join(" ");
               noteInput.value = newVal;
               state.draftItems[idx].note = newVal;
+              syncOrderFieldHighlight(noteInput);
               chip.classList.toggle("is-on", parts.includes(v));
             });
             if ((state.draftItems[idx].note || "").includes(chip.dataset.quick)) {
@@ -2542,6 +2585,7 @@
             }
           });
         });
+        syncOrderFormHighlights();
         updateSubmitLabel();
       }
 
@@ -3214,6 +3258,9 @@
           showToast("已重新連線");
         });
         $("#lockSwitch").addEventListener("click", toggleLock);
+        ["#personName", "#personNote"].forEach(sel => {
+          $(sel).addEventListener("input", () => syncOrderFieldHighlight($(sel)));
+        });
         $("#personName").addEventListener("blur", () => {
           const v = $("#personName").value.trim();
           if (v) try { localStorage.setItem(storageKey("myName"), v); } catch (e) {}
