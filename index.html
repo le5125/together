@@ -551,6 +551,37 @@
         border-left: 3px solid var(--caramel);
       }
 
+      .share-tool-card {
+        margin-top: 16px;
+        padding: 14px;
+        border-radius: 14px;
+        background: var(--sky-soft);
+        border: 1.5px solid rgba(74, 144, 164, .22);
+      }
+      .share-tool-card__head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 6px;
+        font-size: 14px;
+        font-weight: 900;
+        color: var(--sky);
+      }
+      .share-tool-card__head span:first-child { font-size: 18px; line-height: 1; }
+      .share-tool-card__desc {
+        margin: 0 0 12px;
+        font-size: 12.5px;
+        line-height: 1.55;
+        color: var(--ink-2);
+      }
+      .share-tool-card .share-app-btn {
+        width: 100%;
+        max-width: none;
+        justify-content: center;
+        background: #fff;
+      }
+      .share-tool-card .share-app-btn:hover { background: var(--cream); }
+
       /* ─── Order form ───────────────────────────────────── */
       .my-tag {
         display: inline-flex;
@@ -1699,12 +1730,24 @@
         </div>
 
         <button class="btn btn-primary btn-block" id="saveGroupBtn" type="button">
-          ✨ 儲存並產生分享連結
+          ✨ 儲存並產生訂餐團連結
         </button>
 
         <p class="help" style="margin-top:14px">
-          儲存後分享連結給大家，他們開啟就能填餐點。資料會自動同步，主揪在「統計」頁可看到全部結果。
+          先填店名、上傳菜單，儲存後把連結傳給<strong>這次要點餐的夥伴</strong>。他們開啟就能填餐點，你在「統計」頁可看到全部結果。
         </p>
+
+        <div class="share-tool-card">
+          <div class="share-tool-card__head">
+            <span aria-hidden="true">🔗</span>
+            <span>分享揪團工具</span>
+          </div>
+          <p class="share-tool-card__desc">想讓朋友以後也能自己開團點餐？複製工具連結給他們，跟這次的訂餐團連結不一樣。</p>
+          <button class="share-app-btn" id="shareAppSetupBtn" type="button" aria-label="分享揪團工具">
+            <span class="share-app-btn__icon" aria-hidden="true">📋</span>
+            <span class="share-app-btn__label">複製工具連結</span>
+          </button>
+        </div>
       </section>
 
       <!-- ─── VIEW: ORDER ─────────────────────────────── -->
@@ -1851,17 +1894,17 @@
       <div class="section-head" style="margin-bottom:8px">
         <div>
           <span class="eyebrow" style="color:var(--matcha-dark)">✨ 訂餐團已建立</span>
-          <h2 class="display">分享給大家吧</h2>
+          <h2 class="display">分享給這次的夥伴</h2>
         </div>
       </div>
       <div class="share-preview" id="sharePreview"></div>
       <div class="share-url-box">
-        <div class="share-url-label">🔗 連結預覽（給大家）</div>
+        <div class="share-url-label">🔗 這次訂餐團連結（給夥伴）</div>
         <div class="share-url-text" id="shareUrlText"></div>
       </div>
       <div class="button-row">
         <button class="btn btn-ghost" type="button" id="shareCancelBtn">稍後再說</button>
-        <button class="btn btn-primary" type="button" id="shareCopyBtn">📋 複製連結</button>
+        <button class="btn btn-primary" type="button" id="shareCopyBtn">📋 複製訂餐團連結</button>
       </div>
     </div>
 
@@ -2230,6 +2273,14 @@
       }
       function shareText() {
         return `🍱 ${state.title}\n👉 點我加入：${shareUrl()}`;
+      }
+      function shareAppText() {
+        const appUrl = location.origin + location.pathname;
+        return `🍱 揪團點餐\n免費的多人點餐工具，建團、點餐、結算一條龍！\n${appUrl}`;
+      }
+      async function shareAppLink() {
+        await copyText(shareAppText(), "已複製 App 連結 🎉");
+        trackEvent("app_shared");
       }
       async function copyText(text, successMsg) {
         // 方法 1：Clipboard API（現代瀏覽器）
@@ -2880,7 +2931,7 @@
           showToast(`儲存失敗：${e.message}`, "error");
         } finally {
           btn.disabled = false;
-          btn.innerHTML = "✨ 儲存並產生分享連結";
+          btn.innerHTML = "✨ 儲存並產生訂餐團連結";
         }
       }
 
@@ -2953,7 +3004,7 @@
         $("#sharePreview").innerHTML = `
           <div class="sp-emoji">🎉</div>
           <div class="sp-title">${escapeHtml(state.title)}</div>
-          <div class="sp-hint">按下「複製連結」傳給夥伴吧</div>
+          <div class="sp-hint">複製連結，傳給這次要點餐的夥伴</div>
         `;
         $("#shareUrlText").textContent = shareUrl();
         $("#shareBackdrop").classList.add("show");
@@ -3250,13 +3301,9 @@
         $("#cameraInput").addEventListener("change", e => handleImage(e.target.files[0]));
         $("#albumInput").addEventListener("change", e => handleImage(e.target.files[0]));
         $("#saveGroupBtn").addEventListener("click", saveGroup);
-        // 右上角 🔗 圖示按下：分享揪團點餐 App 本身（不是這次的團）
-        $("#shareBtn").addEventListener("click", async () => {
-          const appUrl = location.origin + location.pathname; // 不含 query string
-          const text = `🍱 揪團點餐\n免費的多人點餐工具，建團、點餐、結算一條龍！\n${appUrl}`;
-          await copyText(text, "已複製 App 連結 🎉");
-          trackEvent("app_shared");
-        });
+        // 右上角 🔗：分享揪團點餐 App 本身（不是這次的團）
+        $("#shareBtn").addEventListener("click", shareAppLink);
+        $("#shareAppSetupBtn").addEventListener("click", shareAppLink);
         $("#addItemBtn").addEventListener("click", () => {
           state.draftItems.push({ name: "", price: "", qty: 1, note: "" });
           renderDraftItems();
