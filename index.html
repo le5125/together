@@ -197,6 +197,31 @@
         color: var(--ink);
       }
       .icon-btn:hover { background: var(--cream); }
+      .share-app-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 11px 8px 9px;
+        background: var(--paper);
+        border-radius: 12px;
+        box-shadow: var(--shadow-sm);
+        color: var(--ink-2);
+        flex-shrink: 0;
+        max-width: 46%;
+      }
+      .share-app-btn:hover { background: var(--cream); }
+      .share-app-btn__icon {
+        font-size: 16px;
+        line-height: 1;
+        flex-shrink: 0;
+      }
+      .share-app-btn__label {
+        font-size: 11px;
+        font-weight: 800;
+        line-height: 1.2;
+        text-align: left;
+        white-space: nowrap;
+      }
       .icon-btn.pulse::after {
         content: "";
         position: absolute;
@@ -1583,7 +1608,10 @@
               <h1 class="display">揪團點餐</h1>
             </div>
           </div>
-          <button class="icon-btn" id="shareBtn" type="button" aria-label="分享 App">🔗</button>
+          <button class="share-app-btn" id="shareBtn" type="button" aria-label="分享揪團工具">
+            <span class="share-app-btn__icon" aria-hidden="true">🔗</span>
+            <span class="share-app-btn__label">分享揪團工具</span>
+          </button>
         </div>
 
         <div class="group-title display" id="heroGroupTitle">今天點這家</div>
