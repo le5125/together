@@ -551,37 +551,6 @@
         border-left: 3px solid var(--caramel);
       }
 
-      .share-tool-card {
-        margin-top: 16px;
-        padding: 14px;
-        border-radius: 14px;
-        background: var(--sky-soft);
-        border: 1.5px solid rgba(74, 144, 164, .22);
-      }
-      .share-tool-card__head {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 6px;
-        font-size: 14px;
-        font-weight: 900;
-        color: var(--sky);
-      }
-      .share-tool-card__head span:first-child { font-size: 18px; line-height: 1; }
-      .share-tool-card__desc {
-        margin: 0 0 12px;
-        font-size: 12.5px;
-        line-height: 1.55;
-        color: var(--ink-2);
-      }
-      .share-tool-card .share-app-btn {
-        width: 100%;
-        max-width: none;
-        justify-content: center;
-        background: #fff;
-      }
-      .share-tool-card .share-app-btn:hover { background: var(--cream); }
-
       /* ─── Order form ───────────────────────────────────── */
       .my-tag {
         display: inline-flex;
@@ -1736,18 +1705,6 @@
         <p class="help" style="margin-top:14px">
           先填店名、上傳菜單，儲存後把連結傳給<strong>這次要點餐的夥伴</strong>。他們開啟就能填餐點，你在「統計」頁可看到全部結果。
         </p>
-
-        <div class="share-tool-card">
-          <div class="share-tool-card__head">
-            <span aria-hidden="true">🔗</span>
-            <span>分享揪團工具</span>
-          </div>
-          <p class="share-tool-card__desc">想讓朋友以後也能自己開團點餐？複製工具連結給他們，跟這次的訂餐團連結不一樣。</p>
-          <button class="share-app-btn" id="shareAppSetupBtn" type="button" aria-label="分享揪團工具">
-            <span class="share-app-btn__icon" aria-hidden="true">📋</span>
-            <span class="share-app-btn__label">複製工具連結</span>
-          </button>
-        </div>
       </section>
 
       <!-- ─── VIEW: ORDER ─────────────────────────────── -->
@@ -3303,7 +3260,6 @@
         $("#saveGroupBtn").addEventListener("click", saveGroup);
         // 右上角 🔗：分享揪團點餐 App 本身（不是這次的團）
         $("#shareBtn").addEventListener("click", shareAppLink);
-        $("#shareAppSetupBtn").addEventListener("click", shareAppLink);
         $("#addItemBtn").addEventListener("click", () => {
           state.draftItems.push({ name: "", price: "", qty: 1, note: "" });
           renderDraftItems();
