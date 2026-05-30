@@ -1869,7 +1869,7 @@
           ✨ 儲存並產生訂餐團連結
         </button>
 
-        <p class="help" style="margin-top:14px">
+        <p class="help" id="saveGroupHelp" style="margin-top:14px">
           填店名後，可<strong>上傳菜單照片</strong>或<strong>新增商品</strong>（也可兩者都用）。儲存後把連結傳給這次要點餐的夥伴。
         </p>
       </section>
@@ -3261,6 +3261,28 @@
         if (addItemBtn) {
           addItemBtn.style.display = state.menuItems.length ? "none" : "";
         }
+        updateSaveGroupUI();
+      }
+
+      function isGroupAlreadySaved() {
+        return state.groupExists;
+      }
+
+      function saveGroupBtnLabel() {
+        return isGroupAlreadySaved()
+          ? "💾 儲存"
+          : "✨ 儲存並產生訂餐團連結";
+      }
+
+      function updateSaveGroupUI() {
+        const btn = $("#saveGroupBtn");
+        if (btn && !btn.disabled) btn.innerHTML = saveGroupBtnLabel();
+        const help = $("#saveGroupHelp");
+        if (help) {
+          help.innerHTML = isGroupAlreadySaved()
+            ? "修改後按<strong>儲存</strong>即可，同一個連結的夥伴會即時看到更新，不用重新複製網址。"
+            : "填店名後，可<strong>上傳菜單照片</strong>或<strong>新增商品</strong>（也可兩者都用）。儲存後把連結傳給這次要點餐的夥伴。";
+        }
       }
 
       // ════════════════════════════════════════════════════
@@ -3272,6 +3294,7 @@
         updateUrl();
         renderStats();
         const btn = $("#saveGroupBtn");
+        const wasExisting = state.groupExists;
         btn.disabled = true;
         btn.innerHTML = "⏳ 儲存中…";
         try {
@@ -3283,10 +3306,9 @@
 
           await saveGroupToFirestore(state.title, imageDataUrl);
           state._menuDirty = false;
+          state.groupExists = true;
 
-          // 追蹤：是新建還是更新
-          const isNew = !state.groupExists;
-          trackEvent(isNew ? "group_created" : "group_updated", {
+          trackEvent(wasExisting ? "group_updated" : "group_created", {
             has_image: !!(imageDataUrl || state.imageUrl),
             menu_items: state.menuItems.length
           });
@@ -3295,14 +3317,18 @@
           // 確保訂閱有開（如果是新建立第一次儲存）
           if (!state.unsubGroup) subscribeGroup();
           if (!state.unsubOrders) subscribeOrders();
-          // 開分享 sheet（按確定才複製，user gesture 內 clipboard 100% 成功）
-          openShareSheet();
+
+          if (wasExisting) {
+            showToast("已儲存，連結內容已更新 ✨", "success");
+          } else {
+            openShareSheet();
+          }
         } catch (e) {
           console.error(e);
           showToast(`儲存失敗：${e.message}`, "error");
         } finally {
           btn.disabled = false;
-          btn.innerHTML = "✨ 儲存並產生訂餐團連結";
+          updateSaveGroupUI();
         }
       }
 
