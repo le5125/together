@@ -688,6 +688,23 @@
         color: var(--ink);
         font-variant-numeric: tabular-nums;
       }
+      .menu-pick-qty-input {
+        width: 44px;
+        height: 32px;
+        padding: 0 4px;
+        text-align: center;
+        font-weight: 900;
+        font-size: 15px;
+        color: var(--ink);
+        font-variant-numeric: tabular-nums;
+        border: 1.5px solid var(--line);
+        border-radius: 8px;
+        background: var(--paper);
+      }
+      .menu-pick-qty-input:focus {
+        border-color: var(--matcha);
+        box-shadow: 0 0 0 2px rgba(122, 158, 74, .2);
+      }
 
       /* ─── Order form ───────────────────────────────────── */
       .my-tag {
@@ -2794,7 +2811,7 @@
               <div class="menu-pick-controls">
                 ${qty > 0 ? `
                   <button class="menu-pick-btn" type="button" data-act="minus">−</button>
-                  <span class="menu-pick-qty">${qty}</span>
+                  <input class="menu-pick-qty-input" type="number" data-act="qty-input" min="0" max="99" value="${qty}" inputmode="numeric" aria-label="數量" />
                   <button class="menu-pick-btn" type="button" data-act="plus">+</button>
                 ` : `
                   <button class="menu-pick-btn add" type="button" data-act="plus">＋ 點</button>
@@ -2809,9 +2826,46 @@
           if (!menuItem) return;
           const plusBtn = row.querySelector('[data-act="plus"]');
           const minusBtn = row.querySelector('[data-act="minus"]');
+          const qtyInput = row.querySelector('[data-act="qty-input"]');
           if (plusBtn) plusBtn.addEventListener("click", () => addMenuItemToDraft(menuItem));
           if (minusBtn) minusBtn.addEventListener("click", () => removeMenuItemFromDraft(menuItem));
+          if (qtyInput) {
+            qtyInput.addEventListener("input", () => {
+              setMenuItemDraftQty(menuItem, qtyInput.value, false);
+            });
+            qtyInput.addEventListener("blur", () => {
+              setMenuItemDraftQty(menuItem, qtyInput.value, true);
+            });
+          }
         });
+      }
+
+      function setMenuItemDraftQty(menuItem, rawQty, rerenderPicker = true) {
+        if (state.locked) { showToast("已鎖單", "error"); return; }
+        const key = menuItemKey(menuItem);
+        let qty = Math.floor(Number(rawQty) || 0);
+        if (rawQty === "" || Number.isNaN(Number(rawQty))) qty = 0;
+        qty = Math.max(0, Math.min(99, qty));
+        const idx = state.draftItems.findIndex(d => d._fromMenu === key);
+        if (qty <= 0) {
+          if (idx >= 0) state.draftItems.splice(idx, 1);
+        } else if (idx >= 0) {
+          state.draftItems[idx].qty = qty;
+        } else {
+          state.draftItems = state.draftItems.filter(d => {
+            const empty = !d.name && !d.price && !d.note && Number(d.qty) <= 1;
+            return !empty;
+          });
+          state.draftItems.push({
+            name: menuItem.name,
+            price: menuItem.price || "",
+            qty,
+            note: "",
+            _fromMenu: key
+          });
+        }
+        if (rerenderPicker) renderMenuPicker();
+        renderDraftItems();
       }
 
       function addMenuItemToDraft(menuItem) {
@@ -2878,10 +2932,22 @@
       }
 
       function renderDraftItems() {
-        if (!state.draftItems.length) {
-          state.draftItems.push({ name: "", price: "", qty: 1, note: "" });
-        }
         const box = $("#orderItems");
+        const hasMenu = state.menuItems.length > 0;
+        const hasDraft = state.draftItems.some(d =>
+          d._fromMenu || String(d.name || "").trim() || String(d.note || "").trim() || Number(d.price) > 0
+        );
+        if (!hasDraft) {
+          if (hasMenu) {
+            box.innerHTML = "";
+            syncOrderFormHighlights();
+            updateSubmitLabel();
+            return;
+          }
+          if (!state.draftItems.length) {
+            state.draftItems.push({ name: "", price: "", qty: 1, note: "" });
+          }
+        }
         box.innerHTML = state.draftItems.map((item, idx) => `
           <div class="item-card" data-idx="${idx}">
             <div class="item-no">第 ${idx + 1} 樣</div>
@@ -3191,9 +3257,9 @@
         if (badge) badge.style.display = state.isHost ? "inline-block" : "none";
         // 切換主揪/客人模式（影響 host-only 元素顯示）
         document.body.classList.toggle("is-guest", !state.isHost);
-        const addBtnLabel = $("#addItemBtnLabel");
-        if (addBtnLabel) {
-          addBtnLabel.textContent = state.menuItems.length ? "菜單外手動新增" : "再點一份";
+        const addItemBtn = $("#addItemBtn");
+        if (addItemBtn) {
+          addItemBtn.style.display = state.menuItems.length ? "none" : "";
         }
       }
 
