@@ -551,6 +551,137 @@
         border-left: 3px solid var(--caramel);
       }
 
+      .setup-menu-section { margin-bottom: 14px; }
+      .setup-menu-add {
+        display: grid;
+        grid-template-columns: 1fr 88px auto;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+      .setup-menu-add input {
+        min-height: 44px;
+        padding: 10px 12px;
+        border: 1.5px solid var(--line);
+        border-radius: var(--radius-md);
+        background: #fff;
+      }
+      .setup-menu-add button {
+        padding: 0 14px;
+        min-height: 44px;
+        border: 0;
+        border-radius: var(--radius-md);
+        background: var(--matcha);
+        color: #fff;
+        font-weight: 800;
+        font-size: 13px;
+        white-space: nowrap;
+      }
+      .setup-menu-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .setup-menu-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        background: var(--paper);
+        border: 1.5px solid var(--line);
+        border-radius: var(--radius-md);
+      }
+      .setup-menu-item .info { flex: 1; min-width: 0; }
+      .setup-menu-item .name {
+        font-weight: 800;
+        font-size: 14px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .setup-menu-item .price {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+      .setup-menu-item .del {
+        width: 32px;
+        height: 32px;
+        border: 1.5px solid var(--line);
+        background: var(--paper);
+        border-radius: 10px;
+        color: var(--tomato);
+        font-weight: 900;
+      }
+      .setup-menu-empty {
+        text-align: center;
+        padding: 14px;
+        color: var(--muted);
+        font-size: 12px;
+        border: 1.5px dashed var(--line);
+        border-radius: var(--radius-md);
+        background: var(--cream);
+      }
+
+      .menu-catalog {
+        margin-bottom: 14px;
+      }
+      .menu-catalog-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+      }
+      .menu-catalog-head .lbl {
+        font-size: 12px;
+        font-weight: 800;
+        color: var(--ink-2);
+      }
+      .menu-catalog-head .hint {
+        font-size: 11px;
+        color: var(--muted);
+        font-weight: 500;
+      }
+      .menu-picks {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        scrollbar-width: none;
+      }
+      .menu-picks::-webkit-scrollbar { display: none; }
+      .menu-pick {
+        flex: 0 0 auto;
+        min-width: 120px;
+        max-width: 160px;
+        padding: 10px 12px;
+        background: var(--paper);
+        border: 1.5px solid var(--line);
+        border-radius: var(--radius-md);
+        text-align: left;
+        cursor: pointer;
+        transition: transform .08s, border-color .15s, background .15s;
+      }
+      .menu-pick:active { transform: scale(.97); }
+      .menu-pick:hover {
+        border-color: var(--matcha);
+        background: var(--matcha-soft);
+      }
+      .menu-pick .n {
+        font-weight: 800;
+        font-size: 13px;
+        line-height: 1.3;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      .menu-pick .p {
+        margin-top: 4px;
+        font-size: 12px;
+        color: var(--tomato);
+        font-weight: 800;
+      }
+
       /* ─── Order form ───────────────────────────────────── */
       .my-tag {
         display: inline-flex;
@@ -657,145 +788,6 @@
         margin: 6px 0 16px;
       }
       .add-item-btn:hover { background: #d3e6bd; }
-
-      /* ─── 建立菜單頁：商品列表 ─────────────────────── */
-      .menu-row {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-        margin-bottom: 8px;
-        background: var(--cream);
-        border-radius: 12px;
-        padding: 10px 12px;
-        border: 1.5px solid var(--line-2);
-      }
-      .menu-row input {
-        min-height: 38px;
-        padding: 8px 10px;
-        font-weight: 700;
-        font-size: 14px;
-      }
-      .menu-row .mr-name {
-        flex: 1;
-        min-width: 0;
-      }
-      .menu-row .mr-price {
-        width: 88px;
-        text-align: center;
-      }
-      .menu-row .mr-remove {
-        width: 36px;
-        height: 36px;
-        display: grid;
-        place-items: center;
-        border-radius: 999px;
-        background: var(--paper);
-        color: var(--tomato);
-        font-size: 14px;
-        flex-shrink: 0;
-        box-shadow: var(--shadow-sm);
-      }
-      .menu-row .mr-remove:hover { background: var(--tomato-soft); }
-      .add-menu-item-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        width: 100%;
-        min-height: 44px;
-        background: var(--paper);
-        color: var(--matcha-dark);
-        border: 1.5px dashed var(--matcha);
-        border-radius: 12px;
-        font-weight: 800;
-        font-size: 14px;
-      }
-      .add-menu-item-btn:hover { background: var(--matcha-soft); }
-
-      /* ─── 點餐頁：快選菜單 ─────────────────────────── */
-      .menu-picker-head {
-        margin: 4px 0 8px;
-      }
-      .lbl-block {
-        display: block;
-        font-size: 13px;
-        font-weight: 800;
-        color: var(--ink-2);
-      }
-      .lbl-block .hint {
-        font-weight: 500;
-        color: var(--muted);
-        font-size: 12px;
-        margin-left: 4px;
-      }
-      .menu-picker {
-        background: var(--cream);
-        border-radius: 14px;
-        padding: 6px 10px;
-        margin-bottom: 16px;
-        border: 1.5px solid var(--line-2);
-      }
-      .menu-pick-row {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px 4px;
-        border-bottom: 1px dashed var(--line);
-      }
-      .menu-pick-row:last-child { border-bottom: 0; }
-      .menu-pick-info {
-        flex: 1;
-        min-width: 0;
-      }
-      .menu-pick-name {
-        font-weight: 800;
-        font-size: 15px;
-        line-height: 1.3;
-        color: var(--ink);
-      }
-      .menu-pick-price {
-        font-size: 13px;
-        color: var(--tomato-dark);
-        font-weight: 800;
-        margin-top: 2px;
-        font-variant-numeric: tabular-nums;
-      }
-      .menu-pick-controls {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        flex-shrink: 0;
-      }
-      .menu-pick-btn {
-        width: 32px;
-        height: 32px;
-        display: grid;
-        place-items: center;
-        background: var(--paper);
-        border: 1.5px solid var(--line);
-        border-radius: 8px;
-        font-size: 16px;
-        font-weight: 900;
-        color: var(--matcha-dark);
-      }
-      .menu-pick-btn:hover { background: var(--matcha-soft); }
-      .menu-pick-btn.add {
-        background: var(--matcha);
-        color: #fff;
-        border-color: var(--matcha-dark);
-        padding: 0 12px;
-        width: auto;
-      }
-      .menu-pick-btn.add:hover { background: #6a9e44; }
-      .menu-pick-qty {
-        min-width: 28px;
-        text-align: center;
-        font-weight: 900;
-        font-size: 16px;
-        color: var(--ink);
-        font-variant-numeric: tabular-nums;
-      }
-      .menu-pick-qty.zero { color: var(--muted); }
 
       .quick-notes {
         display: flex;
@@ -1758,15 +1750,15 @@
         <div class="stats">
           <div class="stat people">
             <div class="stat-num" id="peopleCount">0</div>
-            <div class="stat-label">🧑 人</div>
+            <div class="stat-label">👤 人數</div>
           </div>
           <div class="stat">
             <div class="stat-num" id="itemCount">0</div>
-            <div class="stat-label">🥢 份</div>
+            <div class="stat-label">🍱 份數</div>
           </div>
           <div class="stat money">
             <div class="stat-num" id="totalPrice">$0</div>
-            <div class="stat-label">💰 共</div>
+            <div class="stat-label">💰 金額</div>
           </div>
         </div>
       </header>
@@ -1812,7 +1804,7 @@
 
         <label class="field">
           <span class="lbl">店名 / 團名 <span class="hint">可不填，預設「今天點這家」</span></span>
-          <input id="groupTitleInput" type="text" placeholder="例如：五十嵐下午茶 🧋" maxlength="40" />
+          <input id="groupTitleInput" type="text" placeholder="例如：XX飲料店 🧋" maxlength="40" />
         </label>
 
         <label class="field">
@@ -1837,24 +1829,24 @@
           </div>
         </div>
 
-        <!-- 商品清單（可選） -->
-        <label class="field" style="margin-top: 20px">
-          <span class="lbl">
-            🍽️ 商品清單
-            <span class="hint">可不填，朋友可直接點選</span>
-          </span>
-        </label>
-        <div id="menuItemsList"></div>
-        <button class="add-menu-item-btn" type="button" id="addMenuItemBtn">
-          ➕ 新增商品
-        </button>
+        <div class="setup-menu-section">
+          <label class="field" style="margin-bottom:8px">
+            <span class="lbl">文字菜單 <span class="hint">可選，不用照片也能點</span></span>
+          </label>
+          <div class="setup-menu-add">
+            <input id="setupMenuName" type="text" placeholder="品項名稱" maxlength="40" />
+            <input id="setupMenuPrice" type="number" min="0" inputmode="numeric" placeholder="價格" />
+            <button type="button" id="setupMenuAddBtn">＋ 新增</button>
+          </div>
+          <div id="setupMenuList" class="setup-menu-list"></div>
+        </div>
 
-        <button class="btn btn-primary btn-block" id="saveGroupBtn" type="button" style="margin-top: 14px">
-          ✨ 儲存並產生分享連結
+        <button class="btn btn-primary btn-block" id="saveGroupBtn" type="button">
+          ✨ 儲存並產生訂餐團連結
         </button>
 
         <p class="help" style="margin-top:14px">
-          儲存後分享連結給大家，他們開啟就能填餐點。資料會自動同步，主揪在「統計」頁可看到全部結果。
+          填店名後，可<strong>上傳菜單照片</strong>或<strong>新增文字品項</strong>（也可兩者都用）。儲存後把連結傳給這次要點餐的夥伴。
         </p>
       </section>
 
@@ -1879,29 +1871,23 @@
           </div>
         </div>
 
+        <div id="menuCatalog" class="menu-catalog" style="display:none"></div>
+
         <form id="orderForm">
           <label class="field">
             <span class="lbl">你的名字 <span class="hint">同伴會看到</span></span>
-            <input id="personName" type="text" placeholder="例如：小明、A車、1號" maxlength="20" autocomplete="nickname" />
+            <input id="personName" type="text" placeholder="例如：金角大王" maxlength="20" autocomplete="nickname" />
           </label>
 
           <label class="field">
             <span class="lbl">整單備註 <span class="hint">可不填</span></span>
-            <input id="personNote" type="text" placeholder="例如：可一起付、要統一發票" maxlength="60" />
+            <input id="personNote" type="text" placeholder="例如：這單我請" maxlength="60" />
           </label>
-
-          <!-- 快選菜單（主揪有建立清單時才顯示）-->
-          <div id="menuPickerWrap" style="display:none">
-            <div class="menu-picker-head">
-              <span class="lbl-block">🍽️ 主揪的菜單 <span class="hint">點 + 加入訂單</span></span>
-            </div>
-            <div id="menuPicker"></div>
-          </div>
 
           <div id="orderItems"></div>
 
           <button class="add-item-btn" type="button" id="addItemBtn">
-            ➕ <span id="addItemBtnLabel">再點一份</span>
+            ➕ 再點一份
           </button>
 
           <div class="submit-bar">
@@ -1944,12 +1930,12 @@
         </div>
 
         <div class="summary-card">
-          <h3>🥢 依餐點</h3>
+          <h3>🍱 餐點</h3>
           <div id="itemSummary"></div>
         </div>
 
         <div class="summary-card">
-          <h3>🧑 依個人</h3>
+          <h3>👤 個人</h3>
           <div id="personSummary"></div>
         </div>
 
@@ -2010,17 +1996,17 @@
       <div class="section-head" style="margin-bottom:8px">
         <div>
           <span class="eyebrow" style="color:var(--matcha-dark)">✨ 訂餐團已建立</span>
-          <h2 class="display">分享給大家吧</h2>
+          <h2 class="display">分享給這次的夥伴</h2>
         </div>
       </div>
       <div class="share-preview" id="sharePreview"></div>
       <div class="share-url-box">
-        <div class="share-url-label">🔗 連結預覽（給大家）</div>
+        <div class="share-url-label">🔗 這次訂餐團連結（給夥伴）</div>
         <div class="share-url-text" id="shareUrlText"></div>
       </div>
       <div class="button-row">
         <button class="btn btn-ghost" type="button" id="shareCancelBtn">稍後再說</button>
-        <button class="btn btn-primary" type="button" id="shareCopyBtn">📋 複製連結</button>
+        <button class="btn btn-primary" type="button" id="shareCopyBtn">📋 複製訂餐團連結</button>
       </div>
     </div>
 
@@ -2057,12 +2043,12 @@
         </div>
 
         <div class="receipt-section">
-          <div class="receipt-section-title">🥢 餐點清單</div>
+          <div class="receipt-section-title">🍱 餐點清單</div>
           <div id="receiptItems"></div>
         </div>
 
         <div class="receipt-section">
-          <div class="receipt-section-title">🧑 每人金額</div>
+          <div class="receipt-section-title">👤 每人金額</div>
           <div id="receiptPeople"></div>
         </div>
 
@@ -2123,7 +2109,7 @@
       // ════════════════════════════════════════════════════
       const STORAGE_PREFIX = "orderApp.fb.";
       const EXPIRE_HOURS = 24;
-      const QUICK_NOTES = ["半糖", "少糖", "去冰", "微冰", "熱的", "不要香菜", "加辣", "不辣"];
+      const QUICK_NOTES = ["半糖", "少糖", "無糖", "少冰", "微冰","去冰", "熱的", "大辣", "小辣"];
       const AVATAR_COLORS = [
         "#e85a4f", "#5c8a3a", "#d4a05c", "#4a90a4",
         "#a8456b", "#8b5cf6", "#0891b2", "#ea580c",
@@ -2159,12 +2145,13 @@
         groupId: params.get("group") || crypto.randomUUID(),
         title: params.get("title") || "今天點這家",
         imageUrl: "",
+        menuItems: [],
+        menuItemsDirty: false,
         selectedImageFile: null,
         selectedImageDataUrl: "",
         locked: false,
         orders: [],
         draftItems: [],
-        menuItems: [],          // 主揪建立的菜單清單 [{id, name, price}]
         editingOrderId: "",
         myOrderIds: [],
         pendingOrders: new Map(),
@@ -2391,6 +2378,14 @@
       function shareText() {
         return `🍱 ${state.title}\n👉 點我加入：${shareUrl()}`;
       }
+      function shareAppText() {
+        const appUrl = location.origin + location.pathname;
+        return `🍱 揪團點餐\n免費的多人點餐工具，建團、點餐、結算一條龍！\n${appUrl}`;
+      }
+      async function shareAppLink() {
+        await copyText(shareAppText(), "已複製 App 連結 🎉");
+        trackEvent("app_shared");
+      }
       async function copyText(text, successMsg) {
         // 方法 1：Clipboard API（現代瀏覽器）
         if (navigator.clipboard && window.isSecureContext) {
@@ -2484,23 +2479,18 @@
       async function saveGroupToFirestore(title, imageDataUrl) {
         const ref = doc(db, "groups", state.groupId);
         const existing = await getDoc(ref);
-        // 清理菜單清單：去掉空白項目，欄位轉純值
-        const cleanMenu = state.menuItems
-          .map(m => ({
-            id: m.id || ("m_" + Math.random().toString(36).slice(2, 10)),
-            name: String(m.name || "").trim(),
-            price: Number(m.price || 0)
-          }))
-          .filter(m => m.name);
-        state.menuItems = cleanMenu;
         const data = {
           title: title,
           locked: state.locked,
-          menuItems: cleanMenu,
           updatedAt: serverTimestamp(),
           expiresAt: expiryTimestamp()    // ← TTL: 24h 後自動刪
         };
         if (imageDataUrl) data.imageUrl = imageDataUrl;
+        data.menuItems = (state.menuItems || []).map(m => ({
+          id: m.id,
+          name: m.name,
+          price: Number(m.price) || 0,
+        }));
         if (!existing.exists()) {
           // 首次建立：生成 hostToken
           data.createdAt = serverTimestamp();
@@ -2580,20 +2570,16 @@
               state.imageUrl = d.imageUrl;
               cacheImage(d.imageUrl);
             }
-            // 讀取主揪建立的菜單清單
-            if (Array.isArray(d.menuItems)) {
-              // 保留本機正在編輯但還沒儲存的版本（只有主揪會編輯）
-              // 客人 / 非編輯狀態 → 用伺服器版本
-              const isEditingHere = state.isHost && state._menuDirty;
-              if (!isEditingHere) {
-                state.menuItems = d.menuItems.map(m => ({
-                  id: m.id || ("m_" + Math.random().toString(36).slice(2, 10)),
-                  name: m.name || "",
-                  price: m.price || ""
-                }));
-              }
-            } else {
-              if (!state._menuDirty) state.menuItems = [];
+            const incomingMenu = Array.isArray(d.menuItems)
+              ? d.menuItems.map(m => ({
+                  id: m.id || ('m' + Math.random().toString(36).slice(2, 8)),
+                  name: m.name || '',
+                  price: Number(m.price) || 0,
+                }))
+              : [];
+            // 主揪編輯中尚未儲存時，不要被即時同步蓋掉本機品項
+            if (!state.isHost || !state.menuItemsDirty) {
+              state.menuItems = incomingMenu;
             }
             // 主揪識別：本機 token 跟 server token 一致 → 是主揪
             if (d.hostToken) {
@@ -2669,10 +2655,17 @@
         const src = state.selectedImageDataUrl || state.imageUrl;
         const wrap1 = $("#menuImageWrap");
         const wrap2 = $("#orderMenuImageWrap");
+        if (!wrap1 && !wrap2) return;
+
         if (src) {
-          const tag = state.selectedImageDataUrl ? '<div class="image-tag">尚未儲存</div>' : '';
-          wrap1.innerHTML = `${tag}<img src="${src}" alt="菜單" data-menu-image />`;
-          wrap2.innerHTML = `<img src="${src}" alt="菜單" data-menu-image />`;
+          if (wrap1) {
+            const tag = state.selectedImageDataUrl ? '<div class="image-tag">尚未儲存</div>' : '';
+            wrap1.innerHTML = `${tag}<img src="${src}" alt="菜單" data-menu-image />`;
+          }
+          if (wrap2) {
+            wrap2.style.display = "";
+            wrap2.innerHTML = `<img src="${src}" alt="菜單" data-menu-image />`;
+          }
         } else if (state.imageLoading) {
           const loadingHtml = `
             <div class="placeholder">
@@ -2680,155 +2673,149 @@
               菜單載入中…<br/>
               <small>稍等一下下</small>
             </div>`;
-          wrap1.innerHTML = loadingHtml;
-          wrap2.innerHTML = loadingHtml;
+          if (wrap1) wrap1.innerHTML = loadingHtml;
+          if (wrap2) {
+            wrap2.style.display = "";
+            wrap2.innerHTML = loadingHtml;
+          }
         } else {
-          wrap1.innerHTML = '<div class="placeholder"><span class="emo">🍜</span>菜單會顯示在這裡<br/><small>大家點開連結後就能看到</small></div>';
-          wrap2.innerHTML = '<div class="placeholder"><span class="emo">📋</span>主揪還沒上傳菜單</div>';
+          if (wrap1) {
+            wrap1.innerHTML = '<div class="placeholder"><span class="emo">🍜</span>菜單會顯示在這裡<br/><small>大家點開連結後就能看到</small></div>';
+          }
+          if (wrap2) {
+            const items = state.menuItems || [];
+            if (items.length) {
+              wrap2.innerHTML = "";
+              wrap2.style.display = "none";
+            } else {
+              wrap2.style.display = "";
+              wrap2.innerHTML = '<div class="placeholder"><span class="emo">📋</span>主揪還沒上傳菜單<br/><small>請看下方品項或手動填寫</small></div>';
+            }
+          }
         }
         $$("[data-menu-image]").forEach(img => img.addEventListener("click", () => openImageModal(img.src)));
-        // 點餐頁有菜單圖時才顯示「點圖放大」提示
         const zh = $("#zoomHint");
         if (zh) zh.style.display = src ? "inline-flex" : "none";
       }
 
-      // ════════════════════════════════════════════════════
-      //  菜單清單（主揪建立 + 朋友快選）
-      // ════════════════════════════════════════════════════
-      function ensureMenuItemId() {
-        // 每筆菜單需要穩定 id（避免渲染後又改成 random）
-        state.menuItems.forEach(m => {
-          if (!m.id) m.id = "m_" + Math.random().toString(36).slice(2, 10);
-        });
+      function markMenuItemsDirty() {
+        state.menuItemsDirty = true;
       }
 
-      function renderMenuEditor() {
-        ensureMenuItemId();
-        const box = $("#menuItemsList");
+      function renderSetupMenu() {
+        const box = $("#setupMenuList");
         if (!box) return;
-        if (!state.menuItems.length) {
-          box.innerHTML = '<div class="help" style="margin: 0 0 10px">尚未新增商品。可以只用菜單照片，或點下方「新增商品」自己打。</div>';
+        const items = state.menuItems || [];
+        if (!items.length) {
+          box.innerHTML = `<div class="setup-menu-empty">還沒新增品項，或用上方拍照上傳菜單</div>`;
           return;
         }
-        box.innerHTML = state.menuItems.map((m, idx) => `
-          <div class="menu-row" data-idx="${idx}">
-            <input class="mr-name" data-mfield="name" value="${escapeHtml(m.name)}" placeholder="商品名稱" maxlength="40" />
-            <input class="mr-price" data-mfield="price" type="number" inputmode="numeric" min="0" value="${escapeHtml(m.price)}" placeholder="價錢" />
-            <button class="mr-remove" type="button" data-act="remove-menu" aria-label="刪除">✕</button>
+        box.innerHTML = items.map(m => `
+          <div class="setup-menu-item" data-mid="${escapeHtml(m.id)}">
+            <div class="info">
+              <div class="name">${escapeHtml(m.name)}</div>
+              <div class="price">${m.price ? money(m.price) : '價格未填'}</div>
+            </div>
+            <button class="del" type="button" data-act="del-menu" aria-label="刪除">✕</button>
           </div>
         `).join("");
-        $$("#menuItemsList .menu-row").forEach(row => {
-          const idx = Number(row.dataset.idx);
-          row.querySelectorAll("[data-mfield]").forEach(input => {
-            input.addEventListener("input", () => {
-              state.menuItems[idx][input.dataset.mfield] = input.value;
-              state._menuDirty = true;
-            });
-          });
-          row.querySelector('[data-act="remove-menu"]').addEventListener("click", () => {
-            state.menuItems.splice(idx, 1);
-            state._menuDirty = true;
-            renderMenuEditor();
+        box.querySelectorAll('[data-act="del-menu"]').forEach(btn => {
+          btn.addEventListener("click", () => {
+            const row = btn.closest("[data-mid]");
+            const id = row?.dataset.mid;
+            if (!id) return;
+            state.menuItems = (state.menuItems || []).filter(x => x.id !== id);
+            markMenuItemsDirty();
+            renderSetupMenu();
           });
         });
       }
 
-      // 計算某個菜單品項在 draftItems 中的數量
-      function getDraftQtyForMenu(menuItem) {
-        const key = menuItemKey(menuItem);
-        let total = 0;
-        state.draftItems.forEach(d => {
-          if (d._fromMenu && d._fromMenu === key) {
-            total += Number(d.qty || 0);
-          }
-        });
-        return total;
-      }
-      function menuItemKey(m) {
-        // 用 id 或 name+price 當識別（id 比較穩）
-        return m.id || (m.name + "__" + (m.price || ""));
+      function addSetupMenuItem() {
+        const nameEl = $("#setupMenuName");
+        const priceEl = $("#setupMenuPrice");
+        if (!nameEl) return;
+        const name = nameEl.value.trim();
+        const price = Number(priceEl?.value || 0);
+        if (!name) { showToast("請輸入品項名稱", "error"); nameEl.focus(); return; }
+        if (!state.menuItems) state.menuItems = [];
+        state.menuItems.push({ id: "m" + Date.now(), name, price });
+        markMenuItemsDirty();
+        nameEl.value = "";
+        if (priceEl) priceEl.value = "";
+        renderSetupMenu();
+        nameEl.focus();
       }
 
-      function renderMenuPicker() {
-        const wrap = $("#menuPickerWrap");
-        const box = $("#menuPicker");
-        if (!wrap || !box) return;
-        // 主揪沒建菜單清單 → 隱藏整塊
-        if (!state.menuItems.length) {
+      function renderMenuCatalog() {
+        const wrap = $("#menuCatalog");
+        if (!wrap) return;
+        const items = state.menuItems || [];
+        if (!items.length) {
           wrap.style.display = "none";
+          wrap.innerHTML = "";
           return;
         }
         wrap.style.display = "block";
-        box.className = "menu-picker";
-        box.innerHTML = state.menuItems.map(m => {
-          const qty = getDraftQtyForMenu(m);
-          const hasPrice = Number(m.price) > 0;
-          return `
-            <div class="menu-pick-row" data-mkey="${escapeHtml(menuItemKey(m))}">
-              <div class="menu-pick-info">
-                <div class="menu-pick-name">${escapeHtml(m.name || "（未命名）")}</div>
-                ${hasPrice ? `<div class="menu-pick-price">${money(m.price)}</div>` : ''}
-              </div>
-              <div class="menu-pick-controls">
-                ${qty > 0 ? `
-                  <button class="menu-pick-btn" type="button" data-act="minus">−</button>
-                  <span class="menu-pick-qty">${qty}</span>
-                  <button class="menu-pick-btn" type="button" data-act="plus">+</button>
-                ` : `
-                  <button class="menu-pick-btn add" type="button" data-act="plus">＋ 點</button>
-                `}
-              </div>
-            </div>
-          `;
-        }).join("");
-        // 綁定事件
-        $$("#menuPicker .menu-pick-row").forEach(row => {
-          const mkey = row.dataset.mkey;
-          const menuItem = state.menuItems.find(m => menuItemKey(m) === mkey);
-          if (!menuItem) return;
-          const plusBtn = row.querySelector('[data-act="plus"]');
-          const minusBtn = row.querySelector('[data-act="minus"]');
-          if (plusBtn) plusBtn.addEventListener("click", () => addMenuItemToDraft(menuItem));
-          if (minusBtn) minusBtn.addEventListener("click", () => removeMenuItemFromDraft(menuItem));
+        wrap.innerHTML = `
+          <div class="menu-catalog-head">
+            <span class="lbl">🍱 點選品項</span>
+            <span class="hint">會自動帶入餐點與價格</span>
+          </div>
+          <div class="menu-picks">
+            ${items.map(m => `
+              <button type="button" class="menu-pick" data-pick-menu="${escapeHtml(m.id)}">
+                <div class="n">${escapeHtml(m.name)}</div>
+                <div class="p">${m.price ? money(m.price) : '價格洽詢'}</div>
+              </button>
+            `).join("")}
+          </div>
+        `;
+        wrap.querySelectorAll("[data-pick-menu]").forEach(btn => {
+          btn.addEventListener("click", () => pickMenuItem(btn.dataset.pickMenu));
         });
       }
 
-      function addMenuItemToDraft(menuItem) {
-        const key = menuItemKey(menuItem);
-        // 找看看 draft 已經有沒有這個菜單品項
-        const existing = state.draftItems.find(d => d._fromMenu === key);
-        if (existing) {
-          existing.qty = Math.min(99, Number(existing.qty || 0) + 1);
-        } else {
-          // 移除空白的初始項目（沒名字、qty 1、沒價格、沒備註）
-          state.draftItems = state.draftItems.filter(d => {
-            const empty = !d.name && !d.price && !d.note && Number(d.qty) <= 1;
-            return !empty;
-          });
-          state.draftItems.push({
-            name: menuItem.name,
-            price: menuItem.price || "",
-            qty: 1,
-            note: "",
-            _fromMenu: key
-          });
+      function pickMenuItem(id) {
+        const item = (state.menuItems || []).find(m => m.id === id);
+        if (!item) return;
+        if (state.locked) { showToast("已鎖單", "error"); return; }
+        let idx = state.draftItems.findIndex(i => !String(i.name || "").trim());
+        if (idx < 0) {
+          state.draftItems.push({ name: "", price: "", qty: 1, note: "" });
+          idx = state.draftItems.length - 1;
         }
-        renderMenuPicker();
+        state.draftItems[idx].name = item.name;
+        state.draftItems[idx].price = item.price ? String(item.price) : "";
         renderDraftItems();
+        const card = $$("#orderItems .item-card")[idx];
+        card?.scrollIntoView({ behavior: "smooth", block: "center" });
+        showToast(`已選「${item.name}」`);
       }
 
-      function removeMenuItemFromDraft(menuItem) {
-        const key = menuItemKey(menuItem);
-        const idx = state.draftItems.findIndex(d => d._fromMenu === key);
-        if (idx < 0) return;
-        const cur = Number(state.draftItems[idx].qty || 0);
-        if (cur <= 1) {
-          state.draftItems.splice(idx, 1);
-        } else {
-          state.draftItems[idx].qty = cur - 1;
+      function orderFieldHasValue(input) {
+        const field = input.dataset.field;
+        if (field === "qty") {
+          const n = Number(input.value);
+          return input.value !== "" && n > 1;
         }
-        renderMenuPicker();
-        renderDraftItems();
+        return String(input.value).trim() !== "";
+      }
+
+      function syncOrderFieldHighlight(input) {
+        const filled = orderFieldHasValue(input);
+        input.classList.toggle("has-value", filled);
+        if (input.dataset.field === "qty") {
+          input.closest(".qty-stepper")?.classList.toggle("has-value", filled);
+        }
+      }
+
+      function syncOrderFormHighlights() {
+        ["#personName", "#personNote"].forEach(sel => {
+          const el = $(sel);
+          if (el) syncOrderFieldHighlight(el);
+        });
+        $$("#orderItems [data-field]").forEach(syncOrderFieldHighlight);
       }
 
       function renderDraftItems() {
@@ -2842,7 +2829,7 @@
             ${state.draftItems.length > 1 ? `<button class="remove" data-act="remove" type="button" aria-label="刪除">✕</button>` : ''}
             <label class="field" style="margin: 6px 0 8px">
               <span class="lbl">餐點</span>
-              <input data-field="name" value="${escapeHtml(item.name)}" placeholder="例如：奶茶 / 雞腿便當" />
+              <input data-field="name" value="${escapeHtml(item.name)}" placeholder="例如：QQㄋㄟㄋㄟ好喝到咩噗茶 " />
             </label>
             <div class="item-grid">
               <label class="field" style="margin:0">
@@ -2860,7 +2847,7 @@
             </div>
             <label class="field" style="margin: 10px 0 0">
               <span class="lbl">這份的備註 <span class="hint">點一下快選</span></span>
-              <input data-field="note" value="${escapeHtml(item.note)}" placeholder="例如：半糖去冰" />
+              <input data-field="note" value="${escapeHtml(item.note)}" placeholder="例如：珍奶不要珍珠不要奶" />
               <div class="quick-notes">
                 ${QUICK_NOTES.map(n => `<button class="chip" type="button" data-quick="${escapeHtml(n)}">${escapeHtml(n)}</button>`).join("")}
               </div>
@@ -2871,8 +2858,10 @@
         $$("#orderItems .item-card").forEach(card => {
           const idx = Number(card.dataset.idx);
           card.querySelectorAll("[data-field]").forEach(input => {
+            syncOrderFieldHighlight(input);
             input.addEventListener("input", () => {
               state.draftItems[idx][input.dataset.field] = input.value;
+              syncOrderFieldHighlight(input);
               updateSubmitLabel();
             });
           });
@@ -2902,6 +2891,7 @@
               const newVal = parts.join(" ");
               noteInput.value = newVal;
               state.draftItems[idx].note = newVal;
+              syncOrderFieldHighlight(noteInput);
               chip.classList.toggle("is-on", parts.includes(v));
             });
             if ((state.draftItems[idx].note || "").includes(chip.dataset.quick)) {
@@ -2909,6 +2899,7 @@
             }
           });
         });
+        syncOrderFormHighlights();
         updateSubmitLabel();
       }
 
@@ -3127,8 +3118,8 @@
       function renderAll() {
         renderStats();
         renderMenuImage();
-        renderMenuEditor();
-        renderMenuPicker();
+        renderSetupMenu();
+        renderMenuCatalog();
         renderDraftItems();
         renderOrders();
         renderSummary();
@@ -3138,11 +3129,6 @@
         if (badge) badge.style.display = state.isHost ? "inline-block" : "none";
         // 切換主揪/客人模式（影響 host-only 元素顯示）
         document.body.classList.toggle("is-guest", !state.isHost);
-        // 「再點一份」按鈕在有菜單清單時改成「手動新增」
-        const addBtnLabel = $("#addItemBtnLabel");
-        if (addBtnLabel) {
-          addBtnLabel.textContent = state.menuItems.length ? "菜單外手動新增" : "再點一份";
-        }
       }
 
       // ════════════════════════════════════════════════════
@@ -3164,15 +3150,13 @@
           if (imageDataUrl) cacheImage(imageDataUrl);
 
           await saveGroupToFirestore(state.title, imageDataUrl);
-
-          // 已儲存：清掉「正在編輯」標記，允許 onSnapshot 接管菜單同步
-          state._menuDirty = false;
+          state.menuItemsDirty = false;
 
           // 追蹤：是新建還是更新
           const isNew = !state.groupExists;
           trackEvent(isNew ? "group_created" : "group_updated", {
             has_image: !!(imageDataUrl || state.imageUrl),
-            menu_items: state.menuItems.length
+            menu_count: (state.menuItems || []).length
           });
 
           renderAll();
@@ -3186,7 +3170,7 @@
           showToast(`儲存失敗：${e.message}`, "error");
         } finally {
           btn.disabled = false;
-          btn.innerHTML = "✨ 儲存並產生分享連結";
+          btn.innerHTML = "✨ 儲存並產生訂餐團連結";
         }
       }
 
@@ -3259,7 +3243,7 @@
         $("#sharePreview").innerHTML = `
           <div class="sp-emoji">🎉</div>
           <div class="sp-title">${escapeHtml(state.title)}</div>
-          <div class="sp-hint">按下「複製連結」傳給夥伴吧</div>
+          <div class="sp-hint">複製連結，傳給這次要點餐的夥伴</div>
         `;
         $("#shareUrlText").textContent = shareUrl();
         $("#shareBackdrop").classList.add("show");
@@ -3556,13 +3540,15 @@
         $("#cameraInput").addEventListener("change", e => handleImage(e.target.files[0]));
         $("#albumInput").addEventListener("change", e => handleImage(e.target.files[0]));
         $("#saveGroupBtn").addEventListener("click", saveGroup);
-        // 右上角 🔗 圖示按下：分享揪團點餐 App 本身（不是這次的團）
-        $("#shareBtn").addEventListener("click", async () => {
-          const appUrl = location.origin + location.pathname; // 不含 query string
-          const text = `🍱 揪團點餐\n免費的多人點餐工具，建團、點餐、結算一條龍！\n${appUrl}`;
-          await copyText(text, "已複製 App 連結 🎉");
-          trackEvent("app_shared");
+        $("#setupMenuAddBtn").addEventListener("click", addSetupMenuItem);
+        $("#setupMenuName").addEventListener("keydown", e => {
+          if (e.key === "Enter") { e.preventDefault(); addSetupMenuItem(); }
         });
+        $("#setupMenuPrice").addEventListener("keydown", e => {
+          if (e.key === "Enter") { e.preventDefault(); addSetupMenuItem(); }
+        });
+        // 右上角 🔗：分享揪團點餐 App 本身（不是這次的團）
+        $("#shareBtn").addEventListener("click", shareAppLink);
         $("#addItemBtn").addEventListener("click", () => {
           state.draftItems.push({ name: "", price: "", qty: 1, note: "" });
           renderDraftItems();
@@ -3570,18 +3556,6 @@
             const cards = $$("#orderItems .item-card");
             const last = cards[cards.length - 1];
             last?.querySelector('[data-field="name"]')?.focus();
-            last?.scrollIntoView({ behavior: "smooth", block: "center" });
-          }, 50);
-        });
-        // 主揪：新增菜單品項
-        $("#addMenuItemBtn").addEventListener("click", () => {
-          state.menuItems.push({ id: "m_" + Math.random().toString(36).slice(2, 10), name: "", price: "" });
-          state._menuDirty = true;
-          renderMenuEditor();
-          setTimeout(() => {
-            const rows = $$("#menuItemsList .menu-row");
-            const last = rows[rows.length - 1];
-            last?.querySelector('[data-mfield="name"]')?.focus();
             last?.scrollIntoView({ behavior: "smooth", block: "center" });
           }, 50);
         });
@@ -3604,6 +3578,9 @@
           showToast("已重新連線");
         });
         $("#lockSwitch").addEventListener("click", toggleLock);
+        ["#personName", "#personNote"].forEach(sel => {
+          $(sel).addEventListener("input", () => syncOrderFieldHighlight($(sel)));
+        });
         $("#personName").addEventListener("blur", () => {
           const v = $("#personName").value.trim();
           if (v) try { localStorage.setItem(storageKey("myName"), v); } catch (e) {}
